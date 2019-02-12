@@ -10,3 +10,7 @@ var (
 	b int = 12
 	c = 24
 )
+
+i, j := 0, 10
+f := func() int { return 7 }
+
