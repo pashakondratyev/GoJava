@@ -11,4 +11,6 @@ case 4,5,6,7:
 	fallthrough
 case 6,7,8,9: 
 	println("very large")
+default:
+	prinln("other")
 }
