@@ -1,7 +1,6 @@
-// invalid for loop - missing brackets
+// invalid for loop - GoLite doesn't support range loops
 package test
 
-var x = 7
-
-for x<10
-	x = x-1
+for range [5]int{} {
+	println("hi")
+}
