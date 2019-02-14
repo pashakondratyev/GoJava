@@ -2,12 +2,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "mini.tab.h"
+#include "parser.tab.h"
 
 #define YY_USER_ACTION yylloc.first_line = yylloc.last_line = yylineno;
 int g_tokens;
 %} 
 DIGIT [0-9]
+OCTALDIGITS [0-7]
+HEXDECSYMBOLS [0-9a-f]
+
 STRINGSYMBOLS [~@#$%^&*\-+/`<>=_|'.,;:!?{}\[\]() ]
 ESCAPESYMBOLS \\[abfnrtv\"\\]
 %option yylineno
@@ -106,7 +109,7 @@ ESCAPESYMBOLS \\[abfnrtv\"\\]
 
 "("            if (g_tokens){printf("tLPAREN\n");} return tLPAREN;
 ")"            if (g_tokens){printf("tRPAREN\n");} return tRPAREN;
-"["            if (g_tokens){printf("tLSBRACE\n");} return tLBRACE;
+"["            if (g_tokens){printf("tLSBRACE\n");} return tLSBRACE;
 "]"            if (g_tokens){printf("tRSBRACE\n");} return tRSBRACE;
 "{"            if (g_tokens){printf("tLCBRACE\n");} return tLCBRACE;
 "}"            if (g_tokens){printf("tRCBRACE\n");} return tRCBRACE;
@@ -117,10 +120,11 @@ ESCAPESYMBOLS \\[abfnrtv\"\\]
 ";"            if (g_tokens){printf("tSEMICOLON\n");} return tSEMICOLON;
 "..."          if (g_tokens){printf("tELIP\n");} return tELIP;
 
-  /* Valid Integers */
-0|([1-9]{DIGIT}*) { 
+  /* Valid Integers, includes octal and hexadecimal*/
+0|([1-9]{DIGIT}*)|(0{OCTALDIGITS}+)|(0(x|X){HEXDECSYMBOLS}+) { 
   if (g_tokens){printf("tINTVAL(%s)\n", yytext); }
-  yylval.intval = atoi(yytext);
+  // Note: for strtol if base is 0, then it assumes the base based on if it starts with 0 or 0(x|X)
+  yylval.intval = strtol(yytext, NULL, 0);
   return tINTVAL;
 }
 
@@ -131,16 +135,10 @@ ESCAPESYMBOLS \\[abfnrtv\"\\]
 }
 
   /* Valid Floating Points */
-(0|[1-9]{DIGIT}*)(\.{DIGIT}+) {
+({DIGIT}*\.{DIGIT}*) {
   if (g_tokens){printf("tFLOATVAL(%s)\n", yytext); }
   yylval.floatval = atof(yytext);
   return tFLOATVAL;
-}
-
-  /* Invalid Floating Points */
-({DIGIT}*\.{DIGIT}*) {
-  fprintf(stderr, "Error: (line %d) invalid floating point '%s'\n", yylineno, yytext);
-  exit(1);
 }
 
   /* Valid Identifiers */
