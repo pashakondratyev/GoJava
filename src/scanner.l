@@ -15,8 +15,9 @@ STRINGSYMBOLS [~@#$%^&*\-+/`<>=_|'.,;:!?{}\[\]() ]
 ESCAPESYMBOLS \\[abfnrtv\"\\]
 %option yylineno
 %option noyywrap
+
+%x IN_COMMENT
 %%
-  
   /* White Space */
 [ \t\n\r]+
 
@@ -98,7 +99,7 @@ ESCAPESYMBOLS \\[abfnrtv\"\\]
 "--"           if (g_tokens){printf("tDEC\n");} return tDEC;
 
 "<-"           if (g_tokens){printf("tCHANNEL\n");} return tCHANNEL;
-  
+
   /* Logical Comparisons */
 "=="           if (g_tokens){printf("tEQ\n");} return tEQ;
 "<"            if (g_tokens){printf("tLESS\n");} return tLESS;
@@ -150,6 +151,15 @@ ESCAPESYMBOLS \\[abfnrtv\"\\]
 
   /* Comments */
 "//".* { /* empty because comment */ }
+
+  /* Multiline C-Style comments, from FLEX documentation */
+"/*"      BEGIN(IN_COMMENT);
+
+<IN_COMMENT>"*/"      BEGIN(INITIAL);
+<IN_COMMENT>[^*\n]+   // eat comment in chunks
+<IN_COMMENT>"*"       // eat the lone star
+<IN_COMMENT>\n        yylineno++; //TODO: check if this is necessary
+
 
   /* Valid Strings */
 \"([a-zA-Z0-9]|{STRINGSYMBOLS}|{ESCAPESYMBOLS})*\" {
