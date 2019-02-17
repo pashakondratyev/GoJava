@@ -1,4 +1,4 @@
-%{ 
+%{
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,7 +6,36 @@
 
 #define YY_USER_ACTION yylloc.first_line = yylloc.last_line = yylineno;
 int g_tokens;
-%} 
+
+enum yytokentype lastToken;
+
+void saveToken(enum yytokentype type){
+  lastToken = type;
+}
+
+bool semicolonRequired(){
+  switch(lastToken){
+    case tINTVAL:
+    case tFLOATVAL:
+    case tBOOLVAL:
+    case tRUNEVAL:
+    case tSTRINGVAL:
+    case tIDENTIFIER:
+    case tBREAK:
+    case tCONTINUE:
+    case tFALLTHROUGH:
+    case tRETURN:
+    case tINC:
+    case tDEC:
+    case tRPAREN:
+    case tRCBRACE:
+    case tRSBRACE:
+      return true;
+    default:
+      return false;
+  }
+}
+%}
 DIGIT [0-9]
 OCTALDIGITS [0-7]
 HEXDECSYMBOLS [0-9a-f]
@@ -19,113 +48,125 @@ ESCAPESYMBOLS \\[abfnrtv\"\\]
 %x IN_COMMENT
 %%
   /* White Space */
-[ \t\n\r]+
+([\n\r]) {
+  if(semicolonRequired()){
+    lastToken = tSEMICOLON;
+    printf("tSEMICOLON\n");
+    return tSEMICOLON;
+  }
+}
+
+<<EOF>> {
+  if(semicolonRequired()){
+    lastToken = tSEMICOLON;
+    printf("tSEMICOLON\n");
+    return tSEMICOLON;
+  }
+  yyterminate();
+}
+
+[ \t\r]+
 
   /* Keywords */
-"break"        if (g_tokens){printf("tBREAK\n");} return tBREAK;
-"case"         if (g_tokens){printf("tCASE\n");} return tCASE;
-"chan"         if (g_tokens){printf("tCHAN\n");} return tCHAN;
-"const"        if (g_tokens){printf("tCONST\n");} return tCONST;
-"continue"     if (g_tokens){printf("tCONTINUE\n");} return tCONTINUE;
-"default"      if (g_tokens){printf("tDEFAULT\n");} return tDEFAULT;
-"defer"        if (g_tokens){printf("tDEFER\n");} return tDEFER;
-"else"         if (g_tokens){printf("tELSE\n");} return tELSE;
-"fallthrough"  if (g_tokens){printf("tFALLTHROUGH\n");} return tFALLTHROUGH;
-"for"          if (g_tokens){printf("tFOR\n");} return tFOR;
-"func"         if (g_tokens){printf("tFUNC\n");} return tFUNC;
-"go"           if (g_tokens){printf("tGO\n");} return tGO;
-"goto"         if (g_tokens){printf("tGOTO\n");} return tGOTO;
-"if"           if (g_tokens){printf("tIF\n");} return tIF;
-"import"       if (g_tokens){printf("tIMPORT\n");} return tIMPORT;
-"interface"    if (g_tokens){printf("tINTERFACE\n");} return tINTERFACE;
-"map"          if (g_tokens){printf("tMAP\n");} return tMAP;
-"package"      if (g_tokens){printf("tPACKAGE\n");} return tPACKAGE;
-"range"        if (g_tokens){printf("tRANGE\n");} return tRANGE;
-"return"       if (g_tokens){printf("tRETURN\n");} return tRETURN;
-"select"       if (g_tokens){printf("tSELECT\n");} return tSELECT;
-"struct"       if (g_tokens){printf("tSTRUCT\n");} return tSTRUCT;
-"switch"       if (g_tokens){printf("tSWITCH\n");} return tSWITCH;
-"type"         if (g_tokens){printf("tTYPE\n");} return tTYPE;
-"var"          if (g_tokens){printf("tVAR\n");} return tVAR;
-"print"        if (g_tokens){printf("tPRINT\n");} return tPRINT;
-"println"      if (g_tokens){printf("tPRINTLN\n");} return tPRINTLN;
-"append"       if (g_tokens){printf("tAPPEND\n");} return tAPPEND;
-"len"          if (g_tokens){printf("tLEN\n");} return tLEN;
-"cap"          if (g_tokens){printf("tCAP\n");} return tCAP; 
+"break"        if (g_tokens){printf("tBREAK\n");} saveToken(tBREAK); return tBREAK;
+"case"         if (g_tokens){printf("tCASE\n");} saveToken(tCASE); return tCASE;
+"chan"         if (g_tokens){printf("tCHAN\n");} saveToken(tCHAN); return tCHAN;
+"const"        if (g_tokens){printf("tCONST\n");} saveToken(tCONST); return tCONST;
+"continue"     if (g_tokens){printf("tCONTINUE\n");} saveToken(tCONTINUE); return tCONTINUE;
+"default"      if (g_tokens){printf("tDEFAULT\n");} saveToken(tDEFAULT); return tDEFAULT;
+"defer"        if (g_tokens){printf("tDEFER\n");} saveToken(tDEFER); return tDEFER;
+"else"         if (g_tokens){printf("tELSE\n");} saveToken(tELSE); return tELSE;
+"fallthrough"  if (g_tokens){printf("tFALLTHROUGH\n");} saveToken(tFALLTHROUGH); return tFALLTHROUGH;
+"for"          if (g_tokens){printf("tFOR\n");} saveToken(tFOR); return tFOR;
+"func"         if (g_tokens){printf("tFUNC\n");} saveToken(tFUNC); return tFUNC;
+"go"           if (g_tokens){printf("tGO\n");} saveToken(tGO); return tGO;
+"goto"         if (g_tokens){printf("tGOTO\n");} saveToken(tGOTO); return tGOTO;
+"if"           if (g_tokens){printf("tIF\n");} saveToken(tIF); return tIF;
+"import"       if (g_tokens){printf("tIMPORT\n");} saveToken(tIMPORT); return tIMPORT;
+"interface"    if (g_tokens){printf("tINTERFACE\n");} saveToken(tINTERFACE); return tINTERFACE;
+"map"          if (g_tokens){printf("tMAP\n");} saveToken(tMAP); return tMAP;
+"package"      if (g_tokens){printf("tPACKAGE\n");} saveToken(tPACKAGE); return tPACKAGE;
+"range"        if (g_tokens){printf("tRANGE\n");} saveToken(tRANGE); return tRANGE;
+"return"       if (g_tokens){printf("tRETURN\n");} saveToken(tRETURN); return tRETURN;
+"select"       if (g_tokens){printf("tSELECT\n");} saveToken(tSELECT); return tSELECT;
+"struct"       if (g_tokens){printf("tSTRUCT\n");} saveToken(tSTRUCT); return tSTRUCT;
+"switch"       if (g_tokens){printf("tSWITCH\n");} saveToken(tSWITCH); return tSWITCH;
+"type"         if (g_tokens){printf("tTYPE\n");} saveToken(tTYPE); return tTYPE;
+"var"          if (g_tokens){printf("tVAR\n");} saveToken(tVAR); return tVAR;
+"print"        if (g_tokens){printf("tPRINT\n");} saveToken(tPRINT); return tPRINT;
+"println"      if (g_tokens){printf("tPRINTLN\n");} saveToken(tPRINTLN); return tPRINTLN;
+"append"       if (g_tokens){printf("tAPPEND\n");} saveToken(tAPPEND); return tAPPEND;
+"len"          if (g_tokens){printf("tLEN\n");} saveToken(tLEN); return tLEN;
+"cap"          if (g_tokens){printf("tCAP\n");} saveToken(tCAP); return tCAP;
 
   /* Types */
-"rune"         if (g_tokens){printf("tRUNE\n");} return tRUNE;
-"string"       if (g_tokens){printf("tSTRING\n");} return tSTRING;
-"int"          if (g_tokens){printf("tFLOAT\n");} return tFLOAT;
-"float"        if (g_tokens){printf("tFLOAT\n");} return tFLOAT;
-"bool"         if (g_tokens){printf("tBOOLEAN\n");} return tBOOLEAN;
+"rune"         if (g_tokens){printf("tRUNE\n");} saveToken(tRUNE); return tRUNE;
+"string"       if (g_tokens){printf("tSTRING\n");} saveToken(tSTRING); return tSTRING;
+"int"          if (g_tokens){printf("tFLOAT\n");} saveToken(tFLOAT); return tFLOAT;
+"float"        if (g_tokens){printf("tFLOAT\n");} saveToken(tFLOAT); return tFLOAT;
+"bool"         if (g_tokens){printf("tBOOLEAN\n");} saveToken(tBOOLEAN); return tBOOLEAN;
 
   /* Arithmetic Operators */
-"+"            if (g_tokens){printf("tPLUS\n");} return tPLUS;
-"-"            if (g_tokens){printf("tMINUS\n");} return tMINUS;
-"*"            if (g_tokens){printf("tTIMES\n");} return tTIMES;
-"/"            if (g_tokens){printf("tDIV\n");} return tDIV;
-"%"            if (g_tokens){printf("tMOD\n");} return tMOD;
+"+"            if (g_tokens){printf("tPLUS\n");} saveToken(tPLUS); return tPLUS;
+"-"            if (g_tokens){printf("tMINUS\n");} saveToken(tMINUS); return tMINUS;
+"*"            if (g_tokens){printf("tTIMES\n");} saveToken(tTIMES); return tTIMES;
+"/"            if (g_tokens){printf("tDIV\n");} saveToken(tDIV); return tDIV;
+"%"            if (g_tokens){printf("tMOD\n");} saveToken(tMOD); return tMOD;
+"&"            if (g_tokens){printf("tBITAND\n");} saveToken(tBITAND); return tBITAND;
+"|"            if (g_tokens){printf("tBITOR\n");} saveToken(tBITOR); return tBITOR;
+"^"            if (g_tokens){printf("tBITXOR\n");} saveToken(tBITXOR); return tBITXOR;
+"&^"           if (g_tokens){printf("tBITCLEAR\n");} saveToken(tBITCLEAR); return tBITCLEAR;
+"<<"           if (g_tokens){printf("tLEFTSHIFT\n");} saveToken(tLEFTSHIFT); return tLEFTSHIFT;
+">>"           if (g_tokens){printf("tRIGHTSHIFT\n");} saveToken(tRIGHTSHIFT); return tRIGHTSHIFT;
 
-"&"            if (g_tokens){printf("tBITAND\n");} return tBITAND;
-"|"            if (g_tokens){printf("tBITOR\n");} return tBITOR;
-"^"            if (g_tokens){printf("tBITXOR\n");} return tBITXOR;
-"&^"           if (g_tokens){printf("tBITCLEAR\n");} return tBITCLEAR;
-
-"<<"           if (g_tokens){printf("tLEFTSHIFT\n");} return tLEFTSHIFT;
-">>"           if (g_tokens){printf("tRIGHTSHIFT\n");} return tRIGHTSHIFT;
- 
   /* Boolean Operators */
-"&&"           if (g_tokens){printf("tAND\n");} return tAND;
-"||"           if (g_tokens){printf("tOR\n");} return tOR;
-"!"            if (g_tokens){printf("tBANG\n");} return tBANG;
+"&&"           if (g_tokens){printf("tAND\n");} saveToken(tAND); return tAND;
+"||"           if (g_tokens){printf("tOR\n");} saveToken(tOR); return tOR;
+"!"            if (g_tokens){printf("tBANG\n");} saveToken(tBANG); return tBANG;
 
   /* Assignment */
-"="            if (g_tokens){printf("tASSIGN\n");} return tASSIGN;
-":="           if (g_tokens){printf("tDECL\n");} return tDECL;
-"+="           if (g_tokens){printf("tPLUSEQ\n");} return tPLUSEQ;
-"-="           if (g_tokens){printf("tMINUSEQ\n");} return tMINUSEQ;
-"*="           if (g_tokens){printf("tTIMESEQ\n");} return tTIMESEQ;
-"/="           if (g_tokens){printf("tDIVEQ\n");} return tDIVEQ;
-"%="           if (g_tokens){printf("tMODEQ\n");} return tMODEQ;
-"&="           if (g_tokens){printf("tBITANDEQ\n");} return tBITANDEQ;
-"|="           if (g_tokens){printf("tBITOREQ\n");} return tBITOREQ;
-"^="           if (g_tokens){printf("tBITXOREQ\n");} return tBITXOREQ;
-"<<="          if (g_tokens){printf("tLEFTSHIFTEQ\n");} return tLEFTSHIFTEQ;
-">>="          if (g_tokens){printf("tRIGHTSHIFTEQ\n");} return tRIGHTSHIFTEQ;
-"&^="          if (g_tokens){printf("tBITCLEAREQ\n");} return tBITCLEAREQ;
-
-"++"           if (g_tokens){printf("tINC\n");} return tINC;
-"--"           if (g_tokens){printf("tDEC\n");} return tDEC;
-
-"<-"           if (g_tokens){printf("tCHANNEL\n");} return tCHANNEL;
+"="            if (g_tokens){printf("tASSIGN\n");} saveToken(tASSIGN); return tASSIGN;
+":="           if (g_tokens){printf("tDECL\n");} saveToken(tDECL); return tDECL;
+"+="           if (g_tokens){printf("tPLUSEQ\n");} saveToken(tPLUSEQ); return tPLUSEQ;
+"-="           if (g_tokens){printf("tMINUSEQ\n");} saveToken(tMINUSEQ); return tMINUSEQ;
+"*="           if (g_tokens){printf("tTIMESEQ\n");} saveToken(tTIMESEQ); return tTIMESEQ;
+"/="           if (g_tokens){printf("tDIVEQ\n");} saveToken(tDIVEQ); return tDIVEQ;
+"%="           if (g_tokens){printf("tMODEQ\n");} saveToken(tMODEQ); return tMODEQ;
+"&="           if (g_tokens){printf("tBITANDEQ\n");} saveToken(tBITANDEQ); return tBITANDEQ;
+"|="           if (g_tokens){printf("tBITOREQ\n");} saveToken(tBITOREQ); return tBITOREQ;
+"^="           if (g_tokens){printf("tBITXOREQ\n");} saveToken(tBITXOREQ); return tBITXOREQ;
+"<<="          if (g_tokens){printf("tLEFTSHIFTEQ\n");} saveToken(tLEFTSHIFTEQ); return tLEFTSHIFTEQ;
+">>="          if (g_tokens){printf("tRIGHTSHIFTEQ\n");} saveToken(tRIGHTSHIFTEQ); return tRIGHTSHIFTEQ;
+"&^="          if (g_tokens){printf("tBITCLEAREQ\n");} saveToken(tBITCLEAREQ); return tBITCLEAREQ;
+"++"           if (g_tokens){printf("tINC\n");} saveToken(tINC); return tINC;
+"--"           if (g_tokens){printf("tDEC\n");} saveToken(tDEC); return tDEC;
+"<-"           if (g_tokens){printf("tCHANNEL\n");} saveToken(tCHANNEL); return tCHANNEL;
 
   /* Logical Comparisons */
-"=="           if (g_tokens){printf("tEQ\n");} return tEQ;
-"<"            if (g_tokens){printf("tLESS\n");} return tLESS;
-">"            if (g_tokens){printf("tGREATER\n");} return tGREATER;
-"!="           if (g_tokens){printf("tNOTEQ\n");} return tNOTEQ;
-"<="           if (g_tokens){printf("tLTEQ\n");} return tLTEQ;
-">="           if (g_tokens){printf("tGTEQ\n");} return tGTEQ;
-
-"("            if (g_tokens){printf("tLPAREN\n");} return tLPAREN;
-")"            if (g_tokens){printf("tRPAREN\n");} return tRPAREN;
-"["            if (g_tokens){printf("tLSBRACE\n");} return tLSBRACE;
-"]"            if (g_tokens){printf("tRSBRACE\n");} return tRSBRACE;
-"{"            if (g_tokens){printf("tLCBRACE\n");} return tLCBRACE;
-"}"            if (g_tokens){printf("tRCBRACE\n");} return tRCBRACE;
-
-","            if (g_tokens){printf("tCOMMA\n");} return tCOMMA;
-"."            if (g_tokens){printf("tPERIOD\n");} return tPERIOD;
-":"            if (g_tokens){printf("tCOLON\n");} return tCOLON;
-";"            if (g_tokens){printf("tSEMICOLON\n");} return tSEMICOLON;
-"..."          if (g_tokens){printf("tELIP\n");} return tELIP;
+"=="           if (g_tokens){printf("tEQ\n");} saveToken(tEQ); return tEQ;
+"<"            if (g_tokens){printf("tLESS\n");} saveToken(tLESS); return tLESS;
+">"            if (g_tokens){printf("tGREATER\n");} saveToken(tGREATER); return tGREATER;
+"!="           if (g_tokens){printf("tNOTEQ\n");} saveToken(tNOTEQ); return tNOTEQ;
+"<="           if (g_tokens){printf("tLTEQ\n");} saveToken(tLTEQ); return tLTEQ;
+">="           if (g_tokens){printf("tGTEQ\n");} saveToken(tGTEQ); return tGTEQ;
+"("            if (g_tokens){printf("tLPAREN\n");} saveToken(tLPAREN); return tLPAREN;
+")"            if (g_tokens){printf("tRPAREN\n");} saveToken(tRPAREN); return tRPAREN;
+"["            if (g_tokens){printf("tLSBRACE\n");} saveToken(tLSBRACE); return tLSBRACE;
+"]"            if (g_tokens){printf("tRSBRACE\n");} saveToken(tRSBRACE); return tRSBRACE;
+"{"            if (g_tokens){printf("tLCBRACE\n");} saveToken(tLCBRACE); return tLCBRACE;
+"}"            if (g_tokens){printf("tRCBRACE\n");} saveToken(tRCBRACE); return tRCBRACE;
+","            if (g_tokens){printf("tCOMMA\n");} saveToken(tCOMMA); return tCOMMA;
+"."            if (g_tokens){printf("tPERIOD\n");} saveToken(tPERIOD); return tPERIOD;
+":"            if (g_tokens){printf("tCOLON\n");} saveToken(tCOLON); return tCOLON;
+";"            if (g_tokens){printf("tSEMICOLON\n");} saveToken(tSEMICOLON); return tSEMICOLON;
+"..."          if (g_tokens){printf("tELIP\n");} saveToken(tELIP); return tELIP;
 
   /* Valid Integers, includes octal and hexadecimal*/
 0|([1-9]{DIGIT}*)|(0{OCTALDIGITS}+)|(0(x|X){HEXDECSYMBOLS}+) { 
   if (g_tokens){printf("tINTVAL(%s)\n", yytext); }
   // Note: for strtol if base is 0, then it assumes the base based on if it starts with 0 or 0(x|X)
   yylval.intval = strtol(yytext, NULL, 0);
+  saveToken(tINTVAL);
   return tINTVAL;
 }
 
@@ -139,6 +180,7 @@ ESCAPESYMBOLS \\[abfnrtv\"\\]
 ({DIGIT}*\.{DIGIT}*) {
   if (g_tokens){printf("tFLOATVAL(%s)\n", yytext); }
   yylval.floatval = atof(yytext);
+  saveToken(tFLOATVAL);
   return tFLOATVAL;
 }
 
@@ -146,6 +188,7 @@ ESCAPESYMBOLS \\[abfnrtv\"\\]
 [a-zA-Z_][a-zA-Z0-9_]* { 
   if (g_tokens){printf("tIDENTIFIER(%s)\n", yytext); }
   yylval.identifier = strdup(yytext);
+  saveToken(tIDENTIFIER);
   return tIDENTIFIER;
 }
 
@@ -165,6 +208,7 @@ ESCAPESYMBOLS \\[abfnrtv\"\\]
 \"([a-zA-Z0-9]|{STRINGSYMBOLS}|{ESCAPESYMBOLS})*\" {
   if (g_tokens){printf("tSTRINGVAL(%s)\n", yytext); }
   yylval.stringval = strdup(yytext);
+  saveToken(tIDENTIFIER);
   return tSTRINGVAL;
 }
 
