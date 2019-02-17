@@ -35,6 +35,42 @@ bool semicolonRequired(){
       return false;
   }
 }
+
+char getEscaped(char c){
+  char rune;
+  switch(c){
+    case 'a':
+      rune = '\a';
+      break;
+    case 'b':
+      rune = '\b';
+      break;
+    case 'f':
+      rune = '\f';
+      break;
+    case 'n':
+      rune = '\n';
+      break;
+    case 'r':
+      rune = '\r';
+      break;
+    case 't':
+      rune = '\t';
+      break;
+    case 'v':
+      rune = '\v';
+      break;
+    case '\\':
+      rune = '\\';
+      break;
+    case '\'':
+      rune = '\'';
+      break;
+    default:
+      rune = c;
+  }
+  return rune;
+}
 %}
 DIGIT [0-9]
 OCTALDIGITS [0-7]
@@ -203,47 +239,10 @@ ESCAPESYMBOLS \\[abfnrtv\"\\']
 <IN_COMMENT>"*"       // eat the lone star
 <IN_COMMENT>\n        yylineno++; //TODO: check if this is necessary
 
-
-  /* Valid Strings */
-\"([a-zA-Z0-9]|{STRINGSYMBOLS}|{ESCAPESYMBOLS})*\" {
-  if (g_tokens){printf("tSTRINGVAL(%s)\n", yytext); }
-  yylval.stringval = strdup(yytext);
-  saveToken(tIDENTIFIER);
-  return tSTRINGVAL;
-}
-
 \'([^']|{ESCAPESYMBOLS})\' {
   char rune;
   if(yytext[0] == '\\'){
-    switch(yytext[1]){
-      case 'a':
-        rune = '\a';
-        break;
-      case 'b':
-        rune = '\b';
-        break;
-      case 'f':
-        rune = '\f';
-        break;
-      case 'n':
-        rune = '\n';
-        break;
-      case 'r':
-        rune = '\r';
-        break;
-      case 't':
-        rune = '\t';
-        break;
-      case 'v':
-        rune = '\v';
-        break;
-      case '\\':
-        rune = '\\';
-        break;
-      case '\'':
-        rune = '\'';
-        break;
-    }
+    rune = getEscaped(yytext[1]);
   }
   else {
     rune = yytext[0];
@@ -255,9 +254,40 @@ ESCAPESYMBOLS \\[abfnrtv\"\\']
   return tRUNEVAL;
 }
 
+  /* Valid Strings */
+\"([a-zA-Z0-9]|{STRINGSYMBOLS}|{ESCAPESYMBOLS})*\" {
+  // Make one pass to count how long the string is if we count escapes
+  int len = 0;
+  for(int i = 0; yytext[i] != '\0'; i++){
+    len++; //Escapes are not counted in the length
+    if(yytext[i] == '\\'){
+      //So we count the escaped characters as one character and not two
+      i++;
+    }
+  }
+  char *newString = (char*)malloc((len + 1)*sizeof(char));
+  int escapes = 0;
+  for(int i = 0; i < len; i++){
+    if(yytext[i + escapes] == '\\'){
+      escapes++;
+      newString[i] = getEscaped(yytext[i+escapes]);
+    }
+    else{
+      newString[i] = yytext[i+escapes];
+    }
+  }
+
+  if (g_tokens){printf("tSTRINGVAL(%s)\n", newString); }
+  // Don't need to call strdup because for each string we are mallocing more space
+  yylval.stringval = newString;
+  saveToken(tIDENTIFIER);
+  return tSTRINGVAL;
+}
+
 `[^`]*` {
   if (g_tokens){printf("tSTRINGVAL(%s)\n", yytext);}
   yylval.stringval = strdup(yytext);
+  printf("%s", yytext);
   saveToken(tSTRINGVAL);
   return tSTRINGVAL;
 }
