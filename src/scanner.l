@@ -41,7 +41,7 @@ OCTALDIGITS [0-7]
 HEXDECSYMBOLS [0-9a-f]
 
 STRINGSYMBOLS [~@#$%^&*\-+/`<>=_|'.,;:!?{}\[\]() ]
-ESCAPESYMBOLS \\[abfnrtv\"\\]
+ESCAPESYMBOLS \\[abfnrtv\"\\']
 %option yylineno
 %option noyywrap
 
@@ -212,6 +212,48 @@ ESCAPESYMBOLS \\[abfnrtv\"\\]
   return tSTRINGVAL;
 }
 
+\'([^']|{ESCAPESYMBOLS})\' {
+  char rune;
+  if(yytext[0] == '\\'){
+    switch(yytext[1]){
+      case 'a':
+        rune = '\a';
+        break;
+      case 'b':
+        rune = '\b';
+        break;
+      case 'f':
+        rune = '\f';
+        break;
+      case 'n':
+        rune = '\n';
+        break;
+      case 'r':
+        rune = '\r';
+        break;
+      case 't':
+        rune = '\t';
+        break;
+      case 'v':
+        rune = '\v';
+        break;
+      case '\\': //Double check that this works
+        rune = '\\';
+        break;
+      case '\'':
+        rune = '\'';
+        break;
+    }
+  }
+  else {
+    rune = yytext[0];
+  }
+
+  if (g_tokens){printf("tRUNEVAL(%c)\n", rune);}
+  yylval.runeval = rune;
+  saveToken(tRUNEVAL);
+  return tRUNEVAL;
+}
   /* Invalid Strings - Commented out because causing errors in case "string" + "string" 
 \".*\" {
   fprintf(stderr, "error: (line %d) string with invalid characters %s\n", yylineno, yytext);
