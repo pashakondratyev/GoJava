@@ -237,7 +237,7 @@ ESCAPESYMBOLS \\[abfnrtv\"\\']
       case 'v':
         rune = '\v';
         break;
-      case '\\': //Double check that this works
+      case '\\':
         rune = '\\';
         break;
       case '\'':
@@ -253,6 +253,13 @@ ESCAPESYMBOLS \\[abfnrtv\"\\']
   yylval.runeval = rune;
   saveToken(tRUNEVAL);
   return tRUNEVAL;
+}
+
+`[^`]*` {
+  if (g_tokens){printf("tSTRINGVAL(%s)\n", yytext);}
+  yylval.stringval = strdup(yytext);
+  saveToken(tSTRINGVAL);
+  return tSTRINGVAL;
 }
   /* Invalid Strings - Commented out because causing errors in case "string" + "string" 
 \".*\" {
