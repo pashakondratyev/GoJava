@@ -21,8 +21,8 @@ void yyerror(const char *s) {
 %union {
   int intval;
   float floatval;
-  bool boolVal;
-  char runeVal;
+  bool boolval;
+  char runeval;
   char *stringval;
   char *identifier;
 }
