@@ -121,11 +121,10 @@ FuncDecl : tFUNC tIDENTIFIER Signature Block
 
 Block : tLCBRACE StatementList tRCBRACE
 
-StatementList : Statement
+StatementList : %empty
     | Statement StatementList 
 
-Statement : %empty
-    | VarDecl
+Statement :  VarDecl
     | TypeDecl
     | ExpressionStatement
     | AssignStatement
