@@ -85,7 +85,18 @@ VarSpec : IdentifierList Type tASSIGN ExpressionList
 VarSpecList : VarSpec
     | VarSpec VarSpecList
 
-Type : tINT | tFLOAT | tSTRING | tRUNE | tBOOLEAN
+Type : ElementType
+    | CompoundType
+
+ElementType : tINT 
+    | tFLOAT 
+    | tSTRING 
+    | tRUNE 
+    | tBOOLEAN
+
+CompoundType : ArrayType
+    | SliceType
+    | StructType
 
 IdentifierList : tIDENTIFIER
     | tIDENTIFIER tCOMMA IdentifierList
@@ -122,4 +133,15 @@ ParameterList : ParameterDecl
     | ParameterDecl ParameterList
 
 ParameterDecl : IdentifierList Type
+
+SliceType : tLSBRACE tRSBRACE ElementType
+
+ArrayType : tLSBRACE Expression tRSBRACE ElementType
+
+StructType : tSTRUCT tLCBRACE FieldDeclList tRCBRACE
+
+FieldDeclList : FieldDecl
+    | FieldDecl FieldDeclList
+
+FieldDecl : IdentifierList Type
 %%
