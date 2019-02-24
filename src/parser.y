@@ -54,7 +54,7 @@ void yyerror(const char *s) {
 
 %left tOR
 %left tAND
-%left tEQUALS tNOTEQUALS
+%left tEQ tNOTEQ
 %left tLTEQ tGTEQ tLESS tGREATER
 %left tPLUS tMINUS
 %left tTIMES tDIV
@@ -65,6 +65,61 @@ void yyerror(const char *s) {
 
 %start prog
 %%
-prog : 
+prog : PackageDecl TopLevelDeclList  
      ; 
+
+PackageDecl: tPACKAGE tIDENTIFIER
+    ;
+
+TopLevelDeclList : %empty
+    | VarDecl TopLevelDeclList
+    | TypeDecl TopLevelDeclList
+    | FuncDecl TopLevelDeclList
+
+VarDecl : tVAR VarSpec
+        | tVAR tLPAREN VarSpecList tRPAREN
+
+VarSpec : IdentifierList Type tASSIGN ExpressionList
+    | IdentifierList tASSIGN ExpressionList
+
+VarSpecList : VarSpec
+    | VarSpec VarSpecList
+
+Type : tINT | tFLOAT | tSTRING | tRUNE | tBOOLEAN
+
+IdentifierList : tIDENTIFIER
+    | tIDENTIFIER tCOMMA IdentifierList
+
+ExpressionList : Expression
+    | Expression tCOMMA ExpressionList
+
+Expression : tBANG tCOLON
+
+TypeDecl : tTYPE TypeSpec
+    | tTYPE tLPAREN TypeSpecList tRPAREN
+
+TypeSpec : tIDENTIFIER Type
+
+TypeSpecList : TypeSpec
+    | TypeSpec TypeSpecList
+
+FuncDecl : tFUNC tIDENTIFIER Signature Block
+
+Block : tLCBRACE StatementList tRCBRACE
+
+StatementList : Statement
+    | Statement StatementList 
+
+Statement : VarDecl
+    | TypeDecl
+
+Signature : Parameters
+    | Parameters Type
+
+Parameters : tLPAREN ParameterList tRPAREN
+
+ParameterList : ParameterDecl 
+    | ParameterDecl ParameterList
+
+ParameterDecl : IdentifierList Type
 %%
