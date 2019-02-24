@@ -77,7 +77,10 @@ TopLevelDeclList : %empty
     | FuncDecl TopLevelDeclList
 
 VarDecl : tVAR VarSpec
-        | tVAR tLPAREN VarSpecList tRPAREN
+    | tVAR tLPAREN VarSpecList tRPAREN
+    | ShortVarDecl
+
+ShortVarDecl : IdentifierList tCOLON tASSIGN ExpressionList
 
 VarSpec : IdentifierList Type tASSIGN ExpressionList
     | IdentifierList tASSIGN ExpressionList
@@ -123,6 +126,8 @@ StatementList : Statement
 
 Statement : VarDecl
     | TypeDecl
+    | ExpressionStatement
+    | AssignStatement
 
 Signature : Parameters
     | Parameters Type
@@ -144,4 +149,19 @@ FieldDeclList : FieldDecl
     | FieldDecl FieldDeclList
 
 FieldDecl : IdentifierList Type
+
+ExpressionStatement : Expression
+
+AssignStatement : ExpressionList tASSIGN ExpressionList
+    | Expression AssignOp Expression
+
+AssignOp : AddOp
+    | MulOp
+
+AddOp : tPLUS
+    | tMINUS
+     
+MulOp : tTIMES
+
+
 %%
