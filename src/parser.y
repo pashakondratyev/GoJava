@@ -124,10 +124,15 @@ Block : tLCBRACE StatementList tRCBRACE
 StatementList : Statement
     | Statement StatementList 
 
-Statement : VarDecl
+Statement : %empty
+    | VarDecl
     | TypeDecl
     | ExpressionStatement
     | AssignStatement
+    | IncDecStatement
+    | PrintStatement
+    | PrintlnStatement
+    | ReturnStatement
 
 Signature : Parameters
     | Parameters Type
@@ -163,5 +168,12 @@ AddOp : tPLUS
      
 MulOp : tTIMES
 
+IncDecStatement : Expression tINC
+    | Expression tDEC
 
+PrintStatement : tPRINT tLPAREN ExpressionList tRPAREN
+
+PrintlnStatement : tPRINTLN tLPAREN ExpressionList tRPAREN
+
+ReturnStatement : tRETURN Expression
 %%
