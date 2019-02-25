@@ -124,15 +124,19 @@ Block : tLCBRACE StatementList tRCBRACE
 StatementList : Statement
     | Statement StatementList 
 
-Statement : %empty
-    | VarDecl
+Statement : VarDecl
     | TypeDecl
-    | ExpressionStatement
+    | Expression
     | AssignStatement
     | IncDecStatement
     | PrintStatement
     | PrintlnStatement
     | ReturnStatement
+    | IfStatement
+    | ExprSwitchStatement
+    | ForStatement
+    | ContinueStatement
+    | BreakStatement
 
 Signature : Parameters
     | Parameters Type
@@ -155,8 +159,6 @@ FieldDeclList : FieldDecl
 
 FieldDecl : IdentifierList Type
 
-ExpressionStatement : Expression
-
 AssignStatement : ExpressionList tASSIGN ExpressionList
     | Expression AssignOp Expression
 
@@ -176,4 +178,42 @@ PrintStatement : tPRINT tLPAREN ExpressionList tRPAREN
 PrintlnStatement : tPRINTLN tLPAREN ExpressionList tRPAREN
 
 ReturnStatement : tRETURN Expression
+
+IfStatement : tIF Expression Block ElseIfs
+
+ElseIfs : %empty 
+    | tELSE tIF Expression Block ElseIfs
+    | tELSE Block
+
+SimpleStatement : %empty
+    | Expression
+    | IncDecStatement
+    | AssignStatement
+    | ShortVarDecl
+
+ExprSwitchStatement : tSWITCH tLCBRACE ExprCaseClauseList tRCBRACE
+    | tSWITCH SimpleStatement tSEMICOLON tLCBRACE ExprCaseClauseList tRCBRACE
+    | tSWITCH Expression tLCBRACE ExprCaseClauseList tRCBRACE
+    | tSWITCH SimpleStatement tSEMICOLON Expression tLCBRACE ExprCaseClauseList tRCBRACE
+
+ExprCaseClauseList : %empty
+    | ExprCaseClause ExprCaseClauseList
+
+ExprCaseClause : ExprSwitchCase tCOLON StatementList
+
+ExprSwitchCase : tCASE ExpressionList
+    | tDEFAULT
+
+ForStatement : tFOR Block
+    | tFOR ForClause Block
+    | tFOR Expression Block
+
+ForClause : SimpleStatement tSEMICOLON ExpressionOrEmpty tSEMICOLON SimpleStatement
+
+ExpressionOrEmpty : %empty
+    | Expression
+
+BreakStatement : tBREAK
+
+ContinueStatement : tCONTINUE
 %%
