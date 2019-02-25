@@ -56,9 +56,9 @@ void yyerror(const char *s) {
 %left tAND
 %left tEQ tNOTEQ
 %left tLTEQ tGTEQ tLESS tGREATER
-%left tPLUS tMINUS
-%left tTIMES tDIV tMOD
-%left tBANG UMINUS UPLUS
+%left tPLUS tMINUS tBITOR tBITXOR
+%left tTIMES tDIV tMOD tBITAND tLEFTSHIFT tRIGHTSHIFT tBITCLEAR
+%left tBANG
 %left UNARY BINARY
 
 %nonassoc tELSE
@@ -131,6 +131,10 @@ UnaryExpression: PrimaryExpression
 UnaryOp: tPLUS
     | tMINUS
     | tBANG
+    | tBITXOR
+    | tBITAND
+    | tTIMES
+    | tCHAN
     ;
 
 PrimaryExpression: tIDENTIFIER
@@ -170,11 +174,17 @@ RelOp: tEQ
 
 AddOp: tPLUS
     | tMINUS
+    | tBITOR
+    | tBITXOR
     ;
 
 MulOp: tTIMES
     | tDIV
     | tMOD
+    | tLEFTSHIFT
+    | tRIGHTSHIFT
+    | tBITAND
+    | tBITCLEAR
     ;
 
 FunctionCall: tIDENTIFIER tLPAREN ExpressionList tRPAREN
@@ -264,8 +274,18 @@ AssignStatement: ExpressionList tASSIGN ExpressionList
     | Expression AssignOp Expression
     ;
 
-AssignOp: AddOp tASSIGN
-    | MulOp tASSIGN
+AssignOp: tPLUSEQ
+    | tMINUSEQ
+    | tTIMESEQ
+    | tDIVEQ
+    | tMODEQ
+    | tBITANDEQ 
+    | tBITOREQ
+    | tBITXOREQ
+    | tBITDIVEQ
+    | tLEFTSHIFTEQ
+    | tRIGHTSHIFTEQ
+    | tBITCLEAREQ
     ;
 
 IncDecStatement: Expression tINC
