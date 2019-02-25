@@ -68,18 +68,20 @@ void yyerror(const char *s) {
 prog: PackageDecl TopLevelDeclList
     ;
 
-PackageDecl: tPACKAGE tIDENTIFIER
+PackageDecl: tPACKAGE tIDENTIFIER tSEMICOLON
     ;
 
 TopLevelDeclList: %empty
-    | VarDecl TopLevelDeclList
-    | TypeDecl TopLevelDeclList
-    | FuncDecl TopLevelDeclList
+    | Declaration tSEMICOLON TopLevelDeclList
+    | FuncDecl tSEMICOLON TopLevelDeclList
+    ;
+
+Declaration: TypeDecl
+    | VarDecl
     ;
 
 VarDecl: tVAR VarSpec
     | tVAR tLPAREN VarSpecList tRPAREN
-    | ShortVarDecl
     ;
 
 ShortVarDecl: IdentifierList tCOLON tASSIGN ExpressionList
@@ -87,10 +89,11 @@ ShortVarDecl: IdentifierList tCOLON tASSIGN ExpressionList
 
 VarSpec: IdentifierList Type tASSIGN ExpressionList
     | IdentifierList tASSIGN ExpressionList
+    | IdentifierList Type
     ;
 
 VarSpecList: VarSpec
-    | VarSpec VarSpecList
+    | VarSpec tSEMICOLON VarSpecList
     ;
 
 Type: ElementType
@@ -110,7 +113,7 @@ CompoundType: ArrayType
     ;
 
 IdentifierList: tIDENTIFIER
-    | tIDENTIFIER tCOMMA IdentifierList
+    | IdentifierList tCOMMA tIDENTIFIER
     ;
 
 Expression: UnaryExpression %prec UNARY
@@ -118,7 +121,7 @@ Expression: UnaryExpression %prec UNARY
     ;
 
 ExpressionList: Expression
-    | Expression tCOMMA ExpressionList
+    | ExpressionList tCOMMA Expression 
     ; 
 
 UnaryExpression: PrimaryExpression
@@ -141,8 +144,7 @@ PrimaryExpression: tIDENTIFIER
     | AppendExpression
     | LenExpression
     | CapExpression
-    | TypeCast 
-;
+    ;
 
 Literal: tINTVAL
     | tFLOATVAL
@@ -175,36 +177,41 @@ MulOp: tTIMES
     | tMOD
     ;
 
-FunctionCall: PrimaryExpression tLPAREN ExpressionList tRPAREN
+FunctionCall: tIDENTIFIER tLPAREN ExpressionList tRPAREN
     ;
+    
 AppendExpression: tAPPEND tLPAREN Expression tCOMMA Expression tRPAREN
     ;
+
 LenExpression: tLEN tLPAREN Expression tRPAREN
     ;
+
 CapExpression: tCAP tLPAREN Expression tRPAREN
     ;
-TypeCast: Type tLPAREN Expression tRPAREN
-    ;
+
 TypeDecl: tTYPE TypeSpec
     | tTYPE tLPAREN TypeSpecList tRPAREN
     ;
+
 TypeSpec: tIDENTIFIER Type
     ;
+
 TypeSpecList: TypeSpec
     | TypeSpec TypeSpecList
     ;
+
 FuncDecl: tFUNC tIDENTIFIER Signature Block
     ;
+
 Block: tLCBRACE StatementList tRCBRACE
     ;
+
 StatementList: Statement tSEMICOLON
     | Statement tSEMICOLON StatementList
     ;
-Statement: VarDecl
-    | TypeDecl
-    | Expression
-    | AssignStatement
-    | IncDecStatement
+
+Statement: Declaration 
+    | SimpleStatement
     | PrintStatement
     | PrintlnStatement
     | ReturnStatement
@@ -214,14 +221,24 @@ Statement: VarDecl
     | ContinueStatement
     | BreakStatement
     ;
+
+SimpleStatement: %empty
+    | Expression
+    | IncDecStatement
+    | AssignStatement
+    | ShortVarDecl
+    ;
+
 Signature: Parameters
     | Parameters Type
     ;
+
 Parameters: tLPAREN ParameterList tRPAREN
+    | tLPAREN tRPAREN
     ;
 
-ParameterList: ParameterDecl     
-    | ParameterDecl ParameterList
+ParameterList: ParameterDecl
+    | ParameterDecl tCOMMA ParameterList
     ;
 
 ParameterDecl: IdentifierList Type
@@ -241,11 +258,11 @@ FieldDeclList: FieldDecl
     ;        
 
 FieldDecl: IdentifierList Type
-;    
+    ;    
 
 AssignStatement: ExpressionList tASSIGN ExpressionList
     | Expression AssignOp Expression
-    ;    
+    ;
 
 AssignOp: AddOp tASSIGN
     | MulOp tASSIGN
@@ -270,13 +287,6 @@ IfStatement: tIF Expression Block ElseIfs
 ElseIfs: %empty 
     | tELSE tIF Expression Block ElseIfs
     | tELSE Block
-    ;
-
-SimpleStatement: %empty
-    | Expression
-    | IncDecStatement
-    | AssignStatement
-    | ShortVarDecl
     ;
 
 ExprSwitchStatement: tSWITCH tLCBRACE ExprCaseClauseList tRCBRACE
