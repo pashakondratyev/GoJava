@@ -58,7 +58,7 @@ void yyerror(const char *s) {
 %left tLTEQ tGTEQ tLESS tGREATER
 %left tPLUS tMINUS
 %left tTIMES tDIV
-%left tBANG UNARY
+%left tBANG UNARY UMINUS UPLUS
 
 %nonassoc ENDIF
 %nonassoc tELSE
@@ -101,13 +101,64 @@ CompoundType : ArrayType
     | SliceType
     | StructType
 
-IdentifierList : tIDENTIFIER
-    | tIDENTIFIER tCOMMA IdentifierList
+IdentifierList : tIDENTIFIER MoreIdentifiers
 
-ExpressionList : Expression
-    | Expression tCOMMA ExpressionList
+MoreIdentifiers : %empty
+    | tCOMMA tIDENTIFIER MoreIdentifiers
 
-Expression : tBANG tCOLON
+ExpressionList : Expression MoreExpressions
+
+MoreExpressions : %empty
+    | tCOMMA Expression MoreExpressions
+
+Expression : tIDENTIFIER
+    | Literal
+    /*| UnaryExpression %prec UNARY*/
+    | Expression BinaryOp Expression
+    | FunctionCall
+    | AppendExpression
+    | LenExpression
+    | CapExpression
+    | TypeCast
+
+Literal : tINTVAL
+    | tFLOATVAL
+    | tSTRINGVAL
+    | tRUNEVAL
+    | tBOOLVAL
+
+/*UnaryExpression : tPLUS Expression
+    | tMINUS Expression
+    | tBANG Expression*/
+
+BinaryOp : tOR
+    | tAND
+    | RelOp
+    | AssignOp
+
+RelOp : tEQ
+    | tNOTEQ
+    | tLESS
+    | tLTEQ
+    | tGREATER
+    | tGTEQ
+
+AddOp : tPLUS
+    | tMINUS
+
+MulOp : tTIMES
+    | tDIV
+    | tMOD
+
+FunctionCall : tIDENTIFIER tLPAREN ExpressionList tRPAREN
+
+AppendExpression : tAPPEND tLPAREN Expression tRPAREN
+
+LenExpression : tLEN tLPAREN Expression tRPAREN
+
+CapExpression : tCAP tLPAREN Expression tRPAREN
+
+TypeCast : Type tLPAREN Expression tRPAREN
 
 TypeDecl : tTYPE TypeSpec
     | tTYPE tLPAREN TypeSpecList tRPAREN
@@ -164,11 +215,6 @@ AssignStatement : ExpressionList tASSIGN ExpressionList
 
 AssignOp : AddOp
     | MulOp
-
-AddOp : tPLUS
-    | tMINUS
-     
-MulOp : tTIMES
 
 IncDecStatement : Expression tINC
     | Expression tDEC
