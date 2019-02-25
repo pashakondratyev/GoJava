@@ -113,6 +113,7 @@ MoreExpressions : %empty
 
 Expression : tIDENTIFIER
     | Literal
+    | tLPAREN Expression tRPAREN
     /*| UnaryExpression %prec UNARY*/
     | Expression BinaryOp Expression
     | FunctionCall
