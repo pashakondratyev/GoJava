@@ -57,126 +57,150 @@ void yyerror(const char *s) {
 %left tEQ tNOTEQ
 %left tLTEQ tGTEQ tLESS tGREATER
 %left tPLUS tMINUS
-%left tTIMES tDIV
-%left tBANG UNARY UMINUS UPLUS
+%left tTIMES tDIV tMOD
+%left tBANG UMINUS UPLUS
+%left UNARY BINARY
 
-%nonassoc ENDIF
 %nonassoc tELSE
 
 %start prog
 %%
-prog : PackageDecl TopLevelDeclList  
-     ; 
+prog: PackageDecl TopLevelDeclList
+    ;
 
 PackageDecl: tPACKAGE tIDENTIFIER
     ;
 
-TopLevelDeclList : %empty
+TopLevelDeclList: %empty
     | VarDecl TopLevelDeclList
     | TypeDecl TopLevelDeclList
     | FuncDecl TopLevelDeclList
+    ;
 
-VarDecl : tVAR VarSpec
+VarDecl: tVAR VarSpec
     | tVAR tLPAREN VarSpecList tRPAREN
     | ShortVarDecl
+    ;
 
-ShortVarDecl : IdentifierList tCOLON tASSIGN ExpressionList
+ShortVarDecl: IdentifierList tCOLON tASSIGN ExpressionList
+    ;
 
-VarSpec : IdentifierList Type tASSIGN ExpressionList
+VarSpec: IdentifierList Type tASSIGN ExpressionList
     | IdentifierList tASSIGN ExpressionList
+    ;
 
-VarSpecList : VarSpec
+VarSpecList: VarSpec
     | VarSpec VarSpecList
+    ;
 
-Type : ElementType
+Type: ElementType
     | CompoundType
+    ;
 
-ElementType : tINT 
+ElementType: tINT 
     | tFLOAT 
     | tSTRING 
     | tRUNE 
     | tBOOLEAN
+    ;
 
-CompoundType : ArrayType
+CompoundType: ArrayType
     | SliceType
     | StructType
+    ;
 
-IdentifierList : tIDENTIFIER MoreIdentifiers
+IdentifierList: tIDENTIFIER
+    | tIDENTIFIER tCOMMA IdentifierList
+    ;
 
-MoreIdentifiers : %empty
-    | tCOMMA tIDENTIFIER MoreIdentifiers
+Expression: UnaryExpression %prec UNARY
+    | Expression BinaryOp Expression %prec BINARY
+    ;
 
-ExpressionList : Expression MoreExpressions
+ExpressionList: Expression
+    | Expression tCOMMA ExpressionList
+    ; 
 
-MoreExpressions : %empty
-    | tCOMMA Expression MoreExpressions
+UnaryExpression: PrimaryExpression
+    | UnaryOp UnaryExpression
+    ;
 
-Expression : tIDENTIFIER
+UnaryOp: tPLUS
+    | tMINUS
+    | tBANG
+    ;
+
+PrimaryExpression: tIDENTIFIER
     | Literal
     | tLPAREN Expression tRPAREN
-    /*| UnaryExpression %prec UNARY*/
-    | Expression BinaryOp Expression
+    | PrimaryExpression tPERIOD tIDENTIFIER
+    | PrimaryExpression tLSBRACE ExpressionList tRSBRACE
+    | PrimaryExpression tLSBRACE ExpressionOrEmpty tCOLON ExpressionOrEmpty tRSBRACE
+    | PrimaryExpression tLSBRACE ExpressionOrEmpty tCOLON Expression tCOLON Expression tRSBRACE
     | FunctionCall
     | AppendExpression
     | LenExpression
     | CapExpression
-    | TypeCast
+    | TypeCast 
+;
 
-Literal : tINTVAL
+Literal: tINTVAL
     | tFLOATVAL
     | tSTRINGVAL
     | tRUNEVAL
     | tBOOLVAL
+    ;
 
-/*UnaryExpression : tPLUS Expression
-    | tMINUS Expression
-    | tBANG Expression*/
-
-BinaryOp : tOR
+BinaryOp: tOR
     | tAND
     | RelOp
-    | AssignOp
+    | AddOp
+    | MulOp
+    ;
 
-RelOp : tEQ
+RelOp: tEQ
     | tNOTEQ
     | tLESS
     | tLTEQ
     | tGREATER
     | tGTEQ
+    ;
 
-AddOp : tPLUS
+AddOp: tPLUS
     | tMINUS
+    ;
 
-MulOp : tTIMES
+MulOp: tTIMES
     | tDIV
     | tMOD
+    ;
 
-FunctionCall : tIDENTIFIER tLPAREN ExpressionList tRPAREN
-
-AppendExpression : tAPPEND tLPAREN Expression tRPAREN
-
-LenExpression : tLEN tLPAREN Expression tRPAREN
-
-CapExpression : tCAP tLPAREN Expression tRPAREN
-
-TypeCast : Type tLPAREN Expression tRPAREN
-
-TypeDecl : tTYPE TypeSpec
+FunctionCall: PrimaryExpression tLPAREN ExpressionList tRPAREN
+    ;
+AppendExpression: tAPPEND tLPAREN Expression tCOMMA Expression tRPAREN
+    ;
+LenExpression: tLEN tLPAREN Expression tRPAREN
+    ;
+CapExpression: tCAP tLPAREN Expression tRPAREN
+    ;
+TypeCast: Type tLPAREN Expression tRPAREN
+    ;
+TypeDecl: tTYPE TypeSpec
     | tTYPE tLPAREN TypeSpecList tRPAREN
-
-TypeSpec : tIDENTIFIER Type
-
-TypeSpecList : TypeSpec
+    ;
+TypeSpec: tIDENTIFIER Type
+    ;
+TypeSpecList: TypeSpec
     | TypeSpec TypeSpecList
-
-FuncDecl : tFUNC tIDENTIFIER Signature Block
-
-Block : tLCBRACE StatementList tRCBRACE
-
-StatementList : Statement
-    | Statement StatementList 
-
-Statement : VarDecl
+    ;
+FuncDecl: tFUNC tIDENTIFIER Signature Block
+    ;
+Block: tLCBRACE StatementList tRCBRACE
+    ;
+StatementList: Statement tSEMICOLON
+    | Statement tSEMICOLON StatementList
+    ;
+Statement: VarDecl
     | TypeDecl
     | Expression
     | AssignStatement
@@ -189,78 +213,104 @@ Statement : VarDecl
     | ForStatement
     | ContinueStatement
     | BreakStatement
-
-Signature : Parameters
+    ;
+Signature: Parameters
     | Parameters Type
+    ;
+Parameters: tLPAREN ParameterList tRPAREN
+    ;
 
-Parameters : tLPAREN ParameterList tRPAREN
-
-ParameterList : ParameterDecl 
+ParameterList: ParameterDecl     
     | ParameterDecl ParameterList
+    ;
 
-ParameterDecl : IdentifierList Type
+ParameterDecl: IdentifierList Type
+    ;    
 
-SliceType : tLSBRACE tRSBRACE ElementType
+SliceType: tLSBRACE tRSBRACE ElementType
+    ;    
 
-ArrayType : tLSBRACE Expression tRSBRACE ElementType
+ArrayType: tLSBRACE Expression tRSBRACE ElementType
+    ;    
 
-StructType : tSTRUCT tLCBRACE FieldDeclList tRCBRACE
+StructType: tSTRUCT tLCBRACE FieldDeclList tRCBRACE
+    ;    
 
-FieldDeclList : FieldDecl
+FieldDeclList: FieldDecl
     | FieldDecl FieldDeclList
+    ;        
 
-FieldDecl : IdentifierList Type
+FieldDecl: IdentifierList Type
+;    
 
-AssignStatement : ExpressionList tASSIGN ExpressionList
+AssignStatement: ExpressionList tASSIGN ExpressionList
     | Expression AssignOp Expression
+    ;    
 
-AssignOp : AddOp
-    | MulOp
+AssignOp: AddOp tASSIGN
+    | MulOp tASSIGN
+    ;
 
-IncDecStatement : Expression tINC
+IncDecStatement: Expression tINC
     | Expression tDEC
+    ;
 
-PrintStatement : tPRINT tLPAREN ExpressionList tRPAREN
+PrintStatement: tPRINT tLPAREN ExpressionList tRPAREN
+    ;
 
-PrintlnStatement : tPRINTLN tLPAREN ExpressionList tRPAREN
+PrintlnStatement: tPRINTLN tLPAREN ExpressionList tRPAREN
+    ;
 
-ReturnStatement : tRETURN Expression
+ReturnStatement: tRETURN Expression
+    ;
 
-IfStatement : tIF Expression Block ElseIfs
+IfStatement: tIF Expression Block ElseIfs
+    ;
 
-ElseIfs : %empty 
+ElseIfs: %empty 
     | tELSE tIF Expression Block ElseIfs
     | tELSE Block
+    ;
 
-SimpleStatement : %empty
+SimpleStatement: %empty
     | Expression
     | IncDecStatement
     | AssignStatement
     | ShortVarDecl
+    ;
 
-ExprSwitchStatement : tSWITCH tLCBRACE ExprCaseClauseList tRCBRACE
+ExprSwitchStatement: tSWITCH tLCBRACE ExprCaseClauseList tRCBRACE
     | tSWITCH SimpleStatement tSEMICOLON tLCBRACE ExprCaseClauseList tRCBRACE
     | tSWITCH Expression tLCBRACE ExprCaseClauseList tRCBRACE
     | tSWITCH SimpleStatement tSEMICOLON Expression tLCBRACE ExprCaseClauseList tRCBRACE
+    ;
 
-ExprCaseClauseList : %empty
+ExprCaseClauseList: %empty
     | ExprCaseClause ExprCaseClauseList
+    ;    
 
-ExprCaseClause : ExprSwitchCase tCOLON StatementList
+ExprCaseClause: ExprSwitchCase tCOLON StatementList
+    ;
 
-ExprSwitchCase : tCASE ExpressionList
+ExprSwitchCase: tCASE ExpressionList
     | tDEFAULT
+    ;    
 
-ForStatement : tFOR Block
+ForStatement: tFOR Block
     | tFOR ForClause Block
     | tFOR Expression Block
+    ;
 
-ForClause : SimpleStatement tSEMICOLON ExpressionOrEmpty tSEMICOLON SimpleStatement
+ForClause: SimpleStatement tSEMICOLON ExpressionOrEmpty tSEMICOLON SimpleStatement
+    ;
 
-ExpressionOrEmpty : %empty
+ExpressionOrEmpty: %empty
     | Expression
+    ;
 
-BreakStatement : tBREAK
-
-ContinueStatement : tCONTINUE
+BreakStatement: tBREAK
+    ;
+            
+ContinueStatement: tCONTINUE
+    ;
 %%
