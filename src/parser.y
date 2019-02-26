@@ -83,7 +83,7 @@ VarDecl: tVAR VarSpec
     | tVAR tLPAREN VarSpecList tRPAREN
     ;
 
-ShortVarDecl: ExpressionList tCOLON tASSIGN ExpressionList
+ShortVarDecl: ExpressionList tDECL ExpressionList
     ;
 
 VarSpec: IdentifierList Type tASSIGN ExpressionList
@@ -285,9 +285,11 @@ IncDecStatement: Expression tINC
     ;
 
 PrintStatement: tPRINT tLPAREN ExpressionList tRPAREN
+    | tPRINT tLPAREN tRPAREN
     ;
 
 PrintlnStatement: tPRINTLN tLPAREN ExpressionList tRPAREN
+    | tPRINTLN tLPAREN tRPAREN
     ;
 
 ReturnStatement: tRETURN Expression

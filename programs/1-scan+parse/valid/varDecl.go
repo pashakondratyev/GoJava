@@ -14,5 +14,4 @@ var (
 
 func main(){
 	i, j := 0, 10
-	f := func() int { return 7 }
 }
