@@ -84,7 +84,7 @@ VarDecl: tVAR VarSpec
     | tVAR tLPAREN VarSpecList tRPAREN
     ;
 
-ShortVarDecl: IdentifierList tCOLON tASSIGN ExpressionList
+ShortVarDecl: ExpressionList tCOLON tASSIGN ExpressionList
     ;
 
 VarSpec: IdentifierList Type tASSIGN ExpressionList
@@ -92,8 +92,8 @@ VarSpec: IdentifierList Type tASSIGN ExpressionList
     | IdentifierList Type
     ;
 
-VarSpecList: VarSpec
-    | VarSpec tSEMICOLON VarSpecList
+VarSpecList: %empty
+    | VarSpecList VarSpec tSEMICOLON
     ;
 
 Type: ElementType
@@ -206,8 +206,8 @@ TypeDecl: tTYPE TypeSpec
 TypeSpec: tIDENTIFIER Type
     ;
 
-TypeSpecList: TypeSpec
-    | TypeSpec TypeSpecList
+TypeSpecList: %empty
+    | TypeSpecList TypeSpec tSEMICOLON 
     ;
 
 FuncDecl: tFUNC tIDENTIFIER Signature Block
@@ -324,7 +324,7 @@ ExprCaseClause: ExprSwitchCase tCOLON StatementList
 
 ExprSwitchCase: tCASE ExpressionList
     | tDEFAULT
-    ;    
+    ;
 
 ForStatement: tFOR Block
     | tFOR ForClause Block
