@@ -8,7 +8,7 @@ func main(){
 			println("small")
 		case 4,5,6,7: 
 			println("large")
-			fallthrough
+			break
 		case 8,9: 
 			println("very large")
 		default:
