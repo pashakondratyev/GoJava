@@ -4,6 +4,7 @@ package test
 var x1, x2 int
 var y int = 12
 var z = 24
+var _ = 5
 
 var (
 	a1, a2 int
