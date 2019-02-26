@@ -29,6 +29,7 @@ func getFirstUniqueChar(str string) string {
 	return output
 }
 
-
-println(getFirstUniqueChar("ccoommpp520"))
-println(getFirstUniqueChar("comp520"))
+func main(){
+	println(getFirstUniqueChar("ccoommpp520"))
+	println(getFirstUniqueChar("comp520"))
+}

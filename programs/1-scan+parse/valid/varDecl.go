@@ -21,4 +21,3 @@ func main() {
 func a() {
 	return 7;
 }
-

@@ -70,7 +70,8 @@ prog: PackageDecl TopLevelDeclList
 PackageDecl: tPACKAGE tIDENTIFIER tSEMICOLON
     ;
 
-TopLevelDeclList: %empty
+TopLevelDeclList: Declaration tSEMICOLON
+    | FuncDecl tSEMICOLON
     | Declaration tSEMICOLON TopLevelDeclList
     | FuncDecl tSEMICOLON TopLevelDeclList
     ;
@@ -83,7 +84,7 @@ VarDecl: tVAR VarSpec
     | tVAR tLPAREN VarSpecList tRPAREN
     ;
 
-ShortVarDecl: ExpressionList tCOLON tASSIGN ExpressionList
+ShortVarDecl: ExpressionList tDECL ExpressionList
     ;
 
 VarSpec: IdentifierList Type tASSIGN ExpressionList
@@ -255,8 +256,8 @@ ArrayType: tLSBRACE Expression tRSBRACE tIDENTIFIER
 StructType: tSTRUCT tLCBRACE FieldDeclList tRCBRACE
     ;    
 
-FieldDeclList: FieldDecl
-    | FieldDecl FieldDeclList
+FieldDeclList: FieldDecl tSEMICOLON
+    | FieldDecl tSEMICOLON FieldDeclList
     ;        
 
 FieldDecl: IdentifierList Type
@@ -285,19 +286,24 @@ IncDecStatement: Expression tINC
     ;
 
 PrintStatement: tPRINT tLPAREN ExpressionList tRPAREN
+    | tPRINT tLPAREN tRPAREN
     ;
 
 PrintlnStatement: tPRINTLN tLPAREN ExpressionList tRPAREN
+    | tPRINTLN tLPAREN tRPAREN
     ;
 
-ReturnStatement: tRETURN Expression
+ReturnStatement: tRETURN 
+    | tRETURN Expression
     ;
 
 IfStatement: tIF Expression Block ElseIfs
+    | tIF SimpleStatement tSEMICOLON Expression Block ElseIfs
     ;
 
 ElseIfs: %empty 
     | tELSE tIF Expression Block ElseIfs
+    | tELSE tIF SimpleStatement tSEMICOLON Expression Block ElseIfs
     | tELSE Block
     ;
 

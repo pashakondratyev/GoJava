@@ -213,6 +213,20 @@ ESCAPESYMBOLS \\[abfnrtv\"\\']
   return tFLOATVAL;
 }
 
+("true"|"false") {
+  bool val;
+  if(strcmp(yytext, "true") == 0){
+    val = true;
+  }
+  else{
+    val = false;
+  }
+  if (g_tokens){printf("tBOOLVAL(%s)\n", yytext); }
+  yylval.boolval = val;
+  saveToken(tBOOLVAL);
+  return tBOOLVAL;
+}
+
   /* Valid Identifiers */
 [a-zA-Z_][a-zA-Z0-9_]* { 
   if (g_tokens){printf("tIDENTIFIER(%s)\n", yytext); }

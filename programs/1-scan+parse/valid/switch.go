@@ -1,7 +1,6 @@
 // valid switch statement
 package test
 
-
 func main() {
 	x := 6
 

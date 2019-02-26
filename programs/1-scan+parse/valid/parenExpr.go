@@ -1,5 +1,7 @@
 // valid parenthisized expression
 package test
 
-a := 12
-var z = (a<30) && (!false) 
+func main(){
+	a := 12
+	var z = (a<30) && (!false) 
+}
