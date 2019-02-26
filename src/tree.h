@@ -156,7 +156,7 @@ struct VAR_SPECS {
 struct TYPE_SPECS {
 	int lineno;
 	char *name; // new name used for the type
-	TYPE *type; // actual type
+	TYPE *type; 
 	TYPE_SPECS *next;
 };
 
@@ -278,6 +278,7 @@ struct TYPE {
 };
 
 
+// To be completed
 PROG *makeProg(PACKAGE *package, DECL *decl, int lineno);
 PACKAGE *makePackage(char *name, int lineno);
 
