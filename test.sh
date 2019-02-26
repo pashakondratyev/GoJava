@@ -59,7 +59,7 @@ do
 	PREV_PHASE_NAME=${PREV_PHASE#*-}
 	PREV_MODE=${PREV_PHASE_NAME#*+}
 	MODE=${PHASE_NAME#*+}
-	PHASE_NAME="hi"
+	PHASE_NAME="${PHASE_NAME^}"
 
 	for DIR_TYPE in $DIR_PHASE*/
 	do
@@ -85,7 +85,7 @@ do
 			COUNT=0
 			COUNT_PASSED=0
 
-			TESTS=`find $DIR_TYPE -type f \( -name "*.min" \)`
+			TESTS=`find $DIR_TYPE -type f \( -name "*.go" \)`
 
 			for TEST in $TESTS
 			do

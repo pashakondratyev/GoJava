@@ -95,7 +95,7 @@ ESCAPESYMBOLS \\[abfnrtv\"\\']
 <<EOF>> {
   if(semicolonRequired()){
     lastToken = tSEMICOLON;
-    printf("tSEMICOLON\n");
+    if(g_tokens) printf("tSEMICOLON\n");
     return tSEMICOLON;
   }
   yyterminate();
@@ -280,7 +280,6 @@ ESCAPESYMBOLS \\[abfnrtv\"\\']
 `[^`]*` {
   if (g_tokens){printf("tSTRINGVAL(%s)\n", yytext);}
   yylval.stringval = strdup(yytext);
-  printf("%s", yytext);
   saveToken(tSTRINGVAL);
   return tSTRINGVAL;
 }
