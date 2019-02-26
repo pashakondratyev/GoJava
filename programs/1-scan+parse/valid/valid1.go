@@ -9,49 +9,49 @@ func printNumTo15(num int) {
 	switch num {
 	case 0:
 		println("zero")
-		fallthrough
+		break
 	case 1:
 		println("one")
-		fallthrough
+		break
 	case 2:
 		println("two")
-		fallthrough
+		break
 	case 3:
 		println("three")
-		fallthrough
+		break
 	case 4:
 		println("four")
-		fallthrough
+		break
 	case 5:
 		println("five")
-		fallthrough
+		break
 	case 6:
 		println("six")
-		fallthrough
+		break
 	case 7:
 		println("seven")
-		fallthrough
+		break
 	case 8:
 		println("eight")
-		fallthrough
+		break
 	case 9:
 		println("nine")
-		fallthrough
+		break
 	case 10:
 		println("ten")
-		fallthrough
+		break
 	case 11:
 		println("eleven")
-		fallthrough
+		break
 	case 12:
 		println("twelve")
-		fallthrough
+		break
 	case 13:
 		println("thirteen")
-		fallthrough
+		break
 	case 14:
 		println("fourteen")
-		fallthrough
+		break
 	case 15:
 		println("fifteen")
 	}

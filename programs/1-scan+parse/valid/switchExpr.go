@@ -7,13 +7,13 @@ func main(){
 	switch {
 	case x < 0:
 		println("Negative")
-		fallthrough
+		break
 	case x > 0: 
 		println("Positive")
-		fallthrough
+		break
 	case x==0:
 		println("Zero")
-		fallthrough
+		break
 	default:
 		println("Done")
 	}
