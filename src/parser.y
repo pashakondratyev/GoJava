@@ -223,6 +223,7 @@ Statement: Declaration
     | ForStatement
     | ContinueStatement
     | BreakStatement
+    | FallthroughStatement
     ;
 
 SimpleStatement: %empty
@@ -340,5 +341,8 @@ BreakStatement: tBREAK
     ;
             
 ContinueStatement: tCONTINUE
+    ;
+
+FallthroughStatement: tFALLTHROUGH
     ;
 %%
