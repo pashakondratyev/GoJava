@@ -3,9 +3,11 @@
 x := 4
 var label = "hi"
 
-for {
-	x--;
-	if x==1 {
-		continue label
+func main() {
+	for {
+		x--;
+		if x==1 {
+			continue label
+		}
 	}
 }
