@@ -39,8 +39,7 @@ void yyerror(const char *s) {
 %token tELSE tFALLTHROUGH tFOR tFUNC tGO tGOTO tIF tIMPORT tINTERFACE
 %token tMAP tPACKAGE tRANGE tRETURN tSELECT tSTRUCT tSWITCH tTYPE tVAR
 %token tPRINT tPRINTLN tAPPEND tLEN tCAP
-/* Types */
-%token tINT tFLOAT tSTRING tRUNE tBOOLEAN
+
 /* Operators */
 %token tPLUS tMINUS tTIMES tDIV tMOD
 %token tBITAND tBITOR tBITXOR tLEFTSHIFT tRIGHTSHIFT tBITCLEAR
@@ -96,15 +95,8 @@ VarSpecList: %empty
     | VarSpecList VarSpec tSEMICOLON
     ;
 
-Type: ElementType
+Type: tIDENTIFIER
     | CompoundType
-    ;
-
-ElementType: tINT 
-    | tFLOAT 
-    | tSTRING 
-    | tRUNE 
-    | tBOOLEAN
     ;
 
 CompoundType: ArrayType
@@ -254,10 +246,10 @@ ParameterList: ParameterDecl
 ParameterDecl: IdentifierList Type
     ;    
 
-SliceType: tLSBRACE tRSBRACE ElementType
+SliceType: tLSBRACE tRSBRACE tIDENTIFIER
     ;    
 
-ArrayType: tLSBRACE Expression tRSBRACE ElementType
+ArrayType: tLSBRACE Expression tRSBRACE tIDENTIFIER
     ;    
 
 StructType: tSTRUCT tLCBRACE FieldDeclList tRCBRACE
