@@ -3,17 +3,17 @@ package test
 
 var x = -5
 
-func main(){
+func main() {
 	switch {
 	case x < 0:
 		println("Negative")
-		break
+		fallthrough
 	case x > 0: 
 		println("Positive")
-		break
+		fallthrough
 	case x==0:
 		println("Zero")
-		break
+		fallthrough
 	default:
 		println("Done")
 	}

@@ -3,5 +3,7 @@ package test
 
 var x = 7
 
-for x<10
-	x = x-1
+func main() {
+	for x<10
+		x = x-1
+}

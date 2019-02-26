@@ -1,8 +1,15 @@
-// invalid switch - extra parentheses
+// switch with multiple default branches
 package test
 
-var x = 7
-switch (x) {
-	case 0,1,2,3,4 : print("small")
-	default: print("other")
+var x = 5
+
+func main () {
+	switch x {
+	case 2:
+		println("Hi")
+	default:
+		println("hello")
+	default:
+		println("hey")
+	}
 }
