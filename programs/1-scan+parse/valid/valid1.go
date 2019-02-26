@@ -63,7 +63,9 @@ var x = 7;
 var y = -1;
 var z = 4;
 
-printNumTo15(w)
-printNumTo15(x)
-printNumTo15(y)
-printNumTo15(z)
+func main(){
+	printNumTo15(w)
+	printNumTo15(x)
+	printNumTo15(y)
+	printNumTo15(z)
+}

@@ -42,6 +42,8 @@ var v1 = createVector(1,2,3)
 var v2 = createVector(2,4,6)
 var v3 = addVectors(v1, v2)
 var v4 = multiplyVector(v1,2)
-println(equal(v2, v4))
-println(equal(v1, v3))
 
+func main(){
+	println(equal(v2, v4))
+	println(equal(v1, v3))
+}

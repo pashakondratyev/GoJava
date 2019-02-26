@@ -22,14 +22,16 @@ func equals(s1, s2 []int) bool {
 
 var s1, s2, s3 []int
 
-s1 = append(s1, 5)
-s2 = append(s2, 5)
-s1 = append(s1, 7)
-s2 = append(s2, 7)
-s1 = append(s1, 4)
-s2 = append(s2, 4)
-
-s3 = append(s3, 2)
-
-println(equals(s1,s2))
-println(equals(s1,s3))
+func main(){
+	s1 = append(s1, 5)
+	s2 = append(s2, 5)
+	s1 = append(s1, 7)
+	s2 = append(s2, 7)
+	s1 = append(s1, 4)
+	s2 = append(s2, 4)
+	
+	s3 = append(s3, 2)
+	
+	println(equals(s1,s2))
+	println(equals(s1,s3))
+}

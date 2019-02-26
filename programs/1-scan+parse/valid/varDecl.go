@@ -12,6 +12,7 @@ var (
 	c = 24
 )
 
-i, j := 0, 10
-f := func() int { return 7 }
-
+func main(){
+	i, j := 0, 10
+	f := func() int { return 7 }
+}

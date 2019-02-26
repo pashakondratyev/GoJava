@@ -2,7 +2,10 @@
 package test
 
 var x = 7
-x++
-x--
-x+=8
-x-=9
+
+func main(){
+	x++
+	x--
+	x+=8
+	x-=9
+}

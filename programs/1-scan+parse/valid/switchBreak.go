@@ -2,11 +2,13 @@
 package test
 
 var x = 4
-	
-switch x {
-case 2:
-	println("hi")
-	break
-default:
-	println("hello")
+
+func main(){
+	switch x {
+	case 2:
+		println("hi")
+		break
+	default:
+		println("hello")
+	}
 }

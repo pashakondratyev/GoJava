@@ -32,13 +32,14 @@ func printSlice(nums []int) {
 	println()
 }
 
-var nums []int
-nums = append(nums,12)
-nums = append(nums, 75)
-nums = append(nums, 23)
-nums = append(nums, 84)
-nums = append(nums, 12)
-printSlice(nums)
-bubbleSort(nums)
-printSlice(nums)
-
+func main(){
+	var nums []int
+	nums = append(nums,12)
+	nums = append(nums, 75)
+	nums = append(nums, 23)
+	nums = append(nums, 84)
+	nums = append(nums, 12)
+	printSlice(nums)
+	bubbleSort(nums)
+	printSlice(nums)
+}
