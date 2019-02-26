@@ -181,6 +181,7 @@ MulOp: tTIMES
     ;
 
 FunctionCall: tIDENTIFIER tLPAREN ExpressionList tRPAREN
+    | tIDENTIFIER tLPAREN tRPAREN
     ;
     
 AppendExpression: tAPPEND tLPAREN Expression tCOMMA Expression tRPAREN
