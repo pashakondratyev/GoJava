@@ -87,7 +87,7 @@ ESCAPESYMBOLS \\[abfnrtv\"\\']
 ([\n\r]) {
   if(semicolonRequired()){
     lastToken = tSEMICOLON;
-    printf("tSEMICOLON\n");
+    if(g_tokens) printf("tSEMICOLON\n");
     return tSEMICOLON;
   }
 }
@@ -95,7 +95,7 @@ ESCAPESYMBOLS \\[abfnrtv\"\\']
 <<EOF>> {
   if(semicolonRequired()){
     lastToken = tSEMICOLON;
-    printf("tSEMICOLON\n");
+    if(g_tokens) printf("tSEMICOLON\n");
     return tSEMICOLON;
   }
   yyterminate();
@@ -134,13 +134,6 @@ ESCAPESYMBOLS \\[abfnrtv\"\\']
 "append"       if (g_tokens){printf("tAPPEND\n");} saveToken(tAPPEND); return tAPPEND;
 "len"          if (g_tokens){printf("tLEN\n");} saveToken(tLEN); return tLEN;
 "cap"          if (g_tokens){printf("tCAP\n");} saveToken(tCAP); return tCAP;
-
-  /* Types */
-"rune"         if (g_tokens){printf("tRUNE\n");} saveToken(tRUNE); return tRUNE;
-"string"       if (g_tokens){printf("tSTRING\n");} saveToken(tSTRING); return tSTRING;
-"int"          if (g_tokens){printf("tFLOAT\n");} saveToken(tFLOAT); return tFLOAT;
-"float"        if (g_tokens){printf("tFLOAT\n");} saveToken(tFLOAT); return tFLOAT;
-"bool"         if (g_tokens){printf("tBOOLEAN\n");} saveToken(tBOOLEAN); return tBOOLEAN;
 
   /* Arithmetic Operators */
 "+"            if (g_tokens){printf("tPLUS\n");} saveToken(tPLUS); return tPLUS;
@@ -287,7 +280,6 @@ ESCAPESYMBOLS \\[abfnrtv\"\\']
 `[^`]*` {
   if (g_tokens){printf("tSTRINGVAL(%s)\n", yytext);}
   yylval.stringval = strdup(yytext);
-  printf("%s", yytext);
   saveToken(tSTRINGVAL);
   return tSTRINGVAL;
 }
