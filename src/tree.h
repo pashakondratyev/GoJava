@@ -12,6 +12,7 @@ typedef struct VAR_SPECS VAR_SPECS;
 typedef struct TYPE_SPECS TYPE_SPECS;
 typedef struct FUNC_DECL FUNC_DECL;
 typedef struct PARAM_LIST PARAM_LIST;
+typedef struct SIGNATURE SIGNATURE;
 
 typedef struct STMT STMT;
 typedef struct STMT_LIST STMT_LIST;
@@ -144,7 +145,6 @@ struct DECL {
 };
 
 struct VAR_SPECS {
-	//int lineno;	// Not needed always stored in DECL
 	char *id;
 	bool hasType;
 	bool isInitialized;
@@ -154,18 +154,16 @@ struct VAR_SPECS {
 };
 
 struct TYPE_SPECS {
-	//int lineno;	// Not needed always stored in DECL
 	char *name; // new name used for the type
 	TYPE *type; 
 	TYPE_SPECS *next;
 };
 
 struct FUNC_DECL {
-	//int lineno;	// Not needed always stored in DECL
 	char *name;
 	PARAM_LIST *params;
 	STMT_LIST *body;
-	TYPE *returnType;
+	TYPE *returnType;	// NULL if void return type
 };
 
 struct PARAM_LIST {
@@ -174,6 +172,12 @@ struct PARAM_LIST {
 	bool hasType;
 	TYPE *type;
 	PARAM_LIST *next;
+};
+
+// Intermediate structure. Not contained in the final AST. 
+struct SIGNATURE {
+	PARAM_LIST *params;
+	TYPE *returnType; 	
 };
 
 struct STMT {
@@ -282,10 +286,11 @@ struct TYPE {
 PROG *makeProg(PACKAGE *package, DECL *decl, int lineno);
 PACKAGE *makePackage(char *name, int lineno);
 
-DECL *makeDecls(DECL *declHead, DECL *next);
-DECL *makeFunctionDcl(char *name, PARAM_LIST *args, STMT_LIST *body, TYPE *returnType, int lineno);
+DECL *makeDecls(DECL *firstDecl, DECL *declList);
+DECL *makeFuncDecl(char *name, SIGNATURE *signature, STMT_LIST *body, int lineno);
+SIGNATURE *makeSignature(PARAM_LIST *params, TYPE *type);
 TYPE_SPECS *makeTypeSpec(char *name, TYPE *type);
-TYPE_SPECS *makeTypeSpecList(TYPE_SPECS *root, TYPE_SPECS *next);
+TYPE_SPECS *makeTypeSpecList(TYPE_SPECS *specHead, TYPE_SPECS *nextSpec);
 
 STMT *makeBlockStmt(STMT_LIST *stmts, int lineno);
 STMT *makeExpStmt(EXP *exp, int lineno);
@@ -297,7 +302,7 @@ STMT *makePrintlnStmt(EXP_LIST *exprList, int lineno);
 STMT *makeReturnStmt(EXP *returnExp, int lineno);
 STMT *makeBreakStmt(int lineno);
 STMT *makeContinueStmt(int lineno);
-STMT_LIST *makeStmtList(STMT_LIST *list, STMT *stmt);
+STMT_LIST *makeStmtList(STMT *firstStmt, STMT_LIST *stmtList);
 
 ID_LIST *makeIdList(ID_LIST *list, char *id);
 

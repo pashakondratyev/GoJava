@@ -61,13 +61,22 @@ void yyerror(const char *s) {
     struct PROG *prog;
     struct PACKAGE *package;
     struct DECL *decl;
+    struct SIGNATURE *signature;
+    struct STMT *stmt;
+    struct STMT_LIST *stmtList;
+    struct PARAM_LIST *paramList;
+    struct TYPE *type;
 };
 
 
 %type <prog> prog 
 %type <package> PackageDecl
 %type <decl> TopLevelDeclList FuncDecl Declaration
-
+%type <signature> Signature
+%type <stmt> Statement
+%type <stmtList> Block StatementList
+%type <paramList> Parameters
+%type <type> Type
 
 
 %left tOR
@@ -92,8 +101,8 @@ PackageDecl: tPACKAGE tIDENTIFIER tSEMICOLON { $$ = makePackage($2, @2.first_lin
 
 TopLevelDeclList: Declaration tSEMICOLON    
     | FuncDecl tSEMICOLON   
-    | Declaration tSEMICOLON TopLevelDeclList   { $$ = makeDecls($3, $1); }
-    | FuncDecl tSEMICOLON TopLevelDeclList  { $$ = makeDecls($3, $1); }
+    | Declaration tSEMICOLON TopLevelDeclList   { $$ = $1;  /*FIX THIS ONCE DECLARATION IS IMPLEMENTED*/ }
+    | FuncDecl tSEMICOLON TopLevelDeclList  { $$ = makeDecls($1, $3); }
     ;
 
 Declaration: TypeDecl   { $$ = NULL; }
@@ -116,8 +125,8 @@ VarSpecList: %empty
     | VarSpecList VarSpec tSEMICOLON
     ;
 
-Type: tIDENTIFIER
-    | CompoundType
+Type: tIDENTIFIER   { $$ = NULL; }
+    | CompoundType  { $$ = NULL; }
     ;
 
 CompoundType: ArrayType
@@ -224,27 +233,27 @@ TypeSpecList: %empty
     | TypeSpecList TypeSpec tSEMICOLON 
     ;
 
-FuncDecl: tFUNC tIDENTIFIER Signature Block     { $$ = NULL; }
+FuncDecl: tFUNC tIDENTIFIER Signature Block     { $$ = makeFuncDecl($2, $3, $4, @2.first_line); }
     ;
 
-Block: tLCBRACE StatementList tRCBRACE
+Block: tLCBRACE StatementList tRCBRACE  { $$ = $2; }
     ;
 
-StatementList: Statement tSEMICOLON
-    | Statement tSEMICOLON StatementList
+StatementList: Statement tSEMICOLON         { $$ = makeStmtList($1, NULL); }
+    | Statement tSEMICOLON StatementList    { $$ = makeStmtList($1, $3); }
     ;
 
-Statement: Declaration 
-    | SimpleStatement
-    | PrintStatement
-    | PrintlnStatement
-    | ReturnStatement
-    | IfStatement
-    | ExprSwitchStatement
-    | ForStatement
-    | ContinueStatement
-    | BreakStatement
-    | FallthroughStatement
+Statement: Declaration { $$ = NULL; }
+    | SimpleStatement   { $$ = NULL; }
+    | PrintStatement    { $$ = NULL; }
+    | PrintlnStatement  { $$ = NULL; }
+    | ReturnStatement   { $$ = NULL; }
+    | IfStatement   { $$ = NULL; }
+    | ExprSwitchStatement   { $$ = NULL; }
+    | ForStatement      { $$ = NULL; }
+    | ContinueStatement     { $$ = NULL; }
+    | BreakStatement    { $$ = NULL; }
+    | FallthroughStatement  { $$ = NULL; }
     ;
 
 SimpleStatement: %empty
@@ -254,12 +263,12 @@ SimpleStatement: %empty
     | ShortVarDecl
     ;
 
-Signature: Parameters
-    | Parameters Type
+Signature: Parameters   { $$ = makeSignature($1, NULL); }
+    | Parameters Type   { $$ = makeSignature($1, $2); }
     ;
 
-Parameters: tLPAREN ParameterList tRPAREN
-    | tLPAREN tRPAREN
+Parameters: tLPAREN ParameterList tRPAREN   { $$  = NULL; }
+    | tLPAREN tRPAREN   { $$ = NULL; }
     ;
 
 ParameterList: ParameterDecl

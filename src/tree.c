@@ -22,31 +22,21 @@ PACKAGE *makePackage(char *name, int lineno) {
     return p;
 }
 
-DECL *makeDecls(DECL *declHead, DECL *next) {
-	if (next == NULL) {
+DECL *makeDecls(DECL *firstDecl, DECL *declList) {
+	if (firstDecl == NULL) {
 		//printf("ERROR: Logical error in makeDecls.\n");
 	}
-
-	if (declHead == NULL) {
-		declHead = next;
-	} 
-	else {
-		DECL *cur = declHead;
-		while (cur->next != NULL) {
-			cur = declHead->next;
-		}
-		cur->next = next;
-	}
-	return declHead;
+	firstDecl->next = declList;
+	return firstDecl;
 }
 
-DECL *makeFunctionDcl(char *name, PARAM_LIST *args, STMT_LIST *body, TYPE *returnType, int lineno) {
+DECL *makeFuncDecl(char *name, SIGNATURE *signature, STMT_LIST *body, int lineno) {
 	FUNC_DECL *func = malloc(sizeof(FUNC_DECL));
 	func->name = malloc((strlen(name)+1)*sizeof(char));
 	strcpy(func->name, name);
-	func->params = args;
+	func->params = signature->params;
 	func->body = body;
-	func->returnType = returnType;
+	func->returnType = signature->returnType;
 
 	DECL *decl = malloc(sizeof(DECL));
 	decl->lineno = lineno;
@@ -54,4 +44,25 @@ DECL *makeFunctionDcl(char *name, PARAM_LIST *args, STMT_LIST *body, TYPE *retur
 	decl->val.funcDecl = func;
 
 	return decl;
+}
+
+SIGNATURE *makeSignature(PARAM_LIST *params, TYPE *type) {
+	SIGNATURE *s = malloc(sizeof(SIGNATURE));
+	s->params = params;
+	s->returnType = type;
+	return s;
+}
+
+STMT_LIST *makeStmtList(STMT *firstStmt, STMT_LIST *stmtList) {
+	if (firstStmt == NULL) {
+		//printf("ERROR: Logical error in makeStmtList\n");
+	}
+	STMT_LIST *head = malloc(sizeof(STMT_LIST));
+	head->stmt = firstStmt;
+	head->next = stmtList;
+	return head;
+}
+
+TYPE_SPECS *makeTypeSpecList(TYPE_SPECS *specHead, TYPE_SPECS *nextSpec) {
+	return NULL;
 }
