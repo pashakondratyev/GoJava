@@ -59,14 +59,23 @@ do
 	PREV_PHASE_NAME=${PREV_PHASE#*-}
 	PREV_MODE=${PREV_PHASE_NAME#*+}
 	MODE=${PHASE_NAME#*+}
-	PHASE_NAME="${PHASE_NAME^}"
+    if [ "$(uname)" == "Darwin" ]; then
+        PHASE_NAME="${PHASE_NAME}"
+    else
+	    PHASE_NAME="${PHASE_NAME^}"
+    fi
 
 	for DIR_TYPE in $DIR_PHASE*/
 	do
 		TYPE=$(basename $DIR_TYPE)
-		TYPE="${TYPE^}"
 
-		if [[ $TYPE == "Valid" ]]
+        if [ "$(uname)" == "Darwin" ]; then
+            TYPE="${TYPE}"
+            DIR_TYPE=${DIR_TYPE%?}
+        else
+            TYPE="${TYPE^}"
+        fi
+		if [[ $TYPE == "Valid" || $TYPE == "valid" ]]
 		then
 			CONF_STATUS=0
 			CONF_OUTPUT="OK"
@@ -75,7 +84,7 @@ do
 			CONF_OUTPUT="Error: "
 		fi
 
-		if [ "$(ls -A -I ".gitignore" $DIR_TYPE)" ]
+		if [ "$(ls -A -i ".gitignore" $DIR_TYPE)" ]
 		then
 			echo -e "\033[93m"
 			echo "  $PHASE_NAME $TYPE"
@@ -85,12 +94,12 @@ do
 			COUNT=0
 			COUNT_PASSED=0
 
-			TESTS=`find $DIR_TYPE -type f \( -name "*.go" \)`
 
+			TESTS=`find $DIR_TYPE -type f \( -name "*.go" \)`
+            echo $DIR_TYPE
 			for TEST in $TESTS
 			do
 				((COUNT++))
-
 				PREV_SUCCESS=1
 
 				if [[ $VERBOSE == 1 ]]
@@ -108,7 +117,6 @@ do
 					then
 						STATUS=-1
 					fi
-
 					if [[ $OUTPUT != "OK" || $STATUS != 0 ]]
 					then
 						PREV_SUCCESS=0
@@ -204,8 +212,8 @@ do
 				STATUS_COLOUR="41"
 			fi
 
-			echo -e "\e[${STATUS_COLOUR}m# ${PHASE_NAME} ${TYPE}: ${COUNT_PASSED}/${COUNT}\e[49m"
-			RESULTS+=("\e[${STATUS_COLOUR}m# ${PHASE_NAME} ${TYPE}: ${COUNT_PASSED}/${COUNT}\e[49m")
+			echo -e "\033[${STATUS_COLOUR}m# ${PHASE_NAME} ${TYPE}: ${COUNT_PASSED}/${COUNT}\033[49m"
+			RESULTS+=("\033[${STATUS_COLOUR}m# ${PHASE_NAME} ${TYPE}: ${COUNT_PASSED}/${COUNT}\033[49m")
 		fi
 	done
 done
