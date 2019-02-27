@@ -3,11 +3,11 @@
 #include <stdio.h>
 #include "tree.h"
 
-// deal with basic types
+// deal with basic types in typechecker phase
 
 
 PROG *makeProg(PACKAGE *package, DECL *decl, int lineno) {
-	PROG p = malloc(sizeof(PROG));
+	PROG *p = malloc(sizeof(PROG));
 	p->lineno = lineno;
 	p->package = package;
 	p->root_decl = decl;
@@ -15,7 +15,7 @@ PROG *makeProg(PACKAGE *package, DECL *decl, int lineno) {
 }
 
 PACKAGE *makePackage(char *name, int lineno) {
-	PACKAGE p = malloc(sizeof(PACKAGE));
+	PACKAGE *p = malloc(sizeof(PACKAGE));
 	p->lineno = lineno;
 	p->name = malloc((strlen(name)+1)*sizeof(char));
     strcpy(p->name, name);
