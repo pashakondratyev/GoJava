@@ -77,7 +77,7 @@ OCTALDIGITS [0-7]
 HEXDECSYMBOLS [0-9a-f]
 
 STRINGSYMBOLS [~@#$%^&*\-+/`<>=_|'.,;:!?{}\[\]() ]
-ESCAPESYMBOLS \\[abfnrtv\"\\']
+ESCAPESYMBOLS \\[abfnrtv\\]
 %option yylineno
 %option noyywrap
 
@@ -242,11 +242,11 @@ ESCAPESYMBOLS \\[abfnrtv\"\\']
 "/*"      BEGIN(IN_COMMENT);
 
 <IN_COMMENT>"*/"      BEGIN(INITIAL);
-<IN_COMMENT>[^*\n]+   // eat comment in chunks
+<IN_COMMENT>[^*\n]+   // eat comment in chunk
 <IN_COMMENT>"*"       // eat the lone star
-<IN_COMMENT>\n        yylineno++; //TODO: check if this is necessary
+<IN_COMMENT>\n        yylineno++; //TODO: check if this is necessary , insert semicolon
 
-\'([^']|{ESCAPESYMBOLS})\' {
+\'([^']|{ESCAPESYMBOLS}|\\\')\' {
   char rune;
   if(yytext[0] == '\\'){
     rune = getEscaped(yytext[1]);
