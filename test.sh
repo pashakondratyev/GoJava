@@ -96,7 +96,6 @@ do
 
 
 			TESTS=`find $DIR_TYPE -type f \( -name "*.go" \)`
-            echo $DIR_TYPE
 			for TEST in $TESTS
 			do
 				((COUNT++))
