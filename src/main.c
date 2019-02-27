@@ -8,6 +8,8 @@ int yylex();
 int g_tokens;
 int lineno;
 
+PROG *root = NULL;
+
 int main(int argc, char *argv[]){
   // Input starts at first line
   lineno = 1;
