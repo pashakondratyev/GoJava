@@ -66,6 +66,7 @@ void yyerror(const char *s) {
 
 %type <prog> prog 
 %type <package> PackageDecl
+%type <decl> TopLevelDeclList FuncDecl Declaration
 
 
 
@@ -82,24 +83,24 @@ void yyerror(const char *s) {
 
 %start prog
 %%
-prog: PackageDecl TopLevelDeclList { root = makeProg($1, NULL, @1.first_line); }
+prog: PackageDecl TopLevelDeclList { root = makeProg($1, $2, @1.first_line); }
     ;
 
 
 PackageDecl: tPACKAGE tIDENTIFIER tSEMICOLON { $$ = makePackage($2, @2.first_line); }
     ;
 
-TopLevelDeclList: Declaration tSEMICOLON
-    | FuncDecl tSEMICOLON
-    | Declaration tSEMICOLON TopLevelDeclList
-    | FuncDecl tSEMICOLON TopLevelDeclList
+TopLevelDeclList: Declaration tSEMICOLON    
+    | FuncDecl tSEMICOLON   
+    | Declaration tSEMICOLON TopLevelDeclList   { $$ = makeDecls($3, $1); }
+    | FuncDecl tSEMICOLON TopLevelDeclList  { $$ = makeDecls($3, $1); }
     ;
 
-Declaration: TypeDecl
-    | VarDecl
+Declaration: TypeDecl   { $$ = NULL; }
+    | VarDecl       { $$ = NULL; }
     ;
 
-VarDecl: tVAR VarSpec
+VarDecl: tVAR VarSpec 
     | tVAR tLPAREN VarSpecList tRPAREN
     ;
 
@@ -223,7 +224,7 @@ TypeSpecList: %empty
     | TypeSpecList TypeSpec tSEMICOLON 
     ;
 
-FuncDecl: tFUNC tIDENTIFIER Signature Block
+FuncDecl: tFUNC tIDENTIFIER Signature Block     { $$ = NULL; }
     ;
 
 Block: tLCBRACE StatementList tRCBRACE

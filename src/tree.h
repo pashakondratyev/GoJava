@@ -144,7 +144,7 @@ struct DECL {
 };
 
 struct VAR_SPECS {
-	int lineno;
+	//int lineno;	// Not needed always stored in DECL
 	char *id;
 	bool hasType;
 	bool isInitialized;
@@ -154,17 +154,17 @@ struct VAR_SPECS {
 };
 
 struct TYPE_SPECS {
-	int lineno;
+	//int lineno;	// Not needed always stored in DECL
 	char *name; // new name used for the type
 	TYPE *type; 
 	TYPE_SPECS *next;
 };
 
 struct FUNC_DECL {
-	int lineno;
+	//int lineno;	// Not needed always stored in DECL
 	char *name;
 	PARAM_LIST *params;
-	STMT_LIST *block;
+	STMT_LIST *body;
 	TYPE *returnType;
 };
 
@@ -282,6 +282,8 @@ struct TYPE {
 PROG *makeProg(PACKAGE *package, DECL *decl, int lineno);
 PACKAGE *makePackage(char *name, int lineno);
 
+DECL *makeDecls(DECL *declHead, DECL *next);
+DECL *makeFunctionDcl(char *name, PARAM_LIST *args, STMT_LIST *body, TYPE *returnType, int lineno);
 TYPE_SPECS *makeTypeSpec(char *name, TYPE *type);
 TYPE_SPECS *makeTypeSpecList(TYPE_SPECS *root, TYPE_SPECS *next);
 
