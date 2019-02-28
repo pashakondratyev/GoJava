@@ -299,7 +299,7 @@ ESCAPESYMBOLS \\[abfnrtv\\]
 }
   /* Invalid Strings - Commented out because causing errors in case "string" + "string" 
 \".*\" {
-  fprintf(stderr, "error: (line %d) string with invalid characters %s\n", yylineno, yytext);
+  fprintf(stderr, "Error: (line %d) string with invalid characters %s\n", yylineno, yytext);
   exit(1);
 } 
   */

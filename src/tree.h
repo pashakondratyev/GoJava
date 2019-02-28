@@ -60,6 +60,7 @@ typedef enum {
 	sk_println,
 	sk_return,
 	sk_if,
+	sk_else,
 	sk_switch, 
 	sk_for,
 	sk_break,
@@ -164,7 +165,7 @@ struct TYPE_SPECS {
 struct FUNC_DECL {
 	char *name;
 	PARAM_LIST *params;	// NULL if no parameters
-	STMT_LIST *body;
+	STMT *body;
 	TYPE *returnType;	// NULL if void return type
 };
 
@@ -194,8 +195,9 @@ struct STMT {
 		struct { EXP *lhs; EXP *rhs; AssignOpKind kind; } assignOp;
 		VAR_SPECS *shortVarDecl;
 		struct { STMT *simpleStmt; EXP *exp; CASE_CLAUSE_LIST *caseClauses; } switchStmt;
-		struct { EXP *whileExp; FOR_CLAUSE *forClause; STMT_LIST *body; } forLoop;
-		struct { STMT *simpleStmt; EXP *exp; STMT_LIST *body; STMT_LIST *falseBody; } ifBranch; // falseBody is optional - non-existent if no else
+		struct { EXP *whileExp; FOR_CLAUSE *forClause; STMT *body; } forStmt;
+		struct { STMT *simpleStmt; EXP *cond; STMT *body; STMT *elseStmt; } ifStmt; // elseStmt is optional
+		STMT *elseBody;
 	} val;
 };
 
@@ -227,7 +229,7 @@ struct CASE_CLAUSE {
 	CaseKind kind;
 	union {
 		struct { EXP_LIST *cases; STMT_LIST *clauses; } caseClause;
-		STMT_LIST *default_clauses;
+		STMT_LIST *defaultClauses;
 	} val;
 };
 
@@ -237,7 +239,6 @@ struct CASE_CLAUSE_LIST {
 };
 
 struct FOR_CLAUSE {
-	int lineno;
 	STMT *init;
 	EXP *cond;
 	STMT *post;
@@ -288,7 +289,7 @@ PROG *makeProg(PACKAGE *package, DECL *decl, int lineno);
 PACKAGE *makePackage(char *name, int lineno);
 
 DECL *makeDecls(DECL *firstDecl, DECL *declList);
-DECL *makeFuncDecl(char *name, SIGNATURE *signature, STMT_LIST *body, int lineno);
+DECL *makeFuncDecl(char *name, SIGNATURE *signature, STMT *block, int lineno);
 
 PARAM_LIST *makeParamList(PARAM_LIST *firstParam, PARAM_LIST *paramList);
 PARAM_LIST *makeParamListFromIdList(ID_LIST *idList, TYPE *type, int lineno);
@@ -298,7 +299,7 @@ TYPE_SPECS *makeTypeSpec(char *name, TYPE *type);
 TYPE_SPECS *makeTypeSpecList(TYPE_SPECS *specHead, TYPE_SPECS *nextSpec);
 
 STMT *makeDeclStmt(DECL *decl, int lineno);
-STMT *makeBlockStmt(STMT_LIST *stmts, int lineno);		// DOn't forget to Add
+STMT *makeBlockStmt(STMT_LIST *stmts, int lineno);
 STMT *makeExpStmt(EXP *exp, int lineno);
 STMT *makeDeclStmt(DECL *decl, int lineno);
 STMT *makeAssignStmt(EXP_LIST *lhsList, EXP_LIST *rhsList, int lineno);
@@ -311,7 +312,16 @@ STMT *makeReturnStmt(EXP *returnExp, int lineno);
 STMT *makeBreakStmt(int lineno);
 STMT *makeContinueStmt(int lineno);
 STMT *makeFallthroughStmt(int lineno);
+STMT *makeIfStmt(STMT *simpleStmt, EXP *cond, STMT *body, STMT *elseStmt, int lineno);
+STMT *makeElseStmt(STMT *body, int lineno);
+STMT *makeForStmt(EXP *whileExp, FOR_CLAUSE *forClause, STMT *body, int lineno);
+STMT *makeSwitchStmt(STMT *simpleStmt, EXP *exp, CASE_CLAUSE_LIST *caseClauses, int lineno);
 STMT_LIST *makeStmtList(STMT *firstStmt, STMT_LIST *stmtList);
+
+FOR_CLAUSE *makeForClause(STMT *init, EXP *cond, STMT *post);
+CASE_CLAUSE_LIST *makeCaseClauseList(CASE_CLAUSE *firstClause, CASE_CLAUSE_LIST *caseClauseList);
+CASE_CLAUSE *makeCaseClause(EXP_LIST *cases, STMT_LIST *clauses, int lineno);
+CASE_CLAUSE *makeDefaultClause(STMT_LIST *clauses, int lineno);
 
 ID_LIST *makeIdList(ID_LIST *listHead, char *nextId);
 

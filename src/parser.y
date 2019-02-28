@@ -70,6 +70,9 @@ void yyerror(const char *s) {
     struct ID_LIST *idList;
     struct EXP_LIST *exprList;
     struct EXP *exp;
+    struct FOR_CLAUSE *forClause;
+    struct CASE_CLAUSE_LIST *caseClauseList;
+    struct CASE_CLAUSE *caseClause;
 };
 
 
@@ -77,13 +80,16 @@ void yyerror(const char *s) {
 %type <package> PackageDecl
 %type <decl> TopLevelDeclList FuncDecl Declaration
 %type <signature> Signature
-%type <stmt> Statement SimpleStatement IncDecStatement AssignStatement ShortVarDecl PrintStatement PrintlnStatement ReturnStatement ContinueStatement BreakStatement FallthroughStatement IfStatement ExprSwitchStatement ForStatement
-%type <stmtList> Block StatementList
+%type <stmt> Statement Block SimpleStatement IncDecStatement AssignStatement ShortVarDecl PrintStatement PrintlnStatement ReturnStatement ContinueStatement BreakStatement FallthroughStatement IfStatement ElseStatement ExprSwitchStatement ForStatement
+%type <stmtList> StatementList
 %type <paramList> Parameters ParameterList ParameterDecl
 %type <type> Type
 %type <idList> IdentifierList
 %type <exprList> ExpressionList
 %type <exp> Expression ExpressionOrEmpty PrimaryExpression FunctionCall AppendExpression LenExpression CapExpression UnaryExpression
+%type <forClause> ForClause
+%type <caseClauseList> ExprCaseClauseList
+%type <caseClause> ExprCaseClause
 
 
 %left tOR
@@ -108,7 +114,7 @@ PackageDecl: tPACKAGE tIDENTIFIER tSEMICOLON { $$ = makePackage($2, @2.first_lin
 
 TopLevelDeclList: Declaration tSEMICOLON    
     | FuncDecl tSEMICOLON   
-    | Declaration tSEMICOLON TopLevelDeclList   { $$ = $1;  /*FIX THIS ONCE DECLARATION IS IMPLEMENTED*/ }
+    | Declaration tSEMICOLON TopLevelDeclList   { $$ = $1;  /*FIX THIS ONCE DECLARATION IS IMPLEMENTED makeDecls($1, $3)*/ }
     | FuncDecl tSEMICOLON TopLevelDeclList  { $$ = makeDecls($1, $3); }
     ;
 
@@ -221,7 +227,7 @@ TypeSpecList: %empty
 FuncDecl: tFUNC tIDENTIFIER Signature Block     { $$ = makeFuncDecl($2, $3, $4, @2.first_line); }
     ;
 
-Block: tLCBRACE StatementList tRCBRACE  { $$ = $2; }
+Block: tLCBRACE StatementList tRCBRACE  { $$ = makeBlockStmt($2, @2.first_line); }
     ;
 
 StatementList: Statement tSEMICOLON         { $$ = makeStmtList($1, NULL); }
@@ -229,7 +235,7 @@ StatementList: Statement tSEMICOLON         { $$ = makeStmtList($1, NULL); }
     ;
 
 Statement: Declaration { $$ = makeDeclStmt($1, @1.first_line); }
-    | Block { $$ = NULL; }
+    | Block { $$ = $1; }
     | SimpleStatement   { $$ = $1; }
     | PrintStatement    { $$ = $1; }
     | PrintlnStatement  { $$ = $1; }
@@ -310,42 +316,41 @@ ReturnStatement: tRETURN { $$ = makeReturnStmt(NULL, @1.first_line); }
     | tRETURN Expression    { $$ = makeReturnStmt($2, @1.first_line); }
     ;
 
-IfStatement: tIF Expression Block ElseStatement   { $$ = NULL; }
-    | tIF SimpleStatement tSEMICOLON Expression Block ElseStatement   { $$ = NULL; }
+IfStatement: tIF Expression Block ElseStatement   { $$ = makeIfStmt(NULL, $2, $3, $4, @2.first_line); }
+    | tIF SimpleStatement tSEMICOLON Expression Block ElseStatement   { $$ = makeIfStmt($2, $4, $5, $6, @2.first_line); }
     ;
 
-ElseStatement: %empty 
-    | tELSE IfStatement
-    | tELSE Block
+ElseStatement: %empty { $$ = NULL; }
+    | tELSE IfStatement { $$ = makeElseStmt($2, @2.first_line); }
+    | tELSE Block   { $$ = makeElseStmt($2, @2.first_line); }
     ;
 
-ExprSwitchStatement: tSWITCH tLCBRACE ExprCaseClauseList tRCBRACE   { $$ = NULL; }
-    | tSWITCH SimpleStatement tSEMICOLON tLCBRACE ExprCaseClauseList tRCBRACE   { $$ = NULL; }
-    | tSWITCH Expression tLCBRACE ExprCaseClauseList tRCBRACE   { $$ = NULL; }
-    | tSWITCH SimpleStatement tSEMICOLON Expression tLCBRACE ExprCaseClauseList tRCBRACE    { $$ = NULL; }
+ExprSwitchStatement: tSWITCH tLCBRACE ExprCaseClauseList tRCBRACE   { $$ = makeSwitchStmt(NULL, NULL, $3, @1.first_line); }
+    | tSWITCH SimpleStatement tSEMICOLON tLCBRACE ExprCaseClauseList tRCBRACE   { $$ = makeSwitchStmt($2, NULL, $5, @1.first_line); }
+    | tSWITCH Expression tLCBRACE ExprCaseClauseList tRCBRACE   { $$ = makeSwitchStmt(NULL, $2, $4, @1.first_line); }
+    | tSWITCH SimpleStatement tSEMICOLON Expression tLCBRACE ExprCaseClauseList tRCBRACE    { $$ = makeSwitchStmt($2, $4, $6, @1.first_line); }
     ;
 
-ExprCaseClauseList: %empty
-    | ExprCaseClause ExprCaseClauseList
+ExprCaseClauseList: %empty  { $$ = NULL; }
+    | ExprCaseClause ExprCaseClauseList { $$ = makeCaseClauseList($1, $2); }
     ;    
 
-ExprCaseClause: ExprSwitchCase tCOLON StatementList
+ExprCaseClause: tCASE ExpressionList tCOLON StatementList { $$ = makeCaseClause($2, $4, @2.first_line); }
+    | tDEFAULT tCOLON StatementList { $$ = makeDefaultClause($3, @3.first_line); }
+    | tCASE ExpressionList tCOLON  { $$ = makeCaseClause($2, NULL, @2.first_line); }
+    | tDEFAULT tCOLON  { $$ = makeDefaultClause(NULL, @1.first_line); }
     ;
 
-ExprSwitchCase: tCASE ExpressionList
-    | tDEFAULT
+ForStatement: tFOR Block    { $$ = makeForStmt(NULL, NULL, $2, @2.first_line); }
+    | tFOR ForClause Block  { $$ = makeForStmt(NULL, $2, $3, @2.first_line); }
+    | tFOR Expression Block { $$ = makeForStmt($2, NULL, $3, @2.first_line); }
     ;
 
-ForStatement: tFOR Block    { $$ = NULL; }
-    | tFOR ForClause Block  { $$ = NULL; }
-    | tFOR Expression Block { $$ = NULL; }
-    ;
-
-ForClause: SimpleStatement tSEMICOLON ExpressionOrEmpty tSEMICOLON SimpleStatement
+ForClause: SimpleStatement tSEMICOLON ExpressionOrEmpty tSEMICOLON SimpleStatement  { $$ = makeForClause($1, $3, $5); }
     ;
 
 ExpressionOrEmpty: %empty   { $$ = NULL; }
-    | Expression    { $$ = NULL; }
+    | Expression    { $$ = $1; }
     ;
 
 BreakStatement: tBREAK  { $$ = makeBreakStmt(@1.first_line); }

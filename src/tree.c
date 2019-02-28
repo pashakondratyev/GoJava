@@ -30,12 +30,12 @@ DECL *makeDecls(DECL *firstDecl, DECL *declList) {
 	return firstDecl;
 }
 
-DECL *makeFuncDecl(char *name, SIGNATURE *signature, STMT_LIST *body, int lineno) {
+DECL *makeFuncDecl(char *name, SIGNATURE *signature, STMT *block, int lineno) {
 	FUNC_DECL *func = malloc(sizeof(FUNC_DECL));
 	func->name = malloc((strlen(name)+1)*sizeof(char));
 	strcpy(func->name, name);
 	func->params = signature->params;
-	func->body = body;
+	func->body = block;
 	func->returnType = signature->returnType;
 
 	DECL *decl = malloc(sizeof(DECL));
@@ -115,6 +115,14 @@ STMT *makeDeclStmt(DECL *decl, int lineno) {
 	s->lineno = lineno;
 	s->kind = sk_decl;
 	s->val.decl = decl;
+	return s;
+}
+
+STMT *makeBlockStmt(STMT_LIST *stmts, int lineno) {
+	STMT *s = malloc(sizeof(STMT));
+	s->lineno = lineno;
+	s->kind = sk_block;
+	s->val.block = stmts;
 	return s;
 }
 
@@ -248,16 +256,78 @@ STMT *makeAssignOpStmt(EXP *lhs, EXP *rhs, AssignOpKind kind, int lineno) {
 	return s;
 }
 
+STMT *makeForStmt(EXP *whileExp, FOR_CLAUSE *forClause, STMT *body, int lineno) {
+	STMT *s = malloc(sizeof(STMT));
+	s->lineno = lineno;
+	s->kind = sk_for;
+	s->val.forStmt.whileExp = whileExp;
+	s->val.forStmt.forClause = forClause;
+	s->val.forStmt.body = body;
+	return s;
 
+}
 
+CASE_CLAUSE_LIST *makeCaseClauseList(CASE_CLAUSE *firstClause, CASE_CLAUSE_LIST *caseClauseList) {
+	if (firstClause == NULL) {
+		//printf("ERROR: Logical error in makeCaseClauseList.\n");
+	}
+	CASE_CLAUSE_LIST *head = malloc(sizeof(CASE_CLAUSE_LIST));
+	head->clause = firstClause;
+	head->next = caseClauseList;
+	return head;
+}
 
+CASE_CLAUSE *makeCaseClause(EXP_LIST *cases, STMT_LIST *clauses, int lineno) {
+	CASE_CLAUSE *cc = malloc(sizeof(CASE_CLAUSE));
+	cc->kind = ck_case;
+	cc->val.caseClause.cases = cases;
+	cc->val.caseClause.clauses = clauses;
+	return cc;
+}
 
+CASE_CLAUSE *makeDefaultClause(STMT_LIST *clauses, int lineno) {
+	CASE_CLAUSE *cc = malloc(sizeof(CASE_CLAUSE));
+	cc->kind = ck_default;
+	cc->val.defaultClauses = clauses;
+	return cc;
+}
 
+STMT *makeSwitchStmt(STMT *simpleStmt, EXP *exp, CASE_CLAUSE_LIST *caseClauses, int lineno) {
+	STMT *s = malloc(sizeof(STMT));
+	s->lineno = lineno;
+	s->kind = sk_switch;
+	s->val.switchStmt.simpleStmt = simpleStmt;
+	s->val.switchStmt.exp = exp;
+	s->val.switchStmt.caseClauses = caseClauses;
+	return s;
+}
 
+STMT *makeIfStmt(STMT *simpleStmt, EXP *cond, STMT *body, STMT *elseStmt, int lineno) {
+	STMT *s = malloc(sizeof(STMT));
+	s->lineno = lineno;
+	s->kind = sk_if;
+	s->val.ifStmt.simpleStmt = simpleStmt;
+	s->val.ifStmt.cond = cond;
+	s->val.ifStmt.body = body; 
+	s->val.ifStmt.elseStmt = elseStmt;
+	return s;
+}
 
+STMT *makeElseStmt(STMT *body, int lineno) {
+	STMT *s = malloc(sizeof(STMT));
+	s->lineno = lineno;
+	s->kind = sk_else;
+	s->val.elseBody = body;
+	return s;
+}
 
-
-
+FOR_CLAUSE *makeForClause(STMT *init, EXP *cond, STMT *post) {
+	FOR_CLAUSE *fc = malloc(sizeof(FOR_CLAUSE));
+	fc->init = init;
+	fc->cond = cond;
+	fc->post = post;
+	return fc;
+}
 
 
 EXP_LIST *makeExpList(EXP_LIST *listHead, EXP *nextExp) {
