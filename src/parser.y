@@ -229,6 +229,7 @@ StatementList: Statement tSEMICOLON         { $$ = makeStmtList($1, NULL); }
     ;
 
 Statement: Declaration { $$ = makeDeclStmt($1, @1.first_line); }
+    | Block { $$ = NULL; }
     | SimpleStatement   { $$ = $1; }
     | PrintStatement    { $$ = $1; }
     | PrintlnStatement  { $$ = $1; }
@@ -309,13 +310,11 @@ ReturnStatement: tRETURN { $$ = makeReturnStmt(NULL, @1.first_line); }
     | tRETURN Expression    { $$ = makeReturnStmt($2, @1.first_line); }
     ;
 
-IfStatement: tIF Expression Block ElseIfs   { $$ = NULL; }
-    | tIF SimpleStatement tSEMICOLON Expression Block ElseIfs   { $$ = NULL; }
+IfStatement: tIF Expression Block ElseStatement   { $$ = NULL; }
+    | tIF SimpleStatement tSEMICOLON Expression Block ElseStatement   { $$ = NULL; }
     ;
 
-ElseIfs: %empty 
-    | tELSE tIF Expression Block ElseIfs
-    | tELSE tIF SimpleStatement tSEMICOLON Expression Block ElseIfs
+ElseStatement: %empty 
     | tELSE Block
     ;
 
