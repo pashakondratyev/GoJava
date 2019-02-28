@@ -315,6 +315,7 @@ IfStatement: tIF Expression Block ElseStatement   { $$ = NULL; }
     ;
 
 ElseStatement: %empty 
+    | tELSE IfStatement
     | tELSE Block
     ;
 
