@@ -16,7 +16,7 @@ typedef struct SIGNATURE SIGNATURE;
 
 typedef struct STMT STMT;
 typedef struct STMT_LIST STMT_LIST;
-typedef struct ASSIGNMENT ASSIGN;
+typedef struct ASSIGN ASSIGN;
 
 typedef struct ID_LIST ID_LIST;
 typedef struct FIELD_DECLS FIELD_DECLS;
@@ -49,8 +49,9 @@ typedef enum {
 typedef enum {
 	sk_empty, // needed?
 	sk_block,
-	sk_expr,
+	sk_exp,
 	sk_assign,
+	sk_assignOp,
 	sk_decl,
 	sk_shortDecl,
 	sk_incr,
@@ -59,11 +60,11 @@ typedef enum {
 	sk_println,
 	sk_return,
 	sk_if,
-	sk_else,
 	sk_switch, 
 	sk_for,
 	sk_break,
-	sk_continue
+	sk_continue,
+	sk_fallthrough
 } StmtKind;
 
 typedef enum {
@@ -105,8 +106,8 @@ typedef enum {
 	ek_le,
 	ek_gt,
 	ek_lt,
-	ek_logicAnd,
-	ek_logicOr,
+	ek_and,
+	ek_or,
 	ek_bitXor,
 	ek_bitLeftShift,
 	ek_bitRightShift,
@@ -114,6 +115,7 @@ typedef enum {
 	ek_uplus,
 	ek_uminus,
 	ek_bang,
+	ek_ubitXor,
 	ek_func,	// includes casts
 	ek_append,
 	ek_len,
@@ -161,7 +163,7 @@ struct TYPE_SPECS {
 
 struct FUNC_DECL {
 	char *name;
-	PARAM_LIST *params;
+	PARAM_LIST *params;	// NULL if no parameters
 	STMT_LIST *body;
 	TYPE *returnType;	// NULL if void return type
 };
@@ -169,8 +171,7 @@ struct FUNC_DECL {
 struct PARAM_LIST {
 	int lineno;
 	char *id;
-	bool hasType;
-	TYPE *type;
+	TYPE *type;		// NULL if no type specified
 	PARAM_LIST *next;
 };
 
@@ -186,15 +187,15 @@ struct STMT {
 	union {
 		STMT_LIST *block;
 		DECL *decl;	
-		// for all expression-based statements: expression, increment, decrement, return, print, println
+		// for all expression-based statements: expression, increment, decrement, return
 		EXP *exp;
+		EXP_LIST *printExps;	// NULL if no expressions given to print
 		ASSIGN *assign;
 		struct { EXP *lhs; EXP *rhs; AssignOpKind kind; } assignOp;
 		VAR_SPECS *shortVarDecl;
 		struct { STMT *simpleStmt; EXP *exp; CASE_CLAUSE_LIST *caseClauses; } switchStmt;
 		struct { EXP *whileExp; FOR_CLAUSE *forClause; STMT_LIST *body; } forLoop;
-		struct { STMT *simpleStmt; EXP *exp; STMT_LIST *body; } ifBranch;
-		STMT_LIST *elseBody;
+		struct { STMT *simpleStmt; EXP *exp; STMT_LIST *body; STMT_LIST *falseBody; } ifBranch; // falseBody is optional - non-existent if no else
 	} val;
 };
 
@@ -255,12 +256,12 @@ struct EXP {
 		struct { EXP *lhs; EXP *rhs; } binary;
 		struct { EXP *exp; } unary;
 		// function call - (cast calls treated as functions)
-		struct { EXP *funcExp; EXP_LIST *args; } funcCall;
+		struct { char *funcId; EXP_LIST *args; } funcCall;
 		struct { EXP *sliceExp; EXP *elem; } append;
 		EXP *lenExp;
 		EXP *capExp;
-		struct { EXP *sliceOrArrayExp; int index; } indexExp;
-		struct { EXP *structExp; char *field_name; } structField;
+		struct { EXP *objectExp; EXP *indexExp; } indexExp;
+		struct { EXP *structExp; char *fieldName; } structField;
 	} val;
 };
 
@@ -288,23 +289,31 @@ PACKAGE *makePackage(char *name, int lineno);
 
 DECL *makeDecls(DECL *firstDecl, DECL *declList);
 DECL *makeFuncDecl(char *name, SIGNATURE *signature, STMT_LIST *body, int lineno);
+
+PARAM_LIST *makeParamList(PARAM_LIST *firstParam, PARAM_LIST *paramList);
+PARAM_LIST *makeParamListFromIdList(ID_LIST *idList, TYPE *type, int lineno);
+
 SIGNATURE *makeSignature(PARAM_LIST *params, TYPE *type);
 TYPE_SPECS *makeTypeSpec(char *name, TYPE *type);
 TYPE_SPECS *makeTypeSpecList(TYPE_SPECS *specHead, TYPE_SPECS *nextSpec);
 
-STMT *makeBlockStmt(STMT_LIST *stmts, int lineno);
+STMT *makeDeclStmt(DECL *decl, int lineno);
+STMT *makeBlockStmt(STMT_LIST *stmts, int lineno);		// DOn't forget to Add
 STMT *makeExpStmt(EXP *exp, int lineno);
 STMT *makeDeclStmt(DECL *decl, int lineno);
+STMT *makeAssignStmt(EXP_LIST *lhsList, EXP_LIST *rhsList, int lineno);
+STMT *makeAssignOpStmt(EXP *lhs, EXP *rhs, AssignOpKind kind, int lineno);
 STMT *makeIncrStmt(EXP *incrExp, int lineno);
 STMT *makeDecrStmt(EXP *decrExp, int lineno);
-STMT *makePrintStmt(EXP_LIST *exprList, int lineno);
-STMT *makePrintlnStmt(EXP_LIST *exprList, int lineno);
+STMT *makePrintStmt(EXP_LIST *expList, int lineno);
+STMT *makePrintlnStmt(EXP_LIST *expList, int lineno);
 STMT *makeReturnStmt(EXP *returnExp, int lineno);
 STMT *makeBreakStmt(int lineno);
 STMT *makeContinueStmt(int lineno);
+STMT *makeFallthroughStmt(int lineno);
 STMT_LIST *makeStmtList(STMT *firstStmt, STMT_LIST *stmtList);
 
-ID_LIST *makeIdList(ID_LIST *list, char *id);
+ID_LIST *makeIdList(ID_LIST *listHead, char *nextId);
 
 EXP *makeIdentifierExp(char *id, int lineno);
 EXP *makeFloatValExp(double floatval, int lineno);
@@ -314,14 +323,14 @@ EXP *makeBooleanValExp(bool booleanval, int lineno);
 EXP *makeRuneValExp(char runeval, int lineno);
 EXP *makeBinaryExp(ExpKind kind, EXP *lhs, EXP *rhs, int lineno);
 EXP *makeUnaryExp(ExpKind kind, EXP *exp, int lineno);
-EXP *makeFunctionCall(EXP *funcExp, EXP_LIST *args, int lineno);
+EXP *makeFunctionCall(char *funcId, EXP_LIST *args, int lineno);
 EXP *makeAppendCall(EXP *sliceExp, EXP *elem, int lineno);
 EXP *makeLenCall(EXP *sliceOrArrayExp, int lineno);
 EXP *makeCapCall(EXP *sliceOrArrayExp, int lineno);
-EXP *makeIndexExp(EXP *sliceOrArrayExp, int index, int lineno);
-EXP *makeStructFieldAccess(EXP *structExp, char *field_name, int lineno);
+EXP *makeIndexExp(EXP *objectExp, EXP *indexExp, int lineno);
+EXP *makeStructFieldAccess(EXP *structExp, char *fieldName, int lineno);
 
-EXP_LIST *makeExpList(EXP_LIST *list, EXP *exp);
+EXP_LIST *makeExpList(EXP_LIST *listHead, EXP *nextExp);
 
 TYPE *makeType(char *name);
 

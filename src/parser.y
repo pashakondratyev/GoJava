@@ -18,6 +18,7 @@ void yyerror(const char *s) {
 }
 %}
 
+
 %locations
 %code requires{
   #include<stdbool.h>
@@ -66,6 +67,9 @@ void yyerror(const char *s) {
     struct STMT_LIST *stmtList;
     struct PARAM_LIST *paramList;
     struct TYPE *type;
+    struct ID_LIST *idList;
+    struct EXP_LIST *exprList;
+    struct EXP *exp;
 };
 
 
@@ -73,10 +77,13 @@ void yyerror(const char *s) {
 %type <package> PackageDecl
 %type <decl> TopLevelDeclList FuncDecl Declaration
 %type <signature> Signature
-%type <stmt> Statement
+%type <stmt> Statement SimpleStatement IncDecStatement AssignStatement ShortVarDecl PrintStatement PrintlnStatement ReturnStatement ContinueStatement BreakStatement FallthroughStatement IfStatement ExprSwitchStatement ForStatement
 %type <stmtList> Block StatementList
-%type <paramList> Parameters
+%type <paramList> Parameters ParameterList ParameterDecl
 %type <type> Type
+%type <idList> IdentifierList
+%type <exprList> ExpressionList
+%type <exp> Expression ExpressionOrEmpty PrimaryExpression FunctionCall AppendExpression LenExpression CapExpression UnaryExpression
 
 
 %left tOR
@@ -113,7 +120,7 @@ VarDecl: tVAR VarSpec
     | tVAR tLPAREN VarSpecList tRPAREN
     ;
 
-ShortVarDecl: ExpressionList tDECL ExpressionList
+ShortVarDecl: ExpressionList tDECL ExpressionList   { $$ = NULL; }
     ;
 
 VarSpec: IdentifierList Type tASSIGN ExpressionList
@@ -134,92 +141,70 @@ CompoundType: ArrayType
     | StructType
     ;
 
-IdentifierList: tIDENTIFIER
-    | IdentifierList tCOMMA tIDENTIFIER
+IdentifierList: tIDENTIFIER     { $$ = makeIdList(NULL, $1); }
+    | IdentifierList tCOMMA tIDENTIFIER     { $$ = makeIdList($1, $3); }
     ;
 
-Expression: UnaryExpression %prec UNARY
-    | Expression BinaryOp Expression %prec BINARY
+Expression: UnaryExpression %prec UNARY     { $$ = $1; }
+    | Expression tOR Expression %prec BINARY   { $$ = makeBinaryExp(ek_or, $1, $3, @1.first_line); }
+    | Expression tAND Expression %prec BINARY   { $$ = makeBinaryExp(ek_and, $1, $3, @1.first_line); }
+    | Expression tEQ Expression %prec BINARY   { $$ = makeBinaryExp(ek_eq, $1, $3, @1.first_line); }
+    | Expression tNOTEQ Expression %prec BINARY   { $$ = makeBinaryExp(ek_ne, $1, $3, @1.first_line); }
+    | Expression tLESS Expression %prec BINARY   { $$ = makeBinaryExp(ek_lt, $1, $3, @1.first_line); }
+    | Expression tLTEQ Expression %prec BINARY   { $$ = makeBinaryExp(ek_le, $1, $3, @1.first_line); }
+    | Expression tGREATER Expression %prec BINARY   { $$ = makeBinaryExp(ek_gt, $1, $3, @1.first_line); }
+    | Expression tGTEQ Expression %prec BINARY   { $$ = makeBinaryExp(ek_ge, $1, $3, @1.first_line); }
+    | Expression tPLUS Expression %prec BINARY   { $$ = makeBinaryExp(ek_plus, $1, $3, @1.first_line); }
+    | Expression tMINUS Expression %prec BINARY   { $$ = makeBinaryExp(ek_minus, $1, $3, @1.first_line); }
+    | Expression tBITOR Expression %prec BINARY   { $$ = makeBinaryExp(ek_bitOr, $1, $3, @1.first_line); }
+    | Expression tBITXOR Expression %prec BINARY   { $$ = makeBinaryExp(ek_bitXor, $1, $3, @1.first_line); }
+    | Expression tTIMES Expression %prec BINARY   { $$ = makeBinaryExp(ek_times, $1, $3, @1.first_line); }
+    | Expression tDIV Expression %prec BINARY   { $$ = makeBinaryExp(ek_div, $1, $3, @1.first_line); }
+    | Expression tMOD Expression %prec BINARY   { $$ = makeBinaryExp(ek_mod, $1, $3, @1.first_line); }
+    | Expression tLEFTSHIFT Expression %prec BINARY   { $$ = makeBinaryExp(ek_bitLeftShift, $1, $3, @1.first_line); }
+    | Expression tRIGHTSHIFT Expression %prec BINARY   { $$ = makeBinaryExp(ek_bitRightShift, $1, $3, @1.first_line); }
+    | Expression tBITAND Expression %prec BINARY   { $$ = makeBinaryExp(ek_bitAnd, $1, $3, @1.first_line); }
+    | Expression tBITCLEAR Expression %prec BINARY   { $$ = makeBinaryExp(ek_bitClear, $1, $3, @1.first_line); }
     ;
 
-ExpressionList: Expression
-    | ExpressionList tCOMMA Expression 
+ExpressionList: Expression  { $$ = makeExpList(NULL, $1); }
+    | ExpressionList tCOMMA Expression  { $$ = makeExpList($1, $3); }
     ; 
 
-UnaryExpression: PrimaryExpression
-    | UnaryOp UnaryExpression
+UnaryExpression: PrimaryExpression  { $$ = $1; }
+    | tPLUS UnaryExpression   { $$ = makeUnaryExp(ek_uplus,$2, @1.first_line); }
+    | tMINUS UnaryExpression   { $$ = makeUnaryExp(ek_uminus,$2, @1.first_line); }
+    | tBANG UnaryExpression   { $$ = makeUnaryExp(ek_bang,$2, @1.first_line); }
+    | tBITXOR UnaryExpression   { $$ = makeUnaryExp(ek_ubitXor,$2, @1.first_line); }
     ;
 
-UnaryOp: tPLUS
-    | tMINUS
-    | tBANG
-    | tBITXOR
-    | tBITAND
-    | tTIMES
-    | tCHAN
+
+PrimaryExpression: tIDENTIFIER  { $$ = makeIdentifierExp($1, @1.first_line); }
+    | tINTVAL   { $$ = makeIntValExp($1, @1.first_line); }
+    | tFLOATVAL { $$ = makeFloatValExp($1, @1.first_line); }
+    | tSTRINGVAL    { $$ = makeStringValExp($1, @1.first_line); }
+    | tRUNEVAL  { $$ = makeRuneValExp($1, @1.first_line); }
+    | tBOOLVAL  { $$ = makeBooleanValExp($1, @1.first_line); }
+    | tLPAREN Expression tRPAREN    { $$ = $2; }
+    | PrimaryExpression tPERIOD tIDENTIFIER     { $$ = makeStructFieldAccess($1, $3, @1.first_line); }
+    | PrimaryExpression tLSBRACE Expression tRSBRACE    { $$ = makeIndexExp($1, $3, @1.first_line); }
+    | FunctionCall  { $$ = $1; }
+    | AppendExpression  { $$ = $1; }
+    | LenExpression { $$ = $1; }
+    | CapExpression { $$ = $1; }
     ;
 
-PrimaryExpression: tIDENTIFIER
-    | Literal
-    | tLPAREN Expression tRPAREN
-    | PrimaryExpression tPERIOD tIDENTIFIER
-    | PrimaryExpression tLSBRACE ExpressionList tRSBRACE
-    | PrimaryExpression tLSBRACE ExpressionOrEmpty tCOLON ExpressionOrEmpty tRSBRACE
-    | PrimaryExpression tLSBRACE ExpressionOrEmpty tCOLON Expression tCOLON Expression tRSBRACE
-    | FunctionCall
-    | AppendExpression
-    | LenExpression
-    | CapExpression
-    ;
-
-Literal: tINTVAL
-    | tFLOATVAL
-    | tSTRINGVAL
-    | tRUNEVAL
-    | tBOOLVAL
-    ;
-
-BinaryOp: tOR
-    | tAND
-    | RelOp
-    | AddOp
-    | MulOp
-    ;
-
-RelOp: tEQ
-    | tNOTEQ
-    | tLESS
-    | tLTEQ
-    | tGREATER
-    | tGTEQ
-    ;
-
-AddOp: tPLUS
-    | tMINUS
-    | tBITOR
-    | tBITXOR
-    ;
-
-MulOp: tTIMES
-    | tDIV
-    | tMOD
-    | tLEFTSHIFT
-    | tRIGHTSHIFT
-    | tBITAND
-    | tBITCLEAR
-    ;
-
-FunctionCall: tIDENTIFIER tLPAREN ExpressionList tRPAREN
-    | tIDENTIFIER tLPAREN tRPAREN
+FunctionCall: tIDENTIFIER tLPAREN ExpressionList tRPAREN    { $$ = makeFunctionCall($1, $3, @1.first_line); }
+    | tIDENTIFIER tLPAREN tRPAREN   { $$ = makeFunctionCall($1, NULL, @1.first_line); }
     ;
     
-AppendExpression: tAPPEND tLPAREN Expression tCOMMA Expression tRPAREN
+AppendExpression: tAPPEND tLPAREN Expression tCOMMA Expression tRPAREN  { $$ = makeAppendCall($3, $5, @1.first_line); }
     ;
 
-LenExpression: tLEN tLPAREN Expression tRPAREN
+LenExpression: tLEN tLPAREN Expression tRPAREN  { $$ = makeLenCall($3, @1.first_line); }
     ;
 
-CapExpression: tCAP tLPAREN Expression tRPAREN
+CapExpression: tCAP tLPAREN Expression tRPAREN  { $$ = makeCapCall($3, @1.first_line); }
     ;
 
 TypeDecl: tTYPE TypeSpec
@@ -243,39 +228,39 @@ StatementList: Statement tSEMICOLON         { $$ = makeStmtList($1, NULL); }
     | Statement tSEMICOLON StatementList    { $$ = makeStmtList($1, $3); }
     ;
 
-Statement: Declaration { $$ = NULL; }
-    | SimpleStatement   { $$ = NULL; }
-    | PrintStatement    { $$ = NULL; }
-    | PrintlnStatement  { $$ = NULL; }
-    | ReturnStatement   { $$ = NULL; }
-    | IfStatement   { $$ = NULL; }
-    | ExprSwitchStatement   { $$ = NULL; }
-    | ForStatement      { $$ = NULL; }
-    | ContinueStatement     { $$ = NULL; }
-    | BreakStatement    { $$ = NULL; }
-    | FallthroughStatement  { $$ = NULL; }
+Statement: Declaration { $$ = makeDeclStmt($1, @1.first_line); }
+    | SimpleStatement   { $$ = $1; }
+    | PrintStatement    { $$ = $1; }
+    | PrintlnStatement  { $$ = $1; }
+    | ReturnStatement   { $$ = $1; }
+    | IfStatement   { $$ = $1; }
+    | ExprSwitchStatement   { $$ = $1; }
+    | ForStatement      { $$ = $1; }
+    | ContinueStatement     { $$ = $1; }
+    | BreakStatement    { $$ = $1; }
+    | FallthroughStatement  { $$ = $1; }
     ;
 
-SimpleStatement: %empty
-    | Expression
-    | IncDecStatement
-    | AssignStatement
-    | ShortVarDecl
+SimpleStatement: %empty     { $$ = NULL; }
+    | Expression    { $$ = makeExpStmt($1, @1.first_line); }
+    | IncDecStatement   { $$ = $1; }
+    | AssignStatement   { $$ = $1; }
+    | ShortVarDecl  { $$ = NULL; }
     ;
 
 Signature: Parameters   { $$ = makeSignature($1, NULL); }
     | Parameters Type   { $$ = makeSignature($1, $2); }
     ;
 
-Parameters: tLPAREN ParameterList tRPAREN   { $$  = NULL; }
+Parameters: tLPAREN ParameterList tRPAREN   { $$  = $2; }
     | tLPAREN tRPAREN   { $$ = NULL; }
     ;
 
-ParameterList: ParameterDecl
-    | ParameterDecl tCOMMA ParameterList
+ParameterList: ParameterDecl    { $$ = $1; }
+    | ParameterDecl tCOMMA ParameterList    { $$ = makeParamList($1, $3); }
     ;
 
-ParameterDecl: IdentifierList Type
+ParameterDecl: IdentifierList Type  { $$ = makeParamListFromIdList($1, $2, @1.first_line); }
     ;    
 
 SliceType: tLSBRACE tRSBRACE tIDENTIFIER
@@ -294,42 +279,38 @@ FieldDeclList: FieldDecl tSEMICOLON
 FieldDecl: IdentifierList Type
     ;    
 
-AssignStatement: ExpressionList tASSIGN ExpressionList
-    | Expression AssignOp Expression
+AssignStatement: ExpressionList tASSIGN ExpressionList  { $$ = makeAssignStmt($1, $3, @1.first_line); }
+    | Expression tPLUSEQ Expression    { $$ = makeAssignOpStmt($1, $3, aok_plus, @1.first_line); }
+    | Expression tMINUSEQ Expression    { $$ = makeAssignOpStmt($1, $3, aok_minus, @1.first_line); }
+    | Expression tTIMESEQ Expression    { $$ = makeAssignOpStmt($1, $3, aok_times, @1.first_line); }
+    | Expression tDIVEQ Expression        { $$ = makeAssignOpStmt($1, $3, aok_div, @1.first_line); }
+    | Expression tMODEQ Expression    { $$ = makeAssignOpStmt($1, $3, aok_mod, @1.first_line); }
+    | Expression tBITANDEQ Expression    { $$ = makeAssignOpStmt($1, $3, aok_bitAnd, @1.first_line); }
+    | Expression tBITOREQ Expression    { $$ = makeAssignOpStmt($1, $3, aok_bitOr, @1.first_line); }
+    | Expression tBITXOREQ Expression    { $$ = makeAssignOpStmt($1, $3, aok_bitXor, @1.first_line); }
+    | Expression tLEFTSHIFTEQ Expression    { $$ = makeAssignOpStmt($1, $3, aok_bitLeftShift, @1.first_line); }
+    | Expression tRIGHTSHIFTEQ Expression    { $$ = makeAssignOpStmt($1, $3, aok_bitRightShift, @1.first_line); }
+    | Expression tBITCLEAREQ Expression    { $$ = makeAssignOpStmt($1, $3, aok_bitClear, @1.first_line); }
     ;
 
-AssignOp: tPLUSEQ
-    | tMINUSEQ
-    | tTIMESEQ
-    | tDIVEQ
-    | tMODEQ
-    | tBITANDEQ 
-    | tBITOREQ
-    | tBITXOREQ
-    | tBITDIVEQ
-    | tLEFTSHIFTEQ
-    | tRIGHTSHIFTEQ
-    | tBITCLEAREQ
+IncDecStatement: Expression tINC   { $$ = makeIncrStmt($1, @1.first_line); }
+    | Expression tDEC   { $$ = makeDecrStmt($1, @1.first_line); }
     ;
 
-IncDecStatement: Expression tINC
-    | Expression tDEC
+PrintStatement: tPRINT tLPAREN ExpressionList tRPAREN   { $$ = makePrintStmt($3, @1.first_line); }
+    | tPRINT tLPAREN tRPAREN    { $$ = makePrintStmt(NULL, @1.first_line); }
     ;
 
-PrintStatement: tPRINT tLPAREN ExpressionList tRPAREN
-    | tPRINT tLPAREN tRPAREN
+PrintlnStatement: tPRINTLN tLPAREN ExpressionList tRPAREN   { $$ = makePrintlnStmt($3, @1.first_line); }
+    | tPRINTLN tLPAREN tRPAREN  { $$ = makePrintlnStmt(NULL, @1.first_line); }
     ;
 
-PrintlnStatement: tPRINTLN tLPAREN ExpressionList tRPAREN
-    | tPRINTLN tLPAREN tRPAREN
+ReturnStatement: tRETURN { $$ = makeReturnStmt(NULL, @1.first_line); }
+    | tRETURN Expression    { $$ = makeReturnStmt($2, @1.first_line); }
     ;
 
-ReturnStatement: tRETURN 
-    | tRETURN Expression
-    ;
-
-IfStatement: tIF Expression Block ElseIfs
-    | tIF SimpleStatement tSEMICOLON Expression Block ElseIfs
+IfStatement: tIF Expression Block ElseIfs   { $$ = NULL; }
+    | tIF SimpleStatement tSEMICOLON Expression Block ElseIfs   { $$ = NULL; }
     ;
 
 ElseIfs: %empty 
@@ -338,10 +319,10 @@ ElseIfs: %empty
     | tELSE Block
     ;
 
-ExprSwitchStatement: tSWITCH tLCBRACE ExprCaseClauseList tRCBRACE
-    | tSWITCH SimpleStatement tSEMICOLON tLCBRACE ExprCaseClauseList tRCBRACE
-    | tSWITCH Expression tLCBRACE ExprCaseClauseList tRCBRACE
-    | tSWITCH SimpleStatement tSEMICOLON Expression tLCBRACE ExprCaseClauseList tRCBRACE
+ExprSwitchStatement: tSWITCH tLCBRACE ExprCaseClauseList tRCBRACE   { $$ = NULL; }
+    | tSWITCH SimpleStatement tSEMICOLON tLCBRACE ExprCaseClauseList tRCBRACE   { $$ = NULL; }
+    | tSWITCH Expression tLCBRACE ExprCaseClauseList tRCBRACE   { $$ = NULL; }
+    | tSWITCH SimpleStatement tSEMICOLON Expression tLCBRACE ExprCaseClauseList tRCBRACE    { $$ = NULL; }
     ;
 
 ExprCaseClauseList: %empty
@@ -355,24 +336,24 @@ ExprSwitchCase: tCASE ExpressionList
     | tDEFAULT
     ;
 
-ForStatement: tFOR Block
-    | tFOR ForClause Block
-    | tFOR Expression Block
+ForStatement: tFOR Block    { $$ = NULL; }
+    | tFOR ForClause Block  { $$ = NULL; }
+    | tFOR Expression Block { $$ = NULL; }
     ;
 
 ForClause: SimpleStatement tSEMICOLON ExpressionOrEmpty tSEMICOLON SimpleStatement
     ;
 
-ExpressionOrEmpty: %empty
-    | Expression
+ExpressionOrEmpty: %empty   { $$ = NULL; }
+    | Expression    { $$ = NULL; }
     ;
 
-BreakStatement: tBREAK
+BreakStatement: tBREAK  { $$ = makeBreakStmt(@1.first_line); }
     ;
             
-ContinueStatement: tCONTINUE
+ContinueStatement: tCONTINUE    { $$ = makeContinueStmt(@1.first_line); }
     ;
 
-FallthroughStatement: tFALLTHROUGH
+FallthroughStatement: tFALLTHROUGH  { $$ = makeFallthroughStmt(@1.first_line); }
     ;
 %%
