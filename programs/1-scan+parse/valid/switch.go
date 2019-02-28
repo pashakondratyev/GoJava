@@ -10,9 +10,14 @@ func main() {
 	case 4,5,6,7: 
 		println("large")
 		fallthrough
-	case 8,9: 
+	case 8: case 9:
+	case 10:
 		println("very large")
 	default:
 		prinln("done")
+	}
+
+	switch x {
+		
 	}
 }

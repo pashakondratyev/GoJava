@@ -4,7 +4,8 @@ package test
 var x = -5
 
 func main() {
-	switch {
+	var y int
+	switch y=12; {
 	case x < 0:
 		println("Negative")
 		fallthrough
