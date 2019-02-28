@@ -62,6 +62,7 @@ void yyerror(const char *s) {
     struct PROG *prog;
     struct PACKAGE *package;
     struct DECL *decl;
+    struct VAR_SPECS *varSpecs;
     struct SIGNATURE *signature;
     struct STMT *stmt;
     struct STMT_LIST *stmtList;
@@ -78,9 +79,10 @@ void yyerror(const char *s) {
 
 %type <prog> prog 
 %type <package> PackageDecl
-%type <decl> TopLevelDeclList FuncDecl Declaration
+%type <decl> TopLevelDeclList FuncDecl Declaration TypeDecl VarDecl ShortVarDecl
+%type <varSpecs> VarSpec VarSpecList
 %type <signature> Signature
-%type <stmt> Statement Block SimpleStatement IncDecStatement AssignStatement ShortVarDecl PrintStatement PrintlnStatement ReturnStatement ContinueStatement BreakStatement FallthroughStatement IfStatement ElseStatement ExprSwitchStatement ForStatement
+%type <stmt> Statement Block SimpleStatement IncDecStatement AssignStatement PrintStatement PrintlnStatement ReturnStatement ContinueStatement BreakStatement FallthroughStatement IfStatement ElseStatement ExprSwitchStatement ForStatement
 %type <stmtList> StatementList
 %type <paramList> Parameters ParameterList ParameterDecl
 %type <type> Type
@@ -118,24 +120,24 @@ TopLevelDeclList: Declaration tSEMICOLON
     | FuncDecl tSEMICOLON TopLevelDeclList  { $$ = makeDecls($1, $3); }
     ;
 
-Declaration: TypeDecl   { $$ = NULL; }
-    | VarDecl       { $$ = NULL; }
+Declaration: TypeDecl   { $$ = $1; }
+    | VarDecl       { $$ = $1; }
     ;
 
-VarDecl: tVAR VarSpec 
-    | tVAR tLPAREN VarSpecList tRPAREN
+VarDecl: tVAR VarSpec  { $$ = makeVarDecl($2, @2.first_line); }
+    | tVAR tLPAREN VarSpecList tRPAREN  { $$ = makeVarDecl($3, @3.first_line); }
     ;
 
-ShortVarDecl: ExpressionList tDECL ExpressionList   { $$ = NULL; }
+ShortVarDecl: ExpressionList tDECL ExpressionList   { $$ = makeShortVarDecl($1, $3, @1.first_line); }
     ;
 
-VarSpec: IdentifierList Type tASSIGN ExpressionList
-    | IdentifierList tASSIGN ExpressionList
-    | IdentifierList Type
+VarSpec: IdentifierList Type tASSIGN ExpressionList { $$ = makeVarSpecs($1, $4, $2, @1.first_line); }
+    | IdentifierList tASSIGN ExpressionList     { $$ = makeVarSpecs($1, $3, NULL, @1.first_line); }
+    | IdentifierList Type   { $$ = makeVarSpecs($1, NULL, $2, @1.first_line); }
     ;
 
-VarSpecList: %empty
-    | VarSpecList VarSpec tSEMICOLON
+VarSpecList: %empty     { $$ = NULL; }
+    | VarSpecList VarSpec tSEMICOLON    { $$ = addVarSpec($1, $2); }
     ;
 
 Type: tIDENTIFIER   { $$ = NULL; }
@@ -213,8 +215,8 @@ LenExpression: tLEN tLPAREN Expression tRPAREN  { $$ = makeLenCall($3, @1.first_
 CapExpression: tCAP tLPAREN Expression tRPAREN  { $$ = makeCapCall($3, @1.first_line); }
     ;
 
-TypeDecl: tTYPE TypeSpec
-    | tTYPE tLPAREN TypeSpecList tRPAREN
+TypeDecl: tTYPE TypeSpec    { $$ = NULL; }
+    | tTYPE tLPAREN TypeSpecList tRPAREN    { $$ = NULL; }
     ;
 
 TypeSpec: tIDENTIFIER Type
@@ -252,7 +254,7 @@ SimpleStatement: %empty     { $$ = NULL; }
     | Expression    { $$ = makeExpStmt($1, @1.first_line); }
     | IncDecStatement   { $$ = $1; }
     | AssignStatement   { $$ = $1; }
-    | ShortVarDecl  { $$ = NULL; }
+    | ShortVarDecl  { $$ = makeDeclStmt($1, @1.first_line); }
     ;
 
 Signature: Parameters   { $$ = makeSignature($1, NULL); }

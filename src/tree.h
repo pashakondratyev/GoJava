@@ -9,6 +9,7 @@ typedef struct PACKAGE PACKAGE;
 typedef struct DECL DECL;
 
 typedef struct VAR_SPECS VAR_SPECS;
+typedef struct SHORT_SPECS SHORT_SPECS;
 typedef struct TYPE_SPECS TYPE_SPECS;
 typedef struct FUNC_DECL FUNC_DECL;
 typedef struct PARAM_LIST PARAM_LIST;
@@ -43,7 +44,8 @@ typedef enum {
 typedef enum {
   dk_type, 
   dk_func, 
-  dk_var
+  dk_var,
+  dk_short
 } DecKind;
 
 typedef enum {
@@ -141,6 +143,7 @@ struct DECL {
 	DecKind kind;
 	union {
 		VAR_SPECS *varSpecs;
+		SHORT_SPECS *shortSpecs;
 		TYPE_SPECS *typeSpecs;
 		FUNC_DECL *funcDecl;
 	} val;
@@ -149,11 +152,15 @@ struct DECL {
 
 struct VAR_SPECS {
 	char *id;
-	bool hasType;
-	bool isInitialized;
 	TYPE *type;
 	EXP *exp;	
 	VAR_SPECS *next;
+};
+
+struct SHORT_SPECS {
+	EXP *lhs;
+	EXP *rhs;	
+	SHORT_SPECS *next;
 };
 
 struct TYPE_SPECS {
@@ -289,7 +296,12 @@ PROG *makeProg(PACKAGE *package, DECL *decl, int lineno);
 PACKAGE *makePackage(char *name, int lineno);
 
 DECL *makeDecls(DECL *firstDecl, DECL *declList);
+DECL *makeVarDecl(VAR_SPECS *varSpecs, int lineno);
+DECL *makeShortVarDecl(EXP_LIST *lhsList, EXP_LIST *rhsList, int lineno);
 DECL *makeFuncDecl(char *name, SIGNATURE *signature, STMT *block, int lineno);
+
+VAR_SPECS *makeVarSpecs(ID_LIST *idList, EXP_LIST *expList, TYPE *type, int lineno);
+VAR_SPECS *addVarSpec(VAR_SPECS *listHead, VAR_SPECS *nextSpec);
 
 PARAM_LIST *makeParamList(PARAM_LIST *firstParam, PARAM_LIST *paramList);
 PARAM_LIST *makeParamListFromIdList(ID_LIST *idList, TYPE *type, int lineno);

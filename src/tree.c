@@ -30,6 +30,122 @@ DECL *makeDecls(DECL *firstDecl, DECL *declList) {
 	return firstDecl;
 }
 
+DECL *makeVarDecl(VAR_SPECS *varSpecs, int lineno) {
+	DECL *d = malloc(sizeof(DECL));
+	d->lineno = lineno;
+	d->kind = dk_var;
+	d->val.varSpecs = varSpecs;
+	return d;
+}
+
+VAR_SPECS *makeVarSpecs(ID_LIST *idList, EXP_LIST *expList, TYPE *type, int lineno) {
+	// Weeding check: lists are equally sized or the variables aren't being defined
+	int numIds = 0;
+	int numExps = 0;
+
+	ID_LIST *curId = idList;
+	EXP_LIST *curExp = expList;
+	while(curId != NULL) {
+		curId = curId->next;
+		numIds++;
+	}
+	while(curExp != NULL) {
+		curExp = curExp->next;
+		numExps++;
+	}
+	if (numIds != numExps && numExps != 0) {
+		printf("ERROR CAUGHT Variable Declarations!!!!!!!!!!!!!!!");			// REMOVE PRINT STMT
+		fprintf(stderr, "Error: (line %d) variable declaration has unequal number of ids and expressions.\n", lineno);
+  		exit(1); 
+	}
+
+	// create the VarSpecs
+	curId = idList;
+	curExp = expList;
+	VAR_SPECS *firstSpec = NULL;
+	VAR_SPECS *lastSpec = NULL;
+	while (curId != NULL) {
+		VAR_SPECS *vs = malloc(sizeof(VAR_SPECS));
+		vs->id = malloc((strlen(idList->id)+1)*sizeof(char));
+   		strcpy(vs->id, idList->id);
+
+   		vs->type = type;
+   		vs->exp = curExp == NULL ? NULL : curExp->exp;
+
+		if(lastSpec != NULL) {
+			lastSpec->next = vs;
+		}
+		if(firstSpec == NULL) {
+			firstSpec = vs;
+		}
+
+		curId = curId->next;
+		curExp = curExp == NULL ? NULL : curExp->next;
+	}
+	return firstSpec;
+}
+
+VAR_SPECS *addVarSpec(VAR_SPECS *listHead, VAR_SPECS *nextSpec) {
+	if(listHead == NULL) {
+		return nextSpec;
+	}
+	VAR_SPECS *cur = listHead;
+	while(cur->next != NULL) {
+		cur = cur->next;
+	}
+	cur->next = nextSpec;
+	return listHead;
+}
+
+DECL *makeShortVarDecl(EXP_LIST *lhsList, EXP_LIST *rhsList, int lineno) {
+	// Weeding check: lists are equally sized
+	int numLhsExp = 0;
+	int numRhsExp = 0;
+	EXP_LIST *cur = lhsList;
+	while(cur != NULL) {
+		cur = cur->next;
+		numLhsExp++;
+	}
+	cur = rhsList;
+	while(cur != NULL) {
+		cur = cur->next;
+		numRhsExp++;
+	}
+	if (numLhsExp != numRhsExp) {
+		printf("ERROR CAUGHT - short decl!!!!!!!!!!!!!!!");			// REMOVE PRINT STMT
+		fprintf(stderr, "Error: (line %d) assignment has unequal number of expressions on either side.\n", lineno);
+  		exit(1); 
+	}
+
+	// create the ShortSpecs
+	EXP_LIST *curLhs = lhsList;
+	EXP_LIST *curRhs = rhsList;
+	SHORT_SPECS *firstSpec = NULL;
+	SHORT_SPECS *lastSpec = NULL;
+	while (curLhs != NULL) {
+		SHORT_SPECS *ss = malloc(sizeof(SHORT_SPECS));
+		ss->lhs = curLhs->exp;
+		ss->rhs = curRhs->exp;
+
+		if(lastSpec != NULL) {
+			lastSpec->next = ss;
+		}
+
+		if(firstSpec == NULL) {
+			firstSpec = ss;
+		}
+
+		curLhs = curLhs->next;
+		curRhs = curRhs->next;
+	}
+
+	DECL *d = malloc(sizeof(DECL));
+	d->lineno = lineno;
+	d->kind = dk_short;
+	d->val.shortSpecs = firstSpec;
+	return d;
+}
+
 DECL *makeFuncDecl(char *name, SIGNATURE *signature, STMT *block, int lineno) {
 	FUNC_DECL *func = malloc(sizeof(FUNC_DECL));
 	func->name = malloc((strlen(name)+1)*sizeof(char));
@@ -197,7 +313,7 @@ STMT *makeFallthroughStmt(int lineno) {
 }
 
 STMT *makeAssignStmt(EXP_LIST *lhsList, EXP_LIST *rhsList, int lineno) {
-	// Weeding check
+	// Weeding check: lists are equally sized
 	int numLhsExp = 0;
 	int numRhsExp = 0;
 	EXP_LIST *cur = lhsList;
