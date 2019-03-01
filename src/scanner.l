@@ -262,7 +262,7 @@ ESCAPESYMBOLS \\[abfnrtv\\]
 }
 
   /* Valid Strings */
-\"([a-zA-Z0-9]|{STRINGSYMBOLS}|{ESCAPESYMBOLS})*\" {
+\"([a-zA-Z0-9]|{STRINGSYMBOLS}|{ESCAPESYMBOLS}|\\\")*\" {
   // Make one pass to count how long the string is if we count escapes
   int len = 0;
   for(int i = 0; yytext[i] != '\0'; i++){
@@ -272,7 +272,7 @@ ESCAPESYMBOLS \\[abfnrtv\\]
       i++;
     }
   }
-  char *newString = (char*)malloc((len + 1)*sizeof(char));
+  char *newString = (char*)malloc((len)*sizeof(char*));
   int escapes = 0;
   for(int i = 0; i < len; i++){
     if(yytext[i + escapes] == '\\'){

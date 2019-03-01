@@ -17,15 +17,11 @@ PROG *makeProg(PACKAGE *package, DECL *decl, int lineno) {
 PACKAGE *makePackage(char *name, int lineno) {
 	PACKAGE *p = malloc(sizeof(PACKAGE));
 	p->lineno = lineno;
-	p->name = malloc((strlen(name)+1)*sizeof(char));
-    strcpy(p->name, name);
+	p->name = strdup(name);
     return p;
 }
 
 DECL *makeDecls(DECL *firstDecl, DECL *declList) {
-	// if (firstDecl == NULL) {
-	// 	printf("ERROR: Logical error in makeDecls.\n");
-	// }
 	firstDecl->next = declList;
 	return firstDecl;
 }
@@ -35,14 +31,15 @@ DECL *makeTypeDecl(TYPE_SPECS *typeSpecs, int lineno) {
 	d->lineno = lineno;
 	d->kind = dk_type;
 	d->val.typeSpecs = typeSpecs;
+	d->next = NULL;
 	return d;
 }
 
 TYPE_SPECS *makeTypeSpec(char *name, TYPE *type) {
 	TYPE_SPECS *ts = malloc(sizeof(TYPE_SPECS));
-	ts->name = malloc((strlen(name)+1)*sizeof(char));
-    strcpy(ts->name, name);
+	ts->name = strdup(name);
     ts->type = type;
+	ts->next = NULL;
     return ts;
 }
 
@@ -85,7 +82,6 @@ VAR_SPECS *makeVarSpecs(ID_LIST *idList, EXP_LIST *expList, TYPE *type, int line
 		fprintf(stderr, "Error: (line %d) variable declaration has unequal number of ids and expressions.\n", lineno);
   		exit(1); 
 	}
-
 	// create the VarSpecs
 	curId = idList;
 	curExp = expList;
@@ -93,11 +89,10 @@ VAR_SPECS *makeVarSpecs(ID_LIST *idList, EXP_LIST *expList, TYPE *type, int line
 	VAR_SPECS *lastSpec = NULL;
 	while (curId != NULL) {
 		VAR_SPECS *vs = malloc(sizeof(VAR_SPECS));
-		vs->id = malloc((strlen(idList->id)+1)*sizeof(char));
-   		strcpy(vs->id, idList->id);
-
+		vs->id = strdup(idList->id);
    		vs->type = type;
    		vs->exp = curExp == NULL ? NULL : curExp->exp;
+		vs->next = NULL;
 
 		if(lastSpec != NULL) {
 			lastSpec->next = vs;
@@ -152,6 +147,7 @@ DECL *makeShortVarDecl(EXP_LIST *lhsList, EXP_LIST *rhsList, int lineno) {
 		SHORT_SPECS *ss = malloc(sizeof(SHORT_SPECS));
 		ss->lhs = curLhs->exp;
 		ss->rhs = curRhs->exp;
+		ss->next = NULL;
 
 		if(lastSpec != NULL) {
 			lastSpec->next = ss;
@@ -169,13 +165,13 @@ DECL *makeShortVarDecl(EXP_LIST *lhsList, EXP_LIST *rhsList, int lineno) {
 	d->lineno = lineno;
 	d->kind = dk_short;
 	d->val.shortSpecs = firstSpec;
+	d->next = NULL;
 	return d;
 }
 
 DECL *makeFuncDecl(char *name, SIGNATURE *signature, STMT *block, int lineno) {
 	FUNC_DECL *func = malloc(sizeof(FUNC_DECL));
-	func->name = malloc((strlen(name)+1)*sizeof(char));
-	strcpy(func->name, name);
+	func->name = strdup(name);
 	func->params = signature->params;
 	func->body = block;
 	func->returnType = signature->returnType;
@@ -184,7 +180,7 @@ DECL *makeFuncDecl(char *name, SIGNATURE *signature, STMT *block, int lineno) {
 	decl->lineno = lineno;
 	decl->kind = dk_func;
 	decl->val.funcDecl = func;
-
+	decl->next = NULL;
 	return decl;
 }
 
@@ -221,14 +217,12 @@ PARAM_LIST *makeParamListFromIdList(ID_LIST *idList, TYPE *type, int lineno) {
 	while (curId != NULL) {
 		PARAM_LIST *p = malloc(sizeof(PARAM_LIST));
 		p->lineno = lineno;
-		p->id = malloc((strlen(curId->id)+1)*sizeof(char));
-		strcpy(p->id, curId->id);
+		p->id = strdup(curId->id);
 		p->type = type;
-
+		p->next = NULL;
 		if(lastParam != NULL) {
 			lastParam->next = p;
 		}
-
 		if(head == NULL) {
 			head = p;
 		}
@@ -244,9 +238,8 @@ ID_LIST *makeIdList(ID_LIST *listHead, char *nextId) {
 	// 	printf("ERROR: logical error in makeIdList.\n");
 	// }
 	ID_LIST *newId = malloc(sizeof(ID_LIST));
-	newId->id = malloc((strlen(nextId)+1)*sizeof(char));
-	strcpy(newId->id, nextId);
-
+	newId->id = strdup(nextId);
+	newId->next = NULL;
 	if(listHead == NULL) {
 		return newId;
 	}
@@ -362,7 +355,6 @@ STMT *makeAssignStmt(EXP_LIST *lhsList, EXP_LIST *rhsList, int lineno) {
 		fprintf(stderr, "Error: (line %d) assignment has unequal number of expressions on either side.\n", lineno);
   		exit(1); 
 	}
-
 	// Create the ASSIGNs and the STMT
 	EXP_LIST *curLhs = lhsList;
 	EXP_LIST *curRhs = rhsList;
@@ -372,6 +364,7 @@ STMT *makeAssignStmt(EXP_LIST *lhsList, EXP_LIST *rhsList, int lineno) {
 		ASSIGN *a = malloc(sizeof(ASSIGN));
 		a->lhs = curLhs->exp;
 		a->rhs = curRhs->exp;
+		a->next = NULL;
 
 		if(lastAssign != NULL) {
 			lastAssign->next = a;
@@ -483,7 +476,7 @@ EXP_LIST *makeExpList(EXP_LIST *listHead, EXP *nextExp) {
 	// }
 	EXP_LIST *newExp = malloc(sizeof(EXP_LIST));
 	newExp->exp = nextExp;
-
+	newExp->next = NULL;
 	if(listHead == NULL) {
 		return newExp;
 	}
@@ -500,8 +493,7 @@ EXP *makeIdentifierExp(char *id, int lineno) {
 	EXP *e = malloc(sizeof(EXP));
 	e->lineno = lineno;
 	e->kind = ek_id;
-	e->val.id = malloc((strlen(id)+1)*sizeof(char));
-	strcpy(e->val.id, id);
+	e->val.id = strdup(id);
 	return e;
 }
 
@@ -525,8 +517,7 @@ EXP *makeStringValExp(char *stringval, int lineno) {
 	EXP *e = malloc(sizeof(EXP));
 	e->lineno = lineno;
 	e->kind = ek_string;
-	e->val.stringval = malloc((strlen(stringval)+1)*sizeof(char));
-	strcpy(e->val.stringval, stringval);
+	e->val.stringval = strdup(stringval);
 	return e;
 }
 
@@ -567,8 +558,7 @@ EXP *makeFunctionCall(char *funcId, EXP_LIST *args, int lineno) {
 	EXP *e = malloc(sizeof(EXP));
 	e->lineno = lineno;
 	e->kind = ek_func;
-	e->val.funcCall.funcId = malloc((strlen(funcId)+1)*sizeof(char));
-	strcpy(e->val.funcCall.funcId, funcId);
+	e->val.funcCall.funcId = strdup(funcId);
 	e->val.funcCall.args = args;
 	return e;
 }
@@ -612,17 +602,14 @@ EXP *makeStructFieldAccess(EXP *structExp, char *fieldName, int lineno) {
 	e->lineno = lineno;
 	e->kind = ek_structField;
 	e->val.structField.structExp = structExp;
-	e->val.structField.fieldName = malloc((strlen(fieldName)+1)*sizeof(char));
-	strcpy(e->val.structField.fieldName, fieldName);
+	e->val.structField.fieldName = strdup(fieldName);
 	return e;
 }
 
 TYPE *makeType(char *name, int lineno) {
 	TYPE *t = malloc(sizeof(TYPE));
-	t->lineno;
-	/* TODO: determine kind during type checking */
-	t->val.name = malloc((strlen(name)+1)*sizeof(char));
-	strcpy(t->val.name, name);
+	t->lineno = lineno;
+	t->val.name = strdup(name);
 	return t;
 } 
 
@@ -661,9 +648,9 @@ FIELD_DECLS *makeFieldDecls(ID_LIST *idList, TYPE *type, int lineno) {
 	while (curId != NULL) {
 		FIELD_DECLS *fd = malloc(sizeof(FIELD_DECLS));
 		fd->lineno = lineno;
-		fd->id = malloc((strlen(curId->id)+1)*sizeof(char));
-	    strcpy(fd->id, curId->id);
+		fd->id = strdup(curId->id);
 	    fd->type = type;
+		fd->next = NULL;
 	    
 	    if (lastField != NULL) {
 	    	lastField->next = fd;
@@ -687,4 +674,3 @@ FIELD_DECLS *makeFieldDeclsList(FIELD_DECLS *firstField, FIELD_DECLS *fieldList)
 	firstField->next = fieldList;
 	return firstField;
 }
-
