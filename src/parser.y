@@ -79,7 +79,7 @@ void yyerror(const char *s) {
 };
 
 
-%type <prog> prog 
+%type <prog> prog
 %type <package> PackageDecl
 %type <decl> TopLevelDeclList FuncDecl Declaration TypeDecl VarDecl ShortVarDecl
 %type <varSpecs> VarSpec VarSpecList
@@ -117,8 +117,8 @@ prog: PackageDecl TopLevelDeclList { root = makeProg($1, $2, @1.first_line); }
 PackageDecl: tPACKAGE tIDENTIFIER tSEMICOLON { $$ = makePackage($2, @2.first_line); }
     ;
 
-TopLevelDeclList: Declaration tSEMICOLON    
-    | FuncDecl tSEMICOLON   
+TopLevelDeclList: Declaration tSEMICOLON
+    | FuncDecl tSEMICOLON
     | Declaration tSEMICOLON TopLevelDeclList   { $$ = makeDecls($1, $3); }
     | FuncDecl tSEMICOLON TopLevelDeclList  { $$ = makeDecls($1, $3); }
     ;
@@ -147,7 +147,7 @@ Type: tIDENTIFIER   { $$ = makeType($1, @1.first_line); }
     | CompoundType  { $$ = $1; }
     ;
 
-CompoundType: ArrayType 
+CompoundType: ArrayType
     | SliceType
     | StructType
     ;
@@ -180,7 +180,7 @@ Expression: UnaryExpression %prec UNARY     { $$ = $1; }
 
 ExpressionList: Expression  { $$ = makeExpList(NULL, $1); }
     | ExpressionList tCOMMA Expression  { $$ = makeExpList($1, $3); }
-    ; 
+    ;
 
 UnaryExpression: PrimaryExpression  { $$ = $1; }
     | tPLUS UnaryExpression   { $$ = makeUnaryExp(ek_uplus,$2, @1.first_line); }
@@ -189,16 +189,18 @@ UnaryExpression: PrimaryExpression  { $$ = $1; }
     | tBITXOR UnaryExpression   { $$ = makeUnaryExp(ek_ubitXor,$2, @1.first_line); }
     ;
 
-
+    /*
+     * TODO: figure out if we should weed or change grammar for index expressions
+     */
 PrimaryExpression: tIDENTIFIER  { $$ = makeIdentifierExp($1, @1.first_line); }
     | tINTVAL   { $$ = makeIntValExp($1, @1.first_line); }
     | tFLOATVAL { $$ = makeFloatValExp($1, @1.first_line); }
     | tSTRINGVAL    { $$ = makeStringValExp($1, @1.first_line); }
     | tRUNEVAL  { $$ = makeRuneValExp($1, @1.first_line); }
     | tBOOLVAL  { $$ = makeBooleanValExp($1, @1.first_line); }
-    | tLPAREN Expression tRPAREN    { $$ = $2; }
+    | tLPAREN Expression tRPAREN    { $$ = makeParenExp($2, @1.first_line); }
     | PrimaryExpression tPERIOD tIDENTIFIER     { $$ = makeStructFieldAccess($1, $3, @1.first_line); }
-    | PrimaryExpression tLSBRACE Expression tRSBRACE    { $$ = makeIndexExp($1, $3, @1.first_line); }
+    | PrimaryExpression tLSBRACE Expression tRSBRACE    { $$ = makeIndexExp($1, $3, @1.first_line); }  
     | FunctionCall  { $$ = $1; }
     | AppendExpression  { $$ = $1; }
     | LenExpression { $$ = $1; }
@@ -208,7 +210,7 @@ PrimaryExpression: tIDENTIFIER  { $$ = makeIdentifierExp($1, @1.first_line); }
 FunctionCall: tIDENTIFIER tLPAREN ExpressionList tRPAREN    { $$ = makeFunctionCall($1, $3, @1.first_line); }
     | tIDENTIFIER tLPAREN tRPAREN   { $$ = makeFunctionCall($1, NULL, @1.first_line); }
     ;
-    
+
 AppendExpression: tAPPEND tLPAREN Expression tCOMMA Expression tRPAREN  { $$ = makeAppendCall($3, $5, @1.first_line); }
     ;
 
@@ -273,23 +275,23 @@ ParameterList: ParameterDecl    { $$ = $1; }
     ;
 
 ParameterDecl: IdentifierList Type  { $$ = makeParamListFromIdList($1, $2, @1.first_line); }
-    ;    
+    ;
 
 SliceType: tLSBRACE tRSBRACE Type    { $$ = makeSliceType($3, @3.first_line); }
-    ;    
+    ;
 
 ArrayType: tLSBRACE Expression tRSBRACE Type { $$ = makeArrayType($2, $4, @2.first_line); }
-    ;    
+    ;
 
 StructType: tSTRUCT tLCBRACE FieldDeclList tRCBRACE { $$ = makeStructType($3, @3.first_line); }
-    ;    
+    ;
 
 FieldDeclList: FieldDecl tSEMICOLON     { $$ = $1; }
     | FieldDecl tSEMICOLON FieldDeclList    { $$ = makeFieldDeclsList($1, $3); }
-    ;        
+    ;
 
 FieldDecl: IdentifierList Type  { $$ = makeFieldDecls($1, $2, @1.first_line); }
-    ;    
+    ;
 
 AssignStatement: ExpressionList tASSIGN ExpressionList  { $$ = makeAssignStmt($1, $3, @1.first_line); }
     | Expression tPLUSEQ Expression    { $$ = makeAssignOpStmt($1, $3, aok_plus, @1.first_line); }
@@ -338,7 +340,7 @@ ExprSwitchStatement: tSWITCH tLCBRACE ExprCaseClauseList tRCBRACE   { $$ = makeS
 
 ExprCaseClauseList: %empty  { $$ = NULL; }
     | ExprCaseClause ExprCaseClauseList { $$ = makeCaseClauseList($1, $2); }
-    ;    
+    ;
 
 ExprCaseClause: tCASE ExpressionList tCOLON StatementList { $$ = makeCaseClause($2, $4, @2.first_line); }
     | tDEFAULT tCOLON StatementList { $$ = makeDefaultClause($3, @3.first_line); }
@@ -360,7 +362,7 @@ ExpressionOrEmpty: %empty   { $$ = NULL; }
 
 BreakStatement: tBREAK  { $$ = makeBreakStmt(@1.first_line); }
     ;
-            
+
 ContinueStatement: tCONTINUE    { $$ = makeContinueStmt(@1.first_line); }
     ;
 

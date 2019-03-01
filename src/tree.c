@@ -20,6 +20,7 @@ PACKAGE *makePackage(char *name, int lineno) {
   return p;
 }
 
+//Corresponds to declaration lists
 DECL *makeDecls(DECL *firstDecl, DECL *declList) {
   firstDecl->next = declList;
   return firstDecl;
@@ -154,19 +155,17 @@ DECL *makeShortVarDecl(EXP_LIST *lhsList, EXP_LIST *rhsList, int lineno) {
     ss->lhs = curLhs->exp;
     ss->rhs = curRhs->exp;
     ss->next = NULL;
-
+    // If tail not empty, shifts tail over
     if (lastSpec != NULL) {
       lastSpec->next = ss;
     }
-
+    lastSpec = ss; 
     if (firstSpec == NULL) {
       firstSpec = ss;
     }
-
     curLhs = curLhs->next;
     curRhs = curRhs->next;
   }
-
   DECL *d = malloc(sizeof(DECL));
   d->lineno = lineno;
   d->kind = dk_short;
@@ -598,6 +597,14 @@ EXP *makeIndexExp(EXP *objectExp, EXP *indexExp, int lineno) {
   e->kind = ek_indexExp;
   e->val.indexExp.objectExp = objectExp;
   e->val.indexExp.indexExp = indexExp;
+  return e;
+}
+
+EXP *makeParenExp(EXP *exp, int lineno){
+  EXP *e = malloc(sizeof(EXP));
+  e->lineno = lineno;
+  e->kind = ek_paren;
+  e->val.parenExp = exp;
   return e;
 }
 

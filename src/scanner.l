@@ -92,14 +92,6 @@ ESCAPESYMBOLS \\[abfnrtv\\]
   }
 }
 
-<<EOF>> {
-  if(semicolonRequired()){
-    lastToken = tSEMICOLON;
-    if(g_tokens) printf("tSEMICOLON\n");
-    return tSEMICOLON;
-  }
-  yyterminate();
-}
 
 [ \t\r]+
 
@@ -240,11 +232,11 @@ ESCAPESYMBOLS \\[abfnrtv\\]
 
   /* Multiline C-Style comments, from FLEX documentation */
 "/*"      BEGIN(IN_COMMENT);
-
+<IN_COMMENT><<EOF>>   fprintf(stderr, "Error: (line %d) block comment not closed\n", yylineno); exit(1);
 <IN_COMMENT>"*/"      BEGIN(INITIAL);
 <IN_COMMENT>[^*\n]+   // eat comment in chunk
 <IN_COMMENT>"*"       // eat the lone star
-<IN_COMMENT>\n        yylineno++; //TODO: check if this is necessary , insert semicolon
+<IN_COMMENT>\n        yylineno++; if(semicolonRequired()){saveToken(tSEMICOLON); return tSEMICOLON;} //TODO: check if this is necessary , insert semicolon
 
 \'([^']|{ESCAPESYMBOLS}|\\\')\' {
   char rune;
@@ -303,6 +295,15 @@ ESCAPESYMBOLS \\[abfnrtv\\]
   exit(1);
 } 
   */
+
+<<EOF>> {
+  if(semicolonRequired()){
+    lastToken = tSEMICOLON;
+    if(g_tokens) printf("tSEMICOLON\n");
+    return tSEMICOLON;
+  }
+  yyterminate();
+}
 
   /* Everything else */
 . { 

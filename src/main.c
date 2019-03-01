@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "tree.h"
+#include "weed.h"
 
 void yyparse();
 int yylex();
@@ -29,13 +30,13 @@ int main(int argc, char *argv[]) {
     };
   } else if (strcmp(argv[1], "parse") == 0) {
     yyparse();
+    weedProgram(root);
     printf("OK\n");
   } else if (strcmp(argv[1], "pretty") == 0) {
     yyparse();
     // prettyPrint(root);
   } else {
-    fprintf(stderr, "Error: invalid argument for compiler mode, valid options "
-                    "are (scan | tokens | parse | pretty)\n");
+    fprintf(stderr, "Error: invalid argument for compiler mode, valid options are (scan | tokens | parse | pretty)\n");
     return 1;
   }
   return 0;

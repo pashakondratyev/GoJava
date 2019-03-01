@@ -38,7 +38,7 @@ typedef enum {
   tk_struct,
   tk_array,
   tk_slice,
-  tk_ref // user-constructed type
+  tk_ref  // user-constructed type
 } TypeKind;
 
 typedef enum { dk_type, dk_func, dk_var, dk_short } DecKind;
@@ -110,12 +110,13 @@ typedef enum {
   ek_uminus,
   ek_bang,
   ek_ubitXor,
-  ek_func, // includes casts
+  ek_func,  // includes casts
   ek_append,
   ek_len,
   ek_cap,
-  ek_indexExp, // for slice or array
-  ek_structField
+  ek_indexExp,  // for slice or array
+  ek_structField,
+  ek_paren
 } ExpKind;
 
 struct PROG {
@@ -155,22 +156,22 @@ struct SHORT_SPECS {
 };
 
 struct TYPE_SPECS {
-  char *name; // new name used for the type
+  char *name;  // new name used for the type
   TYPE *type;
   TYPE_SPECS *next;
 };
 
 struct FUNC_DECL {
   char *name;
-  PARAM_LIST *params; // NULL if no parameters
+  PARAM_LIST *params;  // NULL if no parameters
   STMT *body;
-  TYPE *returnType; // NULL if void return type
+  TYPE *returnType;  // NULL if void return type
 };
 
 struct PARAM_LIST {
   int lineno;
   char *id;
-  TYPE *type; // NULL if no type specified
+  TYPE *type;  // NULL if no type specified
   PARAM_LIST *next;
 };
 
@@ -189,7 +190,7 @@ struct STMT {
     // for all expression-based statements: expression, increment, decrement,
     // return
     EXP *exp;
-    EXP_LIST *printExps; // NULL if no expressions given to print
+    EXP_LIST *printExps;  // NULL if no expressions given to print
     ASSIGN *assign;
     struct {
       EXP *lhs;
@@ -211,7 +212,7 @@ struct STMT {
       EXP *cond;
       STMT *body;
       STMT *elseStmt;
-    } ifStmt; // elseStmt is optional
+    } ifStmt;  // elseStmt is optional
     STMT *elseBody;
   } val;
 };
@@ -291,6 +292,7 @@ struct EXP {
       EXP *structExp;
       char *fieldName;
     } structField;
+    EXP *parenExp;
   } val;
 };
 
@@ -329,8 +331,7 @@ DECL *makeVarDecl(VAR_SPECS *varSpecs, int lineno);
 DECL *makeShortVarDecl(EXP_LIST *lhsList, EXP_LIST *rhsList, int lineno);
 DECL *makeFuncDecl(char *name, SIGNATURE *signature, STMT *block, int lineno);
 
-VAR_SPECS *makeVarSpecs(ID_LIST *idList, EXP_LIST *expList, TYPE *type,
-                        int lineno);
+VAR_SPECS *makeVarSpecs(ID_LIST *idList, EXP_LIST *expList, TYPE *type, int lineno);
 VAR_SPECS *addVarSpec(VAR_SPECS *listHead, VAR_SPECS *nextSpec);
 
 TYPE_SPECS *makeTypeSpec(char *name, TYPE *type);
@@ -354,17 +355,14 @@ STMT *makeReturnStmt(EXP *returnExp, int lineno);
 STMT *makeBreakStmt(int lineno);
 STMT *makeContinueStmt(int lineno);
 STMT *makeFallthroughStmt(int lineno);
-STMT *makeIfStmt(STMT *simpleStmt, EXP *cond, STMT *body, STMT *elseStmt,
-                 int lineno);
+STMT *makeIfStmt(STMT *simpleStmt, EXP *cond, STMT *body, STMT *elseStmt, int lineno);
 STMT *makeElseStmt(STMT *body, int lineno);
 STMT *makeForStmt(EXP *whileExp, FOR_CLAUSE *forClause, STMT *body, int lineno);
-STMT *makeSwitchStmt(STMT *simpleStmt, EXP *exp, CASE_CLAUSE_LIST *caseClauses,
-                     int lineno);
+STMT *makeSwitchStmt(STMT *simpleStmt, EXP *exp, CASE_CLAUSE_LIST *caseClauses, int lineno);
 STMT_LIST *makeStmtList(STMT *firstStmt, STMT_LIST *stmtList);
 
 FOR_CLAUSE *makeForClause(STMT *init, EXP *cond, STMT *post);
-CASE_CLAUSE_LIST *makeCaseClauseList(CASE_CLAUSE *firstClause,
-                                     CASE_CLAUSE_LIST *caseClauseList);
+CASE_CLAUSE_LIST *makeCaseClauseList(CASE_CLAUSE *firstClause, CASE_CLAUSE_LIST *caseClauseList);
 CASE_CLAUSE *makeCaseClause(EXP_LIST *cases, STMT_LIST *clauses, int lineno);
 CASE_CLAUSE *makeDefaultClause(STMT_LIST *clauses, int lineno);
 ID_LIST *makeIdList(ID_LIST *listHead, char *nextId);
@@ -382,6 +380,7 @@ EXP *makeAppendCall(EXP *sliceExp, EXP *elem, int lineno);
 EXP *makeLenCall(EXP *sliceOrArrayExp, int lineno);
 EXP *makeCapCall(EXP *sliceOrArrayExp, int lineno);
 EXP *makeIndexExp(EXP *objectExp, EXP *indexExp, int lineno);
+EXP *makeParenExp(EXP *exp, int lineno);
 EXP *makeStructFieldAccess(EXP *structExp, char *fieldName, int lineno);
 EXP_LIST *makeExpList(EXP_LIST *listHead, EXP *nextExp);
 
@@ -391,7 +390,6 @@ TYPE *makeArrayType(EXP *size, TYPE *elemType, int lineno);
 TYPE *makeStructType(FIELD_DECLS *fields, int lineno);
 
 FIELD_DECLS *makeFieldDecls(ID_LIST *idList, TYPE *type, int lineno);
-FIELD_DECLS *makeFieldDeclsList(FIELD_DECLS *firstField,
-                                FIELD_DECLS *fieldList);
+FIELD_DECLS *makeFieldDeclsList(FIELD_DECLS *firstField, FIELD_DECLS *fieldList);
 
 #endif
