@@ -43,7 +43,7 @@ void weedDeclaration(DECL *decl) {
     case dk_type:
       break;
     case dk_func:
-      weedFunction(decl->val.funcDecl);
+      weedFunction(decl->val.funcDecl, decl->lineno);
       break;
     case dk_var:
       break;
@@ -55,6 +55,7 @@ void weedDeclaration(DECL *decl) {
   }
 }
 
+// Checks if a block is guaranteed to have a return in it
 int weedBlockReturns(STMT *stmt) {
   // Checks if all paths return
   if (stmt == NULL) {
@@ -101,6 +102,7 @@ int weedBlockReturns(STMT *stmt) {
   return 0;
 }
 
+// Checks if every path of a switch case has a return statement
 int weedSwitchReturn(STMT *stmt) {
   int default_exists = 0;
   int return_exists = 0;
@@ -152,9 +154,11 @@ int weedSwitchReturn(STMT *stmt) {
   return final_clause_returns && default_exists;
 }
 
-void weedFunction(FUNC_DECL *func_decl) {
+void weedFunction(FUNC_DECL *func_decl, int lineno) {
   if (func_decl->returnType != NULL) {
-    weedBlockReturns(func_decl->body);
+    if(!weedBlockReturns(func_decl->body)){
+      reportError("Function does not have return statement", lineno);
+    };
   }
   weedStatement(func_decl->body);
 }
