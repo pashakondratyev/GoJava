@@ -62,18 +62,20 @@ void yyerror(const char *s) {
     struct PROG *prog;
     struct PACKAGE *package;
     struct DECL *decl;
+    struct TYPE_SPECS *typeSpecs;
     struct VAR_SPECS *varSpecs;
     struct SIGNATURE *signature;
+    struct PARAM_LIST *paramList;
+    struct ID_LIST *idList;
     struct STMT *stmt;
     struct STMT_LIST *stmtList;
-    struct PARAM_LIST *paramList;
-    struct TYPE *type;
-    struct ID_LIST *idList;
-    struct EXP_LIST *exprList;
-    struct EXP *exp;
     struct FOR_CLAUSE *forClause;
     struct CASE_CLAUSE_LIST *caseClauseList;
     struct CASE_CLAUSE *caseClause;
+    struct EXP_LIST *exprList;
+    struct EXP *exp;
+    struct TYPE *type;
+    struct FIELD_DECLS *fieldDecls;
 };
 
 
@@ -81,17 +83,19 @@ void yyerror(const char *s) {
 %type <package> PackageDecl
 %type <decl> TopLevelDeclList FuncDecl Declaration TypeDecl VarDecl ShortVarDecl
 %type <varSpecs> VarSpec VarSpecList
+%type <typeSpecs> TypeSpec TypeSpecList
+%type <paramList> Parameters ParameterList ParameterDecl
+%type <idList> IdentifierList
 %type <signature> Signature
 %type <stmt> Statement Block SimpleStatement IncDecStatement AssignStatement PrintStatement PrintlnStatement ReturnStatement ContinueStatement BreakStatement FallthroughStatement IfStatement ElseStatement ExprSwitchStatement ForStatement
 %type <stmtList> StatementList
-%type <paramList> Parameters ParameterList ParameterDecl
-%type <type> Type
-%type <idList> IdentifierList
-%type <exprList> ExpressionList
-%type <exp> Expression ExpressionOrEmpty PrimaryExpression FunctionCall AppendExpression LenExpression CapExpression UnaryExpression
 %type <forClause> ForClause
 %type <caseClauseList> ExprCaseClauseList
 %type <caseClause> ExprCaseClause
+%type <exprList> ExpressionList
+%type <exp> Expression ExpressionOrEmpty PrimaryExpression FunctionCall AppendExpression LenExpression CapExpression UnaryExpression
+%type <type> Type CompoundType ArrayType SliceType StructType
+%type <fieldDecls> FieldDecl FieldDeclList
 
 
 %left tOR
@@ -110,13 +114,12 @@ void yyerror(const char *s) {
 prog: PackageDecl TopLevelDeclList { root = makeProg($1, $2, @1.first_line); }
     ;
 
-
 PackageDecl: tPACKAGE tIDENTIFIER tSEMICOLON { $$ = makePackage($2, @2.first_line); }
     ;
 
 TopLevelDeclList: Declaration tSEMICOLON    
     | FuncDecl tSEMICOLON   
-    | Declaration tSEMICOLON TopLevelDeclList   { $$ = $1;  /*FIX THIS ONCE DECLARATION IS IMPLEMENTED makeDecls($1, $3)*/ }
+    | Declaration tSEMICOLON TopLevelDeclList   { $$ = makeDecls($1, $3); }
     | FuncDecl tSEMICOLON TopLevelDeclList  { $$ = makeDecls($1, $3); }
     ;
 
@@ -140,11 +143,11 @@ VarSpecList: %empty     { $$ = NULL; }
     | VarSpecList VarSpec tSEMICOLON    { $$ = addVarSpec($1, $2); }
     ;
 
-Type: tIDENTIFIER   { $$ = NULL; }
-    | CompoundType  { $$ = NULL; }
+Type: tIDENTIFIER   { $$ = makeType($1, @1.first_line); }
+    | CompoundType  { $$ = $1; }
     ;
 
-CompoundType: ArrayType
+CompoundType: ArrayType 
     | SliceType
     | StructType
     ;
@@ -215,15 +218,15 @@ LenExpression: tLEN tLPAREN Expression tRPAREN  { $$ = makeLenCall($3, @1.first_
 CapExpression: tCAP tLPAREN Expression tRPAREN  { $$ = makeCapCall($3, @1.first_line); }
     ;
 
-TypeDecl: tTYPE TypeSpec    { $$ = NULL; }
-    | tTYPE tLPAREN TypeSpecList tRPAREN    { $$ = NULL; }
+TypeDecl: tTYPE TypeSpec    { $$ = makeTypeDecl($2, @2.first_line); }
+    | tTYPE tLPAREN TypeSpecList tRPAREN    { $$ = makeTypeDecl($3, @3.first_line); }
     ;
 
-TypeSpec: tIDENTIFIER Type
+TypeSpec: tIDENTIFIER Type { $$ = makeTypeSpec($1, $2); }
     ;
 
-TypeSpecList: %empty
-    | TypeSpecList TypeSpec tSEMICOLON 
+TypeSpecList: %empty    { $$ = NULL; }
+    | TypeSpecList TypeSpec tSEMICOLON  { $$ = makeTypeSpecList($1, $2); }
     ;
 
 FuncDecl: tFUNC tIDENTIFIER Signature Block     { $$ = makeFuncDecl($2, $3, $4, @2.first_line); }
@@ -272,20 +275,20 @@ ParameterList: ParameterDecl    { $$ = $1; }
 ParameterDecl: IdentifierList Type  { $$ = makeParamListFromIdList($1, $2, @1.first_line); }
     ;    
 
-SliceType: tLSBRACE tRSBRACE tIDENTIFIER
+SliceType: tLSBRACE tRSBRACE Type    { $$ = makeSliceType($3, @3.first_line); }
     ;    
 
-ArrayType: tLSBRACE Expression tRSBRACE tIDENTIFIER
+ArrayType: tLSBRACE Expression tRSBRACE Type { $$ = makeArrayType($2, $4, @2.first_line); }
     ;    
 
-StructType: tSTRUCT tLCBRACE FieldDeclList tRCBRACE
+StructType: tSTRUCT tLCBRACE FieldDeclList tRCBRACE { $$ = makeStructType($3, @3.first_line); }
     ;    
 
-FieldDeclList: FieldDecl tSEMICOLON
-    | FieldDecl tSEMICOLON FieldDeclList
+FieldDeclList: FieldDecl tSEMICOLON     { $$ = $1; }
+    | FieldDecl tSEMICOLON FieldDeclList    { $$ = makeFieldDeclsList($1, $3); }
     ;        
 
-FieldDecl: IdentifierList Type
+FieldDecl: IdentifierList Type  { $$ = makeFieldDecls($1, $2, @1.first_line); }
     ;    
 
 AssignStatement: ExpressionList tASSIGN ExpressionList  { $$ = makeAssignStmt($1, $3, @1.first_line); }

@@ -23,11 +23,39 @@ PACKAGE *makePackage(char *name, int lineno) {
 }
 
 DECL *makeDecls(DECL *firstDecl, DECL *declList) {
-	if (firstDecl == NULL) {
-		//printf("ERROR: Logical error in makeDecls.\n");
-	}
+	// if (firstDecl == NULL) {
+	// 	printf("ERROR: Logical error in makeDecls.\n");
+	// }
 	firstDecl->next = declList;
 	return firstDecl;
+}
+
+DECL *makeTypeDecl(TYPE_SPECS *typeSpecs, int lineno) {
+	DECL *d = malloc(sizeof(DECL));
+	d->lineno = lineno;
+	d->kind = dk_type;
+	d->val.typeSpecs = typeSpecs;
+	return d;
+}
+
+TYPE_SPECS *makeTypeSpec(char *name, TYPE *type) {
+	TYPE_SPECS *ts = malloc(sizeof(TYPE_SPECS));
+	ts->name = malloc((strlen(name)+1)*sizeof(char));
+    strcpy(ts->name, name);
+    ts->type = type;
+    return ts;
+}
+
+TYPE_SPECS *makeTypeSpecList(TYPE_SPECS *listHead, TYPE_SPECS *nextSpec) {
+	if(listHead == NULL) {
+		return nextSpec;
+	}
+	TYPE_SPECS *cur = listHead;
+	while(cur->next != NULL) {
+		cur = cur->next;
+	}
+	cur->next = nextSpec;
+	return listHead;
 }
 
 DECL *makeVarDecl(VAR_SPECS *varSpecs, int lineno) {
@@ -54,7 +82,6 @@ VAR_SPECS *makeVarSpecs(ID_LIST *idList, EXP_LIST *expList, TYPE *type, int line
 		numExps++;
 	}
 	if (numIds != numExps && numExps != 0) {
-		printf("ERROR CAUGHT Variable Declarations!!!!!!!!!!!!!!!");			// REMOVE PRINT STMT
 		fprintf(stderr, "Error: (line %d) variable declaration has unequal number of ids and expressions.\n", lineno);
   		exit(1); 
 	}
@@ -112,7 +139,6 @@ DECL *makeShortVarDecl(EXP_LIST *lhsList, EXP_LIST *rhsList, int lineno) {
 		numRhsExp++;
 	}
 	if (numLhsExp != numRhsExp) {
-		printf("ERROR CAUGHT - short decl!!!!!!!!!!!!!!!");			// REMOVE PRINT STMT
 		fprintf(stderr, "Error: (line %d) assignment has unequal number of expressions on either side.\n", lineno);
   		exit(1); 
 	}
@@ -170,9 +196,9 @@ SIGNATURE *makeSignature(PARAM_LIST *params, TYPE *type) {
 }
 
 STMT_LIST *makeStmtList(STMT *firstStmt, STMT_LIST *stmtList) {
-	if (firstStmt == NULL) {
-		//printf("ERROR: Logical error in makeStmtList\n");
-	}
+	// if (firstStmt == NULL) {
+	// 	printf("ERROR: Logical error in makeStmtList\n");
+	// }
 	STMT_LIST *head = malloc(sizeof(STMT_LIST));
 	head->stmt = firstStmt;
 	head->next = stmtList;
@@ -189,6 +215,7 @@ PARAM_LIST *makeParamList(PARAM_LIST *firstParam, PARAM_LIST *paramList) {
 
 PARAM_LIST *makeParamListFromIdList(ID_LIST *idList, TYPE *type, int lineno) {
 	PARAM_LIST *head = NULL;
+	PARAM_LIST *lastParam = NULL;
 
 	ID_LIST *curId = idList;
 	while (curId != NULL) {
@@ -198,19 +225,24 @@ PARAM_LIST *makeParamListFromIdList(ID_LIST *idList, TYPE *type, int lineno) {
 		strcpy(p->id, curId->id);
 		p->type = type;
 
+		if(lastParam != NULL) {
+			lastParam->next = p;
+		}
+
 		if(head == NULL) {
 			head = p;
 		}
 
+		lastParam = p;
 		curId = curId->next;
 	}
 	return head;
 }
 
 ID_LIST *makeIdList(ID_LIST *listHead, char *nextId) {
-	if (nextId == NULL) {
-		//printf("ERROR: logical error in makeIdList.\n");
-	}
+	// if (nextId == NULL) {
+	// 	printf("ERROR: logical error in makeIdList.\n");
+	// }
 	ID_LIST *newId = malloc(sizeof(ID_LIST));
 	newId->id = malloc((strlen(nextId)+1)*sizeof(char));
 	strcpy(newId->id, nextId);
@@ -327,7 +359,6 @@ STMT *makeAssignStmt(EXP_LIST *lhsList, EXP_LIST *rhsList, int lineno) {
 		numRhsExp++;
 	}
 	if (numLhsExp != numRhsExp) {
-		printf("ERROR CAUGHT!!!!!!!!!!!!!!!");			// REMOVE PRINT STMT
 		fprintf(stderr, "Error: (line %d) assignment has unequal number of expressions on either side.\n", lineno);
   		exit(1); 
 	}
@@ -384,9 +415,9 @@ STMT *makeForStmt(EXP *whileExp, FOR_CLAUSE *forClause, STMT *body, int lineno) 
 }
 
 CASE_CLAUSE_LIST *makeCaseClauseList(CASE_CLAUSE *firstClause, CASE_CLAUSE_LIST *caseClauseList) {
-	if (firstClause == NULL) {
-		//printf("ERROR: Logical error in makeCaseClauseList.\n");
-	}
+	// if (firstClause == NULL) {
+	// 	printf("ERROR: Logical error in makeCaseClauseList.\n");
+	// }
 	CASE_CLAUSE_LIST *head = malloc(sizeof(CASE_CLAUSE_LIST));
 	head->clause = firstClause;
 	head->next = caseClauseList;
@@ -447,9 +478,9 @@ FOR_CLAUSE *makeForClause(STMT *init, EXP *cond, STMT *post) {
 
 
 EXP_LIST *makeExpList(EXP_LIST *listHead, EXP *nextExp) {
-	if (nextExp == NULL) {
-		//printf("ERROR: Logical error in makeExpList.\n");
-	}
+	// if (nextExp == NULL) {
+	// 	printf("ERROR: Logical error in makeExpList.\n");
+	// }
 	EXP_LIST *newExp = malloc(sizeof(EXP_LIST));
 	newExp->exp = nextExp;
 
@@ -585,3 +616,75 @@ EXP *makeStructFieldAccess(EXP *structExp, char *fieldName, int lineno) {
 	strcpy(e->val.structField.fieldName, fieldName);
 	return e;
 }
+
+TYPE *makeType(char *name, int lineno) {
+	TYPE *t = malloc(sizeof(TYPE));
+	t->lineno;
+	/* TODO: determine kind during type checking */
+	t->val.name = malloc((strlen(name)+1)*sizeof(char));
+	strcpy(t->val.name, name);
+	return t;
+} 
+
+TYPE *makeSliceType(TYPE *elemType, int lineno) {
+	TYPE *t = malloc(sizeof(TYPE));
+	t->lineno = lineno;
+	t->kind = tk_slice;
+	t->val.sliceType = elemType;
+	return t;
+}
+
+TYPE *makeArrayType(EXP *size, TYPE *elemType, int lineno) {
+	TYPE *t = malloc(sizeof(TYPE));
+	t->lineno = lineno;
+	t->kind = tk_array;
+	t->val.array.size = size;
+	t->val.array.elemType = elemType;
+	return t;
+}
+
+
+TYPE *makeStructType(FIELD_DECLS *fields, int lineno) {
+	TYPE *t = malloc(sizeof(TYPE));
+	t->lineno = lineno;
+	t->kind = tk_struct;
+	t->val.structFields = fields;
+	return t;
+}
+
+
+FIELD_DECLS *makeFieldDecls(ID_LIST *idList, TYPE *type, int lineno) {
+	FIELD_DECLS *head = NULL;
+	FIELD_DECLS *lastField = NULL;
+
+	ID_LIST *curId = idList;
+	while (curId != NULL) {
+		FIELD_DECLS *fd = malloc(sizeof(FIELD_DECLS));
+		fd->lineno = lineno;
+		fd->id = malloc((strlen(curId->id)+1)*sizeof(char));
+	    strcpy(fd->id, curId->id);
+	    fd->type = type;
+	    
+	    if (lastField != NULL) {
+	    	lastField->next = fd;
+	    }
+
+	    if (head == NULL) {
+	    	head = fd;
+	    }
+
+	    lastField = fd;
+	    curId = curId->next;
+
+	}
+    return head;
+}
+
+FIELD_DECLS *makeFieldDeclsList(FIELD_DECLS *firstField, FIELD_DECLS *fieldList) {
+	// if (firstField == NULL) {
+	// 	printf("ERROR: Logical error in makeFieldDeclsList.\n");
+	// }
+	firstField->next = fieldList;
+	return firstField;
+}
+

@@ -20,7 +20,6 @@ typedef struct STMT_LIST STMT_LIST;
 typedef struct ASSIGN ASSIGN;
 
 typedef struct ID_LIST ID_LIST;
-typedef struct FIELD_DECLS FIELD_DECLS;
 typedef struct CASE_CLAUSE CASE_CLAUSE;
 typedef struct CASE_CLAUSE_LIST CASE_CLAUSE_LIST;
 typedef struct FOR_CLAUSE FOR_CLAUSE;
@@ -29,6 +28,7 @@ typedef struct EXP EXP;
 typedef struct EXP_LIST EXP_LIST;
 
 typedef struct TYPE TYPE;
+typedef struct FIELD_DECLS FIELD_DECLS;
 
 
 typedef enum {
@@ -38,7 +38,9 @@ typedef enum {
 	tk_string,
 	tk_boolean,
 	tk_struct,
-	tk_array
+	tk_array,
+	tk_slice,
+	tk_ref	// user-constructed type
 } TypeKind;
 
 typedef enum {
@@ -49,7 +51,6 @@ typedef enum {
 } DecKind;
 
 typedef enum {
-	sk_empty, // needed?
 	sk_block,
 	sk_exp,
 	sk_assign,
@@ -183,7 +184,7 @@ struct PARAM_LIST {
 	PARAM_LIST *next;
 };
 
-// Intermediate structure. Not contained in the final AST. 
+// Intermediate structure. Not contained in the final AST.
 struct SIGNATURE {
 	PARAM_LIST *params;
 	TYPE *returnType; 	
@@ -200,7 +201,6 @@ struct STMT {
 		EXP_LIST *printExps;	// NULL if no expressions given to print
 		ASSIGN *assign;
 		struct { EXP *lhs; EXP *rhs; AssignOpKind kind; } assignOp;
-		VAR_SPECS *shortVarDecl;
 		struct { STMT *simpleStmt; EXP *exp; CASE_CLAUSE_LIST *caseClauses; } switchStmt;
 		struct { EXP *whileExp; FOR_CLAUSE *forClause; STMT *body; } forStmt;
 		struct { STMT *simpleStmt; EXP *cond; STMT *body; STMT *elseStmt; } ifStmt; // elseStmt is optional
@@ -222,13 +222,6 @@ struct ASSIGN {
 struct ID_LIST {
 	char *id;
 	ID_LIST *next;
-};
-
-struct FIELD_DECLS {
-	int lineno;
-	char *id;
-	TYPE *type;
-	FIELD_DECLS *next;
 };
 
 struct CASE_CLAUSE {
@@ -284,18 +277,25 @@ struct TYPE {
 	TypeKind kind;
 	union {
 		char *name;
-		struct { int size; TYPE *type; } array;
+		struct { EXP *size; TYPE *elemType; } array;
 		TYPE *sliceType;
 		FIELD_DECLS *structFields;
 	} val;
 };
 
+struct FIELD_DECLS {
+	int lineno;
+	char *id;
+	TYPE *type;
+	FIELD_DECLS *next;
+};
 
-// To be completed
+
 PROG *makeProg(PACKAGE *package, DECL *decl, int lineno);
 PACKAGE *makePackage(char *name, int lineno);
 
 DECL *makeDecls(DECL *firstDecl, DECL *declList);
+DECL *makeTypeDecl(TYPE_SPECS *typeSpecs, int lineno);
 DECL *makeVarDecl(VAR_SPECS *varSpecs, int lineno);
 DECL *makeShortVarDecl(EXP_LIST *lhsList, EXP_LIST *rhsList, int lineno);
 DECL *makeFuncDecl(char *name, SIGNATURE *signature, STMT *block, int lineno);
@@ -303,12 +303,13 @@ DECL *makeFuncDecl(char *name, SIGNATURE *signature, STMT *block, int lineno);
 VAR_SPECS *makeVarSpecs(ID_LIST *idList, EXP_LIST *expList, TYPE *type, int lineno);
 VAR_SPECS *addVarSpec(VAR_SPECS *listHead, VAR_SPECS *nextSpec);
 
+TYPE_SPECS *makeTypeSpec(char *name, TYPE *type);
+TYPE_SPECS *makeTypeSpecList(TYPE_SPECS *listHead, TYPE_SPECS *nextSpec);
+
 PARAM_LIST *makeParamList(PARAM_LIST *firstParam, PARAM_LIST *paramList);
 PARAM_LIST *makeParamListFromIdList(ID_LIST *idList, TYPE *type, int lineno);
-
 SIGNATURE *makeSignature(PARAM_LIST *params, TYPE *type);
-TYPE_SPECS *makeTypeSpec(char *name, TYPE *type);
-TYPE_SPECS *makeTypeSpecList(TYPE_SPECS *specHead, TYPE_SPECS *nextSpec);
+
 
 STMT *makeDeclStmt(DECL *decl, int lineno);
 STMT *makeBlockStmt(STMT_LIST *stmts, int lineno);
@@ -334,7 +335,6 @@ FOR_CLAUSE *makeForClause(STMT *init, EXP *cond, STMT *post);
 CASE_CLAUSE_LIST *makeCaseClauseList(CASE_CLAUSE *firstClause, CASE_CLAUSE_LIST *caseClauseList);
 CASE_CLAUSE *makeCaseClause(EXP_LIST *cases, STMT_LIST *clauses, int lineno);
 CASE_CLAUSE *makeDefaultClause(STMT_LIST *clauses, int lineno);
-
 ID_LIST *makeIdList(ID_LIST *listHead, char *nextId);
 
 EXP *makeIdentifierExp(char *id, int lineno);
@@ -351,9 +351,14 @@ EXP *makeLenCall(EXP *sliceOrArrayExp, int lineno);
 EXP *makeCapCall(EXP *sliceOrArrayExp, int lineno);
 EXP *makeIndexExp(EXP *objectExp, EXP *indexExp, int lineno);
 EXP *makeStructFieldAccess(EXP *structExp, char *fieldName, int lineno);
-
 EXP_LIST *makeExpList(EXP_LIST *listHead, EXP *nextExp);
 
-TYPE *makeType(char *name);
+TYPE *makeType(char *name, int lineno);
+TYPE *makeSliceType(TYPE *elemType, int lineno);
+TYPE *makeArrayType(EXP *size, TYPE *elemType, int lineno);
+TYPE *makeStructType(FIELD_DECLS *fields, int lineno);
+
+FIELD_DECLS *makeFieldDecls(ID_LIST *idList, TYPE *type, int lineno);
+FIELD_DECLS *makeFieldDeclsList(FIELD_DECLS *firstField, FIELD_DECLS *fieldList);
 
 #endif
