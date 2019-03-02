@@ -5,7 +5,6 @@
 #include "pretty.h"
 
 void printTab(int tabCount) {
-  printf("%d",tabCount);
   for (int i = 0; i < tabCount; i++) {
     printf("\t");
   }
@@ -266,6 +265,17 @@ void prettyPrintStmt(STMT *stmt, int tabCount) {
     case sk_assign:
       printTab(tabCount);
       a = stmt->val.assign;
+      while(a != NULL){
+        prettyPrintExp(a->lhs);
+        a = a->next;
+      }
+      printf(" = ");
+      a = stmt->val.assign;
+      while(a != NULL){
+        prettyPrintExp(a->rhs);
+        a = a->next;
+      }
+      printf("\n");
       break;
     case sk_assignOp:
       printTab(tabCount);
@@ -392,6 +402,7 @@ void prettyPrintStmt(STMT *stmt, int tabCount) {
 
 // Subset of statrments, doesn't prince newlines
 void prettyPrintSimpleStmt(STMT *stmt){
+  ASSIGN *a;
   switch(stmt->kind){
     case sk_exp:
       prettyPrintExp(stmt->val.exp);
@@ -405,7 +416,17 @@ void prettyPrintSimpleStmt(STMT *stmt){
       printf("++");
       break;
     case sk_assign:
-      printf("hi");
+      a = stmt->val.assign;
+      while(a != NULL){
+        prettyPrintExp(a->lhs);
+        a = a->next;
+      }
+      printf(" = ");
+      a = stmt->val.assign;
+      while(a != NULL){
+        prettyPrintExp(a->rhs);
+        a = a->next;
+      }
       break;
     case sk_assignOp:
       prettyPrintExp(stmt->val.assignOp.lhs);
