@@ -393,8 +393,16 @@ void prettyPrintStmt(STMT *stmt, int tabCount) {
       printf("}\n");
       break;
     case sk_break:
+      printTab(tabCount);
+      printf("break\n");
+      break;
     case sk_continue:
+      printTab(tabCount);
+      printf("continue\n");
+      break;
     case sk_fallthrough:
+      printTab(tabCount);
+      printf("fallthrough\n");
       return;
   }
   return;
