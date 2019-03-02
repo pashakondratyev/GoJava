@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "tree.h"
+#include "pretty.h"
 #include "weed.h"
 
 void yyparse();
@@ -34,7 +35,8 @@ int main(int argc, char *argv[]) {
     printf("OK\n");
   } else if (strcmp(argv[1], "pretty") == 0) {
     yyparse();
-    // prettyPrint(root);
+    weedProgram(root);
+    prettyPrint(root);
   } else {
     fprintf(stderr, "Error: invalid argument for compiler mode, valid options are (scan | tokens | parse | pretty)\n");
     return 1;
