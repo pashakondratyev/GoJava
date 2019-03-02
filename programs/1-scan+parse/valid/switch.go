@@ -13,7 +13,7 @@ func main() {
 	case 10:
 		println("very large")
 	default:
-		prinln("done")
+		println("done")
 	}
 
 	switch x {

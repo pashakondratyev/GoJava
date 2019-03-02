@@ -10,6 +10,7 @@ void prettyPrintDecl(DECL *decl, int tabCount);
 void prettyPrintStmt(STMT *stmt, int tabCount);
 void prettyPrintExp(EXP *exp);
 void prettyPrintType(TYPE *type);
+void prettyPrintCase(CASE_CLAUSE *c, int tabCount);
 
 void prettyPrintAssignOp(AssignOpKind op);
 void prettyPrintSimpleStmt(STMT *stmt);

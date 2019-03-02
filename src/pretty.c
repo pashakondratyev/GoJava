@@ -249,6 +249,7 @@ void prettyPrintStmt(STMT *stmt, int tabCount) {
   ASSIGN *a;
   FOR_CLAUSE *f;
   STMT *elseStmt;
+  CASE_CLAUSE_LIST *clause_list;
   switch (stmt->kind) {
     case sk_block:
       sl = stmt->val.block;
@@ -372,8 +373,23 @@ void prettyPrintStmt(STMT *stmt, int tabCount) {
       }
       break;
     case sk_switch:
+      printTab(tabCount);
       printf("switch ");
-      // TODO
+      if(stmt->val.switchStmt.simpleStmt != NULL){
+        prettyPrintSimpleStmt(stmt->val.switchStmt.simpleStmt);
+        printf("; ");
+      }
+      if(stmt->val.switchStmt.exp != NULL){
+        prettyPrintExp(stmt->val.switchStmt.exp);
+      }
+      printf(" {\n");
+      clause_list = stmt->val.switchStmt.caseClauses;
+      while(clause_list != NULL){
+        prettyPrintCase(clause_list->clause, newTabCount);
+        clause_list=clause_list->next;
+      }
+      printTab(tabCount);
+      printf("}\n");
       break;
     case sk_for:
       printTab(tabCount);
@@ -448,6 +464,36 @@ void prettyPrintSimpleStmt(STMT *stmt){
       break;
     default:
       return;
+  }
+}
+
+void prettyPrintCase(CASE_CLAUSE *c, int tabCount){
+  int newTabCount = tabCount + 1;
+  STMT_LIST *sl;
+  switch(c->kind){
+    case ck_case:
+      printTab(tabCount);
+      printf("case ");
+      if(c->val.caseClause.cases != NULL){
+        prettyPrintExpList(c->val.caseClause.cases);
+        printf(":\n");
+      }
+      sl = c->val.caseClause.clauses;
+      while(sl != NULL){
+        prettyPrintStmt(sl->stmt, newTabCount);
+        sl=sl->next;
+      }
+      break;
+    case ck_default:
+      printTab(tabCount);
+      printf("default:\n");
+      sl = c->val.defaultClauses;
+      while(sl != NULL){
+        prettyPrintStmt(sl->stmt, newTabCount);
+        sl=sl->next;
+      }
+      printf("\n");
+      break;
   }
 }
 
