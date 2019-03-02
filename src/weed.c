@@ -84,6 +84,7 @@ int weedBlockReturns(STMT *stmt) {
     case sk_else:
       return weedBlockReturns(stmt->val.elseBody);
     case sk_switch:
+      return weedSwitchReturn(stmt);
     case sk_exp:
     case sk_assign:
     case sk_assignOp:
@@ -143,14 +144,16 @@ int weedSwitchReturn(STMT *stmt) {
     curr_stmt = curr_case_clause->clause->val.caseClause.clauses;
   }
   if (curr_stmt->next == NULL) {
-    return_exists = weedBlockReturns(curr_stmt->stmt);
+    printf("\nswag\n");
+    final_clause_returns = weedBlockReturns(curr_stmt->stmt);
   }
   while (curr_stmt->next != NULL) {
     if (weedBlockReturns(curr_stmt->stmt)) {
-      return_exists = 1;
-      curr_stmt = curr_stmt->next;
+      final_clause_returns = 1;
     }
+    curr_stmt = curr_stmt->next;
   }
+  printf("final clause has a return: %d\ndefault exists: %d\n", final_clause_returns, default_exists);
   return final_clause_returns && default_exists;
 }
 
