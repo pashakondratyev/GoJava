@@ -144,7 +144,6 @@ int weedSwitchReturn(STMT *stmt) {
     curr_stmt = curr_case_clause->clause->val.caseClause.clauses;
   }
   if (curr_stmt->next == NULL) {
-    printf("\nswag\n");
     final_clause_returns = weedBlockReturns(curr_stmt->stmt);
   }
   while (curr_stmt->next != NULL) {
@@ -153,7 +152,6 @@ int weedSwitchReturn(STMT *stmt) {
     }
     curr_stmt = curr_stmt->next;
   }
-  printf("final clause has a return: %d\ndefault exists: %d\n", final_clause_returns, default_exists);
   return final_clause_returns && default_exists;
 }
 
