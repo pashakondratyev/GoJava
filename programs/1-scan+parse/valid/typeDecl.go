@@ -9,3 +9,10 @@ type (
 		x, y, z real
 	}
 )
+
+type (
+	num int
+	point struct {
+	x, y float64
+	}
+)

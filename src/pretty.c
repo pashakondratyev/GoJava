@@ -23,6 +23,8 @@ void prettyPrintDecl(DECL *decl, int tabCount) {
   DECL *cur = decl;
   int nextTabCount = tabCount + 1;
   SHORT_SPECS *s;
+  TYPE_SPECS *t;
+  VAR_SPECS *v;
   while (cur != NULL) {
     switch (cur->kind) {
       case dk_func:
@@ -36,12 +38,12 @@ void prettyPrintDecl(DECL *decl, int tabCount) {
 
         if(cur->val.funcDecl->returnType != NULL){
           TYPE *type = cur->val.funcDecl->returnType;
-          prettyPrintType(type);
+          prettyPrintType(type, nextTabCount);
         }
 
         printf("{\n");
         prettyPrintStmt(cur->val.funcDecl->body, nextTabCount);
-        printf("\n}\n");
+        printf("}\n");
         break;
       case dk_short:
         s = cur->val.shortSpecs;
@@ -55,12 +57,62 @@ void prettyPrintDecl(DECL *decl, int tabCount) {
           prettyPrintExp(s->rhs);
           s = s->next;
         } 
+        if(tabCount != 0) printf("\n");
+        //printf("\n");
         break;
       case dk_type:
-        //printf("func %s(", decl->val.typeSpecs);
+        printf("type ");
+        //Handle if multiple type specs
+        t = cur->val.typeSpecs;
+        if(t->next != NULL){
+          printf("(\n");
+          while(t != NULL){
+            printTab(nextTabCount);
+            printf("%s ", t->name);
+            prettyPrintType(t->type, nextTabCount);
+            printf("\n");
+            t = t->next;
+          }
+          printf(")");
+        }
+        else{
+          printf("%s ", t->name);
+          prettyPrintType(t->type, tabCount);
+        }
+        if(tabCount != 0) printf("\n");
         break;
       case dk_var:
+        printf("var ");
+        if(decl->val.varSpecs->next != NULL){
+          printf("(\n");
+          v = decl->val.varSpecs;
+          while(v != NULL){
+            printTab(tabCount);
+            printf("%s", v->id);
+            if(v->type != NULL){
+              prettyPrintType(v->type, nextTabCount);
+            }
+            if(v->exp != NULL){
+              printf(" = ");
+              prettyPrintExp(v->exp);
+            }
+            v=v->next;
+          }
+          printf(")");
+        }
+        else{
+          printf("%s ", decl->val.varSpecs->id);
+          if(decl->val.varSpecs->type != NULL){
+            prettyPrintType(decl->val.varSpecs->type, nextTabCount);
+          }
+          if(decl->val.varSpecs->exp != NULL){
+            printf(" = ");
+            prettyPrintExp(decl->val.varSpecs->exp);
+          }
+        }
+        //printf("\n");
         //printf("func %s(", decl->val.varSpecs)
+        if(tabCount >= 0) printf("\n");
         break;
     }
     cur = cur->next;
@@ -243,6 +295,7 @@ void prettyPrintExp(EXP *exp) {
   return;
 }
 
+// Invariant: Each statement must print its own newline
 void prettyPrintStmt(STMT *stmt, int tabCount) {
   int newTabCount = tabCount+1;
   STMT_LIST *sl;
@@ -255,13 +308,14 @@ void prettyPrintStmt(STMT *stmt, int tabCount) {
       sl = stmt->val.block;
       while(sl != NULL){
         prettyPrintStmt(sl->stmt, tabCount);
-        printf("\n");
+        //printf("\n");
         sl = sl->next;
       }
       break;
     case sk_exp:
       printTab(tabCount);
       prettyPrintExp(stmt->val.exp);
+      printf("\n");
       break;
     case sk_assign:
       printTab(tabCount);
@@ -289,7 +343,7 @@ void prettyPrintStmt(STMT *stmt, int tabCount) {
     case sk_shortDecl:
       printTab(tabCount);
       prettyPrintDecl(stmt->val.decl, tabCount);
-      printf("\n");
+      //printf("\n");
       break;
     case sk_incr:
       printTab(tabCount);
@@ -317,9 +371,13 @@ void prettyPrintStmt(STMT *stmt, int tabCount) {
       break;
     case sk_return:
       printTab(tabCount);
-      printf("return(");
-      prettyPrintExp(stmt->val.exp);
-      printf(")\n");
+      printf("return");
+      if(stmt->val.exp != NULL){
+        printf("(");
+        prettyPrintExp(stmt->val.exp);
+        printf(")");
+      }
+      printf("\n");
       break;
     case sk_if:
       printTab(tabCount);
@@ -460,6 +518,7 @@ void prettyPrintSimpleStmt(STMT *stmt){
       prettyPrintExp(stmt->val.assignOp.rhs);
     case sk_decl:
     case sk_shortDecl:
+      //Short Declarations have a 0 indentation so that we can 
       prettyPrintDecl(stmt->val.decl, 0);
       break;
     default:
@@ -497,25 +556,31 @@ void prettyPrintCase(CASE_CLAUSE *c, int tabCount){
   }
 }
 
-void prettyPrintType(TYPE *type){
+void prettyPrintType(TYPE *type, int tabCount){
+  int nextTabCount = tabCount + 1;
+  FIELD_DECLS *d;
   switch(type->kind){
     case tk_array:
       printf(" []%s", type->val.name);
       break;
-    case tk_boolean:
-    case tk_float:
-    case tk_int:
-    case tk_rune:
-    case tk_string:
-      printf(" %s", type->val.name);
-      break;
-    case tk_ref:
-    case tk_slice:
+   case tk_slice:
       printf(" []%s", type->val.sliceType->val.name);
       break;
     case tk_struct:
-      printf("%s", type->val.name);
+      printf("struct {\n");
+      d = type->val.structFields;
+      while(d != NULL){
+        printTab(nextTabCount);
+        printf("%s ", d->id);
+        prettyPrintType(d->type, nextTabCount);
+        printf("\n");
+        d = d->next;
+      }
+      printTab(tabCount);
+      printf("}");
       break;
+    default:
+      printf("%s", type->val.name);
   }
 }
 
@@ -585,7 +650,7 @@ void prettyPrintParamList(PARAM_LIST *param_list){
   while(cur != NULL) {
     printf("%s", cur->id);
     if(cur->type != NULL){
-      prettyPrintType(cur->type);
+      prettyPrintType(cur->type, 0);
     }
     if (cur->next != NULL) {
       printf(", ");
