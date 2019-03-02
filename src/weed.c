@@ -55,6 +55,7 @@ void weedDeclaration(DECL *decl) {
   }
 }
 
+// Checks if a statement list is guaranteed to return something and has no dead code
 // Checks if a block is guaranteed to have a return in it
 int weedBlockReturns(STMT *stmt) {
   // Checks if all paths return
@@ -84,7 +85,7 @@ int weedBlockReturns(STMT *stmt) {
     case sk_else:
       return weedBlockReturns(stmt->val.elseBody);
     case sk_switch:
-      return weedSwitchReturn(stmt);
+      return weedSwitchDefault(stmt);
     case sk_exp:
     case sk_assign:
     case sk_assignOp:
@@ -103,56 +104,71 @@ int weedBlockReturns(STMT *stmt) {
   return 0;
 }
 
-// Checks if every path of a switch case has a return statement
-int weedSwitchReturn(STMT *stmt) {
-  int default_exists = 0;
-  int return_exists = 0;
-  int final_clause_returns = 0;
-  int fallthrough_exists = 0;
+// Checks if switch statement has at most one default case
+int weedSwitchDefault(STMT *stmt) {
+  int num_defaults = 0;
   CASE_CLAUSE_LIST *curr_case_clause = stmt->val.switchStmt.caseClauses;
   STMT_LIST *curr_stmt;
-  while (curr_case_clause->next != NULL) {
-    if (curr_case_clause->clause->kind == ck_default) {
-      default_exists = 1;
-      curr_stmt = curr_case_clause->clause->val.defaultClauses;
-    } else {
-      curr_stmt = curr_case_clause->clause->val.caseClause.clauses;
-    }
-    // Checks if a return exsists in the current stmt list
-    if (curr_stmt->next == NULL) {
-      return_exists = weedBlockReturns(curr_stmt->stmt);
-    } else {
-      while (curr_stmt->next != NULL) {
-        if (weedBlockReturns(curr_stmt->stmt)) {
-          return_exists = 1;
-        }
-        curr_stmt = curr_stmt->next;
-      }
-    }
-    // Checks if last statement is a fall through
-    fallthrough_exists = curr_stmt->stmt->kind == sk_fallthrough;
-    if (!fallthrough_exists && !return_exists) {
-      return 0;
+  if (curr_case_clause->next == NULL){
+    num_defaults = num_defaults+1;
+  }
+  while (curr_case_clause->next != NULL){
+    if (curr_case_clause->clause->kind == ck_default){
+      num_defaults = num_defaults+1;
     }
     curr_case_clause = curr_case_clause->next;
   }
-  // Last clause cannot have a fallthrough, but this might have a return
-  if (curr_case_clause->clause->kind == ck_default) {
-    default_exists = 1;
-    curr_stmt = curr_case_clause->clause->val.defaultClauses;
-  } else {
-    curr_stmt = curr_case_clause->clause->val.caseClause.clauses;
+  if (num_defaults > 1){
+    reportError("Too many default cases in switch statement", stmt->lineno);
   }
-  if (curr_stmt->next == NULL) {
-    final_clause_returns = weedBlockReturns(curr_stmt->stmt);
+  return 0;
+}
+
+// Checks if there are no misplaced break or continue statements
+int weedBreakCont(STMT *stmt, int allow_cont, int allow_break) {
+  STMT_LIST *curr_stmt;
+  CASE_CLAUSE_LIST *curr_case_clause;
+  switch (stmt->kind) {
+    case sk_block:
+      curr_stmt = stmt->val.block;
+      weedBreakCont(curr_stmt->stmt, allow_cont, allow_break);
+      while (curr_stmt->next != NULL){
+        curr_stmt = curr_stmt->next;
+        weedBreakCont(curr_stmt->stmt, allow_cont, allow_break);
+      }
+    case sk_for:
+      weedBreakCont(stmt->val.forStmt.body, 1, 1);
+    case sk_continue:
+      if (!allow_cont){
+        reportError("Continue statement outside of loop", stmt->lineno);
+      }
+    case sk_break:
+      if (!allow_break){
+        reportError("Break statement outside of loop or switch", stmt->lineno);
+      }
+    case sk_switch:
+      curr_case_clause = stmt->val.switchStmt.caseClauses;
+      if (curr_case_clause->clause->kind == ck_default){
+        curr_stmt = curr_case_clause->clause->val.defaultClauses;
+      } else {
+        curr_stmt = curr_case_clause->clause->val.caseClause.clauses;
+      }
+    case sk_exp:
+    case sk_assign:
+    case sk_assignOp:
+    case sk_decl:
+    case sk_shortDecl:
+    case sk_incr:
+    case sk_decr:
+    case sk_print:
+    case sk_println:
+    case sk_return:
+    case sk_if:
+    case sk_else:
+    case sk_fallthrough:
+      break;
   }
-  while (curr_stmt->next != NULL) {
-    if (weedBlockReturns(curr_stmt->stmt)) {
-      final_clause_returns = 1;
-    }
-    curr_stmt = curr_stmt->next;
-  }
-  return final_clause_returns && default_exists;
+  
 }
 
 void weedFunction(FUNC_DECL *func_decl, int lineno) {

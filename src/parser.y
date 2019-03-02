@@ -87,7 +87,7 @@ void yyerror(const char *s) {
 %type <paramList> Parameters ParameterList ParameterDecl
 %type <idList> IdentifierList
 %type <signature> Signature
-%type <stmt> Statement Block SimpleStatement IncDecStatement AssignStatement PrintStatement PrintlnStatement ReturnStatement ContinueStatement BreakStatement FallthroughStatement IfStatement ElseStatement ExprSwitchStatement ForStatement
+%type <stmt> Statement Block SimpleStatement IncDecStatement AssignStatement PrintStatement PrintlnStatement ReturnStatement ContinueStatement BreakStatement IfStatement ElseStatement ExprSwitchStatement ForStatement
 %type <stmtList> StatementList
 %type <forClause> ForClause
 %type <caseClauseList> ExprCaseClauseList
@@ -249,7 +249,6 @@ Statement: Declaration { $$ = makeDeclStmt($1, @1.first_line); }
     | ForStatement      { $$ = $1; }
     | ContinueStatement     { $$ = $1; }
     | BreakStatement    { $$ = $1; }
-    | FallthroughStatement  { $$ = $1; }
     ;
 
 SimpleStatement: %empty     { $$ = NULL; }
@@ -361,8 +360,5 @@ BreakStatement: tBREAK  { $$ = makeBreakStmt(@1.first_line); }
     ;
 
 ContinueStatement: tCONTINUE    { $$ = makeContinueStmt(@1.first_line); }
-    ;
-
-FallthroughStatement: tFALLTHROUGH  { $$ = makeFallthroughStmt(@1.first_line); }
     ;
 %%
