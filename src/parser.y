@@ -189,9 +189,6 @@ UnaryExpression: PrimaryExpression  { $$ = $1; }
     | tBITXOR UnaryExpression   { $$ = makeUnaryExp(ek_ubitXor,$2, @1.first_line); }
     ;
 
-    /*
-     * TODO: figure out if we should weed or change grammar for index expressions
-     */
 PrimaryExpression: tIDENTIFIER  { $$ = makeIdentifierExp($1, @1.first_line); }
     | tINTVAL   { $$ = makeIntValExp($1, @1.first_line); }
     | tFLOATVAL { $$ = makeFloatValExp($1, @1.first_line); }
