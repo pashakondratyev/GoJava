@@ -81,8 +81,9 @@ int weedBlockReturns(STMT *stmt) {
         return 0;
       }
       return weedBlockReturns(stmt->val.ifStmt.body) && weedBlockReturns(stmt->val.ifStmt.elseStmt);
+    case sk_else:
+      return weedBlockReturns(stmt->val.elseBody);
     case sk_switch:
-      return weedSwitchReturn(stmt);
     case sk_exp:
     case sk_assign:
     case sk_assignOp:
@@ -92,7 +93,6 @@ int weedBlockReturns(STMT *stmt) {
     case sk_decr:
     case sk_print:
     case sk_println:
-    case sk_else:
     case sk_for:
     case sk_break:
     case sk_continue:
