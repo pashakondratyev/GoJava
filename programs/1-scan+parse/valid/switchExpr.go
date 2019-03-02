@@ -8,13 +8,10 @@ func main() {
 	switch y=12; {
 	case x < 0:
 		println("Negative")
-		fallthrough
 	case x > 0: 
 		println("Positive")
-		fallthrough
 	case x==0:
 		println("Zero")
-		fallthrough
 	default:
 		println("Done")
 	}

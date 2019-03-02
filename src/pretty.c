@@ -372,6 +372,8 @@ void prettyPrintStmt(STMT *stmt, int tabCount) {
       }
       break;
     case sk_switch:
+      printf("switch ");
+      // TODO
       break;
     case sk_for:
       printTab(tabCount);
