@@ -1,7 +1,8 @@
-// invalid append - returned value unused
+// invalid append - appending multiple elements at once not allowed in GoLite
 package test
+
 
 func main() {
 	var s []int
-	append(s, 0)
+	s = append(s, 0, 5)
 }
