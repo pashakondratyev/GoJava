@@ -55,8 +55,7 @@ void weedDeclaration(DECL *decl) {
   }
 }
 
-// Checks if a statement list is guaranteed to return something and has no dead code
-// Checks if a block is guaranteed to have a return in it
+// Checks if all return statements return an expression
 int weedBlockReturns(STMT *stmt) {
   // Checks if all paths return
   if (stmt == NULL) {
@@ -76,7 +75,7 @@ int weedBlockReturns(STMT *stmt) {
       }
       return 0;
     case sk_return:
-      return 1;
+      return stmt->val.exp != NULL;
     case sk_if:
       if (stmt->val.ifStmt.elseStmt == NULL) {
         return 0;
@@ -124,10 +123,33 @@ int weedSwitchDefault(STMT *stmt) {
   return 0;
 }
 
-// Checks if there are no misplaced break or continue statements
-int weedBreakCont(STMT *stmt, int allow_cont, int allow_break) {
+// Checks if switch statement has no inappropriate continue statement
+void weedSwitchBreak(STMT *stmt, int allow_cont, int allow_break){
+  stmt->val.switchStmt.caseClauses->clause->kind;
+  stmt->val.switchStmt.caseClauses->clause->val;
+  CASE_CLAUSE_LIST *curr_case_clause = stmt->val.switchStmt.caseClauses;
   STMT_LIST *curr_stmt;
-  CASE_CLAUSE_LIST *curr_case_clause;
+  curr_case_clause->clause->kind;
+  curr_stmt = curr_case_clause->clause->val.defaultClauses;
+  if (curr_case_clause->clause->kind == ck_default) {
+    //curr_case_clause->clause->val.defaultClauses;  
+  }
+  /*CASE_CLAUSE_LIST *curr_case_clause = stmt->val.switchStmt.caseClauses;
+  STMT_LIST *curr_stmt;
+  if (curr_case_clause->clause->kind == ck_default){
+    curr_case_clause->clause->val;
+    //curr_stmt = curr_case_clause->clause->val.defaultClauses;
+  } else {
+    //curr_stmt = curr_case_clause->clause->val.caseClause.clauses;
+  }*/
+}
+
+// Checks if there are no misplaced break or continue statements
+void weedBreakCont(STMT *stmt, int allow_cont, int allow_break) {
+  STMT_LIST *curr_stmt;
+  CASE_CLAUSE_LIST *curr_case_clause = malloc(sizeof(CASE_CLAUSE_LIST));
+  CaseKind k;
+  CASE_CLAUSE *c;
   switch (stmt->kind) {
     case sk_block:
       curr_stmt = stmt->val.block;
@@ -136,23 +158,46 @@ int weedBreakCont(STMT *stmt, int allow_cont, int allow_break) {
         curr_stmt = curr_stmt->next;
         weedBreakCont(curr_stmt->stmt, allow_cont, allow_break);
       }
+      break;
     case sk_for:
       weedBreakCont(stmt->val.forStmt.body, 1, 1);
+      break;
     case sk_continue:
       if (!allow_cont){
         reportError("Continue statement outside of loop", stmt->lineno);
       }
+      break;
     case sk_break:
       if (!allow_break){
         reportError("Break statement outside of loop or switch", stmt->lineno);
       }
+      break;
     case sk_switch:
-      curr_case_clause = stmt->val.switchStmt.caseClauses;
-      if (curr_case_clause->clause->kind == ck_default){
-        curr_stmt = curr_case_clause->clause->val.defaultClauses;
-      } else {
-        curr_stmt = curr_case_clause->clause->val.caseClause.clauses;
+      weedSwitchBreak(stmt, allow_cont, allow_break);
+      /*
+      if (curr_stmt != NULL) {
+        weedBreakCont(curr_stmt->stmt, allow_cont, 1);
+        while (curr_stmt->next != NULL){
+          curr_stmt = curr_stmt->next;
+          weedBreakCont(curr_stmt->stmt, allow_cont, 1);
+        }
       }
+      while (curr_case_clause->next != NULL){
+        curr_case_clause = curr_case_clause->next;
+        if (curr_case_clause->clause->kind == ck_default){
+          curr_stmt = curr_case_clause->clause->val.defaultClauses;
+        } else {
+          curr_stmt = curr_case_clause->clause->val.caseClause.clauses;
+        }
+        if (curr_stmt != NULL) {
+          weedBreakCont(curr_stmt->stmt, allow_cont, 1);
+          while (curr_stmt->next != NULL){
+            curr_stmt = curr_stmt->next;
+            weedBreakCont(curr_stmt->stmt, allow_cont, 1);
+          }
+        }
+      }*/
+      break;
     case sk_exp:
     case sk_assign:
     case sk_assignOp:
@@ -175,9 +220,10 @@ void weedFunction(FUNC_DECL *func_decl, int lineno) {
   if (func_decl->returnType != NULL) {
     if(!weedBlockReturns(func_decl->body)){
       reportError("Function does not have return statement", lineno);
-    };
+    }
   }
   weedStatement(func_decl->body);
+  weedBreakCont(func_decl->body, 0, 0);
 }
 
 int isShortSpecIdentifierType(SHORT_SPECS *shortSpecList) {

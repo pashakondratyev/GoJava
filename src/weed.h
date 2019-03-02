@@ -10,6 +10,7 @@ void weedStatement(STMT *stmt);
 void weedFunction(FUNC_DECL *func_decl, int lineno);
 
 int weedSwitchDefault(STMT *stmt);
+void weedBreakCont(STMT *stmt, int allow_cont, int allow_break);
 int isShortSpecIdentifierType(SHORT_SPECS *shorts_specs);
 
 #endif 
