@@ -1,3 +1,13 @@
 Pavel Kondratyev (ID: 260653115)
 Kaylee Kutschera (ID: 260608470)
 Kabilan Sriranjan (ID: 260671847)
+
+
+Scanner/Parser Test Programs to Grade:
+Valid - validX.go, where X is a number 1-6.
+Invalid - assign1.go, break2.go, continue2.go, comment1.go, comment2.go, 
+          for1.go, for3.go, for4.go, funcDecl1.go, funcDecl2.go,
+          funcDecl3.go, funcDecl4.go, if1.go, if2.go, invalidFunc.go, 
+          invalidFuncReturn.go, invalidInt1.go, invalidInt2.go, invalidInt3.go, invalidRune1.go,
+          invalidRune2.go, invalidRune3.go, invalidString1.go, invalidString2.go, invalidString3.go, 
+          invalidSwitchReturn1.go, invalidTopDecl1.go, invalidTopDecl2.go, package.go, program.go
