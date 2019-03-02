@@ -5,6 +5,7 @@
 #include "pretty.h"
 
 void printTab(int tabCount) {
+  printf("%d",tabCount);
   for (int i = 0; i < tabCount; i++) {
     printf("\t");
   }
@@ -39,7 +40,7 @@ void prettyPrintDecl(DECL *decl, int tabCount) {
           prettyPrintType(type);
         }
 
-        printf("{");
+        printf("{\n");
         prettyPrintStmt(cur->val.funcDecl->body, nextTabCount);
         printf("\n}\n");
         break;
@@ -87,103 +88,104 @@ void prettyPrintExp(EXP *exp) {
       } else {
         printf("false");
       }
+      break;
     case ek_rune:
       printf("%c", exp->val.runeval);
       break;
     case ek_plus:
       prettyPrintExp(exp->val.binary.lhs);
       printf(" + ");
-      prettyPrintExp(exp->val.binary.lhs);
+      prettyPrintExp(exp->val.binary.rhs);
       break;
     case ek_minus:
       prettyPrintExp(exp->val.binary.lhs);
       printf(" - ");
-      prettyPrintExp(exp->val.binary.lhs);
+      prettyPrintExp(exp->val.binary.rhs);
       break;
     case ek_times:
       prettyPrintExp(exp->val.binary.lhs);
       printf(" * ");
-      prettyPrintExp(exp->val.binary.lhs);
+      prettyPrintExp(exp->val.binary.rhs);
       break;
     case ek_div:
       prettyPrintExp(exp->val.binary.lhs);
       printf(" / ");
-      prettyPrintExp(exp->val.binary.lhs);
+      prettyPrintExp(exp->val.binary.rhs);
       break;
     case ek_mod:
       prettyPrintExp(exp->val.binary.lhs);
       printf(" %% ");
-      prettyPrintExp(exp->val.binary.lhs);
+      prettyPrintExp(exp->val.binary.rhs);
       break;
     case ek_bitAnd:
       prettyPrintExp(exp->val.binary.lhs);
       printf(" & ");
-      prettyPrintExp(exp->val.binary.lhs);
+      prettyPrintExp(exp->val.binary.rhs);
       break;
     case ek_bitOr:
       prettyPrintExp(exp->val.binary.lhs);
       printf(" | ");
-      prettyPrintExp(exp->val.binary.lhs);
+      prettyPrintExp(exp->val.binary.rhs);
       break;
     case ek_eq:
       prettyPrintExp(exp->val.binary.lhs);
-      printf(" += ");
-      prettyPrintExp(exp->val.binary.lhs);
+      printf(" == ");
+      prettyPrintExp(exp->val.binary.rhs);
       break;
     case ek_ne:
       prettyPrintExp(exp->val.binary.lhs);
       printf(" != ");
-      prettyPrintExp(exp->val.binary.lhs);
+      prettyPrintExp(exp->val.binary.rhs);
       break;
     case ek_ge:
       prettyPrintExp(exp->val.binary.lhs);
       printf(" >= ");
-      prettyPrintExp(exp->val.binary.lhs);
+      prettyPrintExp(exp->val.binary.rhs);
       break;
     case ek_le:
       prettyPrintExp(exp->val.binary.lhs);
       printf(" <= ");
-      prettyPrintExp(exp->val.binary.lhs);
+      prettyPrintExp(exp->val.binary.rhs);
       break;
     case ek_gt:
       prettyPrintExp(exp->val.binary.lhs);
       printf(" > ");
-      prettyPrintExp(exp->val.binary.lhs);
+      prettyPrintExp(exp->val.binary.rhs);
       break;
     case ek_lt:
       prettyPrintExp(exp->val.binary.lhs);
       printf(" > ");
-      prettyPrintExp(exp->val.binary.lhs);
+      prettyPrintExp(exp->val.binary.rhs);
       break;
     case ek_and:
       prettyPrintExp(exp->val.binary.lhs);
       printf(" && ");
-      prettyPrintExp(exp->val.binary.lhs);
+      prettyPrintExp(exp->val.binary.rhs);
       break;
     case ek_or:
       prettyPrintExp(exp->val.binary.lhs);
       printf(" || ");
-      prettyPrintExp(exp->val.binary.lhs);
+      prettyPrintExp(exp->val.binary.rhs);
       break;
     case ek_bitXor:
       prettyPrintExp(exp->val.binary.lhs);
       printf(" ^ ");
-      prettyPrintExp(exp->val.binary.lhs);
+      prettyPrintExp(exp->val.binary.rhs);
       break;
     case ek_bitLeftShift:
       prettyPrintExp(exp->val.binary.lhs);
       printf(" << ");
-      prettyPrintExp(exp->val.binary.lhs);
+      prettyPrintExp(exp->val.binary.rhs);
       break;
     case ek_bitRightShift:
       prettyPrintExp(exp->val.binary.lhs);
       printf(" >> ");
-      prettyPrintExp(exp->val.binary.lhs);
+      prettyPrintExp(exp->val.binary.rhs);
       break;
     case ek_bitClear:
       prettyPrintExp(exp->val.binary.lhs);
       printf(" &^ ");
-      prettyPrintExp(exp->val.binary.lhs);
+      prettyPrintExp(exp->val.binary.rhs);
       break;
     case ek_uplus:
       printf("+");
@@ -243,29 +245,179 @@ void prettyPrintExp(EXP *exp) {
 }
 
 void prettyPrintStmt(STMT *stmt, int tabCount) {
-  int newTabCount = tabCount++;
+  int newTabCount = tabCount+1;
+  STMT_LIST *sl;
+  ASSIGN *a;
+  FOR_CLAUSE *f;
+  STMT *elseStmt;
   switch (stmt->kind) {
     case sk_block:
+      sl = stmt->val.block;
+      while(sl != NULL){
+        prettyPrintStmt(sl->stmt, tabCount);
+        printf("\n");
+        sl = sl->next;
+      }
+      break;
     case sk_exp:
+      printTab(tabCount);
+      prettyPrintExp(stmt->val.exp);
+      break;
     case sk_assign:
+      printTab(tabCount);
+      a = stmt->val.assign;
+      break;
     case sk_assignOp:
+      printTab(tabCount);
+      prettyPrintExp(stmt->val.assignOp.lhs);
+      prettyPrintAssignOp(stmt->val.assignOp.kind);
+      prettyPrintExp(stmt->val.assignOp.rhs);
+      printf("\n");
+      break;
     case sk_decl:
     case sk_shortDecl:
+      printTab(tabCount);
+      prettyPrintDecl(stmt->val.decl, tabCount);
+      printf("\n");
+      break;
     case sk_incr:
+      printTab(tabCount);
+      printf("++");
+      prettyPrintExp(stmt->val.exp);
+      printf("\n");
+      break;
     case sk_decr:
+      printTab(tabCount);
+      printf("--");
+      prettyPrintExp(stmt->val.exp);
+      printf("\n");
+      break;
     case sk_print:
+      printTab(tabCount);
+      printf("print(");
+      prettyPrintExpList(stmt->val.printExps);
+      printf(")\n");
+      break;
     case sk_println:
+      printTab(tabCount);
+      printf("println(");
+      prettyPrintExpList(stmt->val.printExps);
+      printf(")\n");
+      break;
     case sk_return:
+      printTab(tabCount);
+      printf("return(");
+      prettyPrintExp(stmt->val.exp);
+      printf(")\n");
+      break;
     case sk_if:
+      printTab(tabCount);
+      printf("if ");
+      if(stmt->val.ifStmt.simpleStmt != NULL){
+        prettyPrintSimpleStmt(stmt->val.ifStmt.simpleStmt);
+        printf("; ");
+      }
+      prettyPrintExp(stmt->val.ifStmt.cond);
+      printf(" {\n");
+      prettyPrintStmt(stmt->val.ifStmt.body, newTabCount);
+      printTab(tabCount);
+      // Handle condition where there is an else statment
+      printf("} ");
+      if(stmt->val.ifStmt.elseStmt != NULL){
+        prettyPrintStmt(stmt->val.ifStmt.elseStmt, tabCount);
+      }
+      else {
+        printf("\n");
+      }
+      break;
     case sk_else:
+      printf(" else ");
+      // Check if next is if
+      elseStmt = stmt->val.elseBody;
+      if(elseStmt->kind == sk_if){
+        printf(" if ");
+        if(elseStmt->val.ifStmt.simpleStmt != NULL){
+          prettyPrintSimpleStmt(elseStmt->val.ifStmt.simpleStmt);
+          printf("; ");
+        }
+
+        prettyPrintExp(elseStmt->val.ifStmt.cond);
+        printf(" {\n"); 
+        prettyPrintStmt(elseStmt->val.ifStmt.body, newTabCount);
+        printTab(tabCount);
+        printf("} ");
+      }
+      else{
+        printf(" {\n"); 
+        prettyPrintStmt(elseStmt, newTabCount);
+        printTab(tabCount);
+        printf("} ");
+      }
+      // If this is an else if and has an else/else if statement
+      if(elseStmt->kind == sk_if && elseStmt->val.ifStmt.elseStmt != NULL){
+        prettyPrintStmt(elseStmt->val.ifStmt.elseStmt, tabCount);
+      }
+      else {
+        printf("\n");
+      }
+      break;
     case sk_switch:
+      break;
     case sk_for:
+      printTab(tabCount);
+      printf("for ");
+      if(stmt->val.forStmt.whileExp != NULL){
+        prettyPrintExp(stmt->val.forStmt.whileExp);
+      }
+      else if(stmt->val.forStmt.forClause != NULL){
+        f = stmt->val.forStmt.forClause;
+        prettyPrintSimpleStmt(f->init);
+        printf("; ");
+        prettyPrintExp(f->cond);
+        printf("; ");
+        prettyPrintSimpleStmt(f->post);
+      }
+      printf("{\n");
+      prettyPrintStmt(stmt->val.forStmt.body, newTabCount);
+      printTab(tabCount);
+      printf("}\n");
+      break;
     case sk_break:
     case sk_continue:
     case sk_fallthrough:
       return;
   }
   return;
+}
+
+// Subset of statrments, doesn't prince newlines
+void prettyPrintSimpleStmt(STMT *stmt){
+  switch(stmt->kind){
+    case sk_exp:
+      prettyPrintExp(stmt->val.exp);
+      break;
+    case sk_decr:
+      prettyPrintExp(stmt->val.exp);
+      printf("--");
+      break;
+    case sk_incr:
+      prettyPrintExp(stmt->val.exp);
+      printf("++");
+      break;
+    case sk_assign:
+      printf("hi");
+      break;
+    case sk_assignOp:
+      prettyPrintExp(stmt->val.assignOp.lhs);
+      prettyPrintAssignOp(stmt->val.assignOp.kind);
+      prettyPrintExp(stmt->val.assignOp.rhs);
+    case sk_decl:
+    case sk_shortDecl:
+      prettyPrintDecl(stmt->val.decl, 0);
+      break;
+    default:
+      return;
+  }
 }
 
 void prettyPrintType(TYPE *type){
@@ -286,6 +438,45 @@ void prettyPrintType(TYPE *type){
       break;
     case tk_struct:
       printf("%s", type->val.name);
+      break;
+  }
+}
+
+// Should only be called if guaranteed stmt is 
+void prettyPrintAssignOp(AssignOpKind op){
+  switch(op){
+    case aok_plus:
+      printf(" += ");
+      break;
+    case aok_minus:
+      printf(" -= ");
+      break;
+    case aok_times:
+      printf(" *= ");
+      break;
+    case aok_div:
+      printf(" /= ");
+      break;
+    case aok_mod:
+      printf(" %%= ");
+      break;
+    case aok_bitAnd:
+      printf(" &= ");
+      break;
+    case aok_bitOr:
+      printf(" |= ");
+      break;
+    case aok_bitXor:
+      printf(" ^= ");
+      break;
+    case aok_bitLeftShift:
+      printf(" <<= ");
+      break;
+    case aok_bitRightShift:
+      printf(" >>= ");
+      break;
+    case aok_bitClear:
+      printf(" &^= ");
       break;
   }
 }

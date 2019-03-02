@@ -11,6 +11,8 @@ void prettyPrintStmt(STMT *stmt, int tabCount);
 void prettyPrintExp(EXP *exp);
 void prettyPrintType(TYPE *type);
 
+void prettyPrintAssignOp(AssignOpKind op);
+void prettyPrintSimpleStmt(STMT *stmt);
 void prettyPrintExpList(EXP_LIST *exp_list);
 void prettyPrintParamList(PARAM_LIST *param_list);
 void prettyPrintIdList(ID_LIST *id_list);
