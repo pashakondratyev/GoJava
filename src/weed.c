@@ -84,7 +84,7 @@ int weedBlockReturns(STMT *stmt) {
     case sk_else:
       return weedBlockReturns(stmt->val.elseBody);
     case sk_switch:
-      //return weedSwitchDefault(stmt);
+      return weedSwitchReturns(stmt->val.switchStmt.caseClauses);
     case sk_exp:
     case sk_assign:
     case sk_assignOp:
@@ -108,8 +108,8 @@ void weedSwitchDefault(STMT *stmt) {
   int num_defaults = 0;
   CASE_CLAUSE_LIST *curr_case_clause = stmt->val.switchStmt.caseClauses;
   STMT_LIST *curr_stmt;
-  if (curr_case_clause != NULL && curr_case_clause->next == NULL){
-    num_defaults = num_defaults+1;
+  if (curr_case_clause != NULL && curr_case_clause->next == NULL) {
+    num_defaults = num_defaults + 1;
   }
   while (curr_case_clause != NULL){
     if (curr_case_clause->clause->kind == ck_default){
@@ -117,17 +117,17 @@ void weedSwitchDefault(STMT *stmt) {
     }
     curr_case_clause = curr_case_clause->next;
   }
-  if (num_defaults > 1){
+  if (num_defaults > 1) {
     reportError("Too many default cases in switch statement", stmt->lineno);
   }
 }
 
 // Checks if switch statement has no inappropriate continue statement
-void weedSwitchBreak(STMT *stmt, int allow_cont){
+void weedSwitchBreak(STMT *stmt, int allow_cont) {
   CASE_CLAUSE_LIST *curr_case_clause = stmt->val.switchStmt.caseClauses;
   STMT_LIST *curr_stmt;
   while (curr_case_clause != NULL && curr_case_clause->next != NULL) {
-    if (curr_case_clause->clause->kind == ck_default) { 
+    if (curr_case_clause->clause->kind == ck_default) {
       curr_stmt = curr_case_clause->clause->val.defaultClauses;
     } else {
       curr_stmt = curr_case_clause->clause->val.caseClause.clauses;
@@ -170,7 +170,7 @@ void weedBreakCont(STMT *stmt, int allow_cont, int allow_break) {
     case sk_block:
       curr_stmt = stmt->val.block;
       weedBreakCont(curr_stmt->stmt, allow_cont, allow_break);
-      while (curr_stmt->next != NULL){
+      while (curr_stmt->next != NULL) {
         curr_stmt = curr_stmt->next;
         weedBreakCont(curr_stmt->stmt, allow_cont, allow_break);
       }
@@ -179,12 +179,12 @@ void weedBreakCont(STMT *stmt, int allow_cont, int allow_break) {
       weedBreakCont(stmt->val.forStmt.body, 1, 1);
       break;
     case sk_continue:
-      if (!allow_cont){
+      if (!allow_cont) {
         reportError("Continue statement outside of loop", stmt->lineno);
       }
       break;
     case sk_break:
-      if (!allow_break){
+      if (!allow_break) {
         reportError("Break statement outside of loop or switch", stmt->lineno);
       }
       break;
@@ -232,10 +232,60 @@ void weedBreakCont(STMT *stmt, int allow_cont, int allow_break) {
   
 }
 
+int weedSwitchReturns(CASE_CLAUSE_LIST *c) {
+  CASE_CLAUSE_LIST *clauses = c;
+  STMT_LIST *s;
+  STMT *curr;
+
+  int stmtListHasReturn;
+  int lastStmtListHasContinue = 0;
+  int curStmtHasContinue;
+  while (clauses != NULL) {
+    switch (clauses->clause->kind) {
+      case ck_default:
+        s = clauses->clause->val.defaultClauses;
+      case ck_case:
+        s = clauses->clause->val.caseClause.clauses;
+        // Check if each statement list has a a continue or a return
+    }
+    curStmtHasContinue = 0;
+    stmtListHasReturn = 0;
+    while (s != NULL) {
+      curr = s->stmt;
+      switch (curr->kind) {
+        case sk_continue:
+          curStmtHasContinue = 1;
+          break;
+        case sk_return:
+          // If the statement has a return statement we can break;
+          stmtListHasReturn = 1;
+          break;
+        default:
+          stmtListHasReturn = weedBlockReturns(curr);
+          break;
+      }
+      if (stmtListHasReturn) {
+        break;
+      }
+      if (curStmtHasContinue) {
+        lastStmtListHasContinue = 1;
+        curStmtHasContinue = 0;
+        break;
+      }
+      s = s->next;
+    }
+    if (lastStmtListHasContinue && !stmtListHasReturn) {
+      return 0;
+    }
+    clauses = clauses->next;
+  }
+  return 0;
+}
+
 void weedFunction(FUNC_DECL *func_decl, int lineno) {
   if (func_decl->returnType != NULL) {
-    if(!weedBlockReturns(func_decl->body)){
-      //reportError("Function does not have return statement", lineno);
+    if (!weedBlockReturns(func_decl->body)) {
+      reportError("Function does not have return statement", lineno);
     }
   }
   weedStatement(func_decl->body);
