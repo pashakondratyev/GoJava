@@ -247,7 +247,7 @@ ESCAPESYMBOLS \\[abfnrtv\\]
     rune = yytext[1];
   }
 
-  if (g_tokens){printf("tRUNEVAL(%c)\n", rune);}
+  if (g_tokens){printf("tRUNEVAL(%s)\n", yytext);}
   yylval.runeval = rune;
   saveToken(tRUNEVAL);
   return tRUNEVAL;
@@ -276,7 +276,7 @@ ESCAPESYMBOLS \\[abfnrtv\\]
     }
   }
 
-  if (g_tokens){printf("tSTRINGVAL(%s)\n", newString); }
+  if (g_tokens){printf("tSTRINGVAL(%s)\n", yytext); }
   // Don't need to call strdup because for each string we are mallocing more space
   yylval.stringval = newString;
   saveToken(tIDENTIFIER);
