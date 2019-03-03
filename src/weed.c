@@ -190,29 +190,6 @@ void weedBreakCont(STMT *stmt, int allow_cont, int allow_break) {
       break;
     case sk_switch:
       weedSwitchBreak(stmt, allow_cont);
-      /*
-      if (curr_stmt != NULL) {
-        weedBreakCont(curr_stmt->stmt, allow_cont, 1);
-        while (curr_stmt->next != NULL){
-          curr_stmt = curr_stmt->next;
-          weedBreakCont(curr_stmt->stmt, allow_cont, 1);
-        }
-      }
-      while (curr_case_clause->next != NULL){
-        curr_case_clause = curr_case_clause->next;
-        if (curr_case_clause->clause->kind == ck_default){
-          curr_stmt = curr_case_clause->clause->val.defaultClauses;
-        } else {
-          curr_stmt = curr_case_clause->clause->val.caseClause.clauses;
-        }
-        if (curr_stmt != NULL) {
-          weedBreakCont(curr_stmt->stmt, allow_cont, 1);
-          while (curr_stmt->next != NULL){
-            curr_stmt = curr_stmt->next;
-            weedBreakCont(curr_stmt->stmt, allow_cont, 1);
-          }
-        }
-      }*/
       break;
     case sk_exp:
     case sk_assign:
@@ -236,7 +213,7 @@ int weedSwitchReturns(CASE_CLAUSE_LIST *c) {
   CASE_CLAUSE_LIST *clauses = c;
   STMT_LIST *s;
   STMT *curr;
-
+  //printf("valid\n");
   int stmtListHasReturn;
   while (clauses != NULL) {
     if(clauses->clause->val.defaultClauses == NULL 
@@ -274,13 +251,18 @@ int weedSwitchReturns(CASE_CLAUSE_LIST *c) {
     }
     clauses = clauses->next;
   }
-  return 1;
+  return stmtListHasReturn;
 }
 
 void weedFunction(FUNC_DECL *func_decl, int lineno) {
   if (func_decl->returnType != NULL) {
     if (!weedBlockReturns(func_decl->body)) {
       reportError("Function does not have return statement", lineno);
+    }
+  }
+  else{
+    if(weedBlockReturns(func_decl->body)){
+      reportError("Too many arguments to return", lineno); 
     }
   }
   weedStatement(func_decl->body);

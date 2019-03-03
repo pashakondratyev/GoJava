@@ -3,7 +3,7 @@ package test
 
 var x = 4
 
-func main(){
+func main() {
 	switch x {
 	case 2:
 		println("hi")

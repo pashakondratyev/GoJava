@@ -18,6 +18,6 @@ func main() {
 	f := a() 
 }
 
-func a() {
+func a() int{
 	return 7;
 }
