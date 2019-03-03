@@ -111,7 +111,7 @@ void weedSwitchDefault(STMT *stmt) {
   if (curr_case_clause != NULL && curr_case_clause->next == NULL){
     num_defaults = num_defaults+1;
   }
-  while (curr_case_clause != NULL && curr_case_clause->next != NULL){
+  while (curr_case_clause != NULL){
     if (curr_case_clause->clause->kind == ck_default){
       num_defaults = num_defaults+1;
     }
@@ -229,7 +229,7 @@ void weedBreakCont(STMT *stmt, int allow_cont, int allow_break) {
     case sk_fallthrough:
       break;
   }
-  return;
+  
 }
 
 void weedFunction(FUNC_DECL *func_decl, int lineno) {
