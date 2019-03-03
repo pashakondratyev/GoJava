@@ -241,11 +241,17 @@ int weedSwitchReturns(CASE_CLAUSE_LIST *c) {
   int lastStmtListHasContinue = 0;
   int curStmtHasContinue;
   while (clauses != NULL) {
+    if(clauses->clause->val.defaultClauses == NULL 
+      && clauses->clause->val.caseClause.clauses == NULL){
+        return 0;
+      }
     switch (clauses->clause->kind) {
       case ck_default:
         s = clauses->clause->val.defaultClauses;
+        break;
       case ck_case:
         s = clauses->clause->val.caseClause.clauses;
+        break;
         // Check if each statement list has a a continue or a return
     }
     curStmtHasContinue = 0;
@@ -279,7 +285,7 @@ int weedSwitchReturns(CASE_CLAUSE_LIST *c) {
     }
     clauses = clauses->next;
   }
-  return 0;
+  return 1;
 }
 
 void weedFunction(FUNC_DECL *func_decl, int lineno) {
