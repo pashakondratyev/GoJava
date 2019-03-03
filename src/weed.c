@@ -84,7 +84,7 @@ int weedBlockReturns(STMT *stmt) {
     case sk_else:
       return weedBlockReturns(stmt->val.elseBody);
     case sk_switch:
-      return weedSwitchDefault(stmt);
+      //return weedSwitchDefault(stmt);
     case sk_exp:
     case sk_assign:
     case sk_assignOp:
@@ -104,14 +104,14 @@ int weedBlockReturns(STMT *stmt) {
 }
 
 // Checks if switch statement has at most one default case
-int weedSwitchDefault(STMT *stmt) {
+void weedSwitchDefault(STMT *stmt) {
   int num_defaults = 0;
   CASE_CLAUSE_LIST *curr_case_clause = stmt->val.switchStmt.caseClauses;
   STMT_LIST *curr_stmt;
-  if (curr_case_clause->next == NULL){
+  if (curr_case_clause != NULL && curr_case_clause->next == NULL){
     num_defaults = num_defaults+1;
   }
-  while (curr_case_clause->next != NULL){
+  while (curr_case_clause != NULL && curr_case_clause->next != NULL){
     if (curr_case_clause->clause->kind == ck_default){
       num_defaults = num_defaults+1;
     }
@@ -120,28 +120,44 @@ int weedSwitchDefault(STMT *stmt) {
   if (num_defaults > 1){
     reportError("Too many default cases in switch statement", stmt->lineno);
   }
-  return 0;
 }
 
 // Checks if switch statement has no inappropriate continue statement
-void weedSwitchBreak(STMT *stmt, int allow_cont, int allow_break){
-  stmt->val.switchStmt.caseClauses->clause->kind;
-  stmt->val.switchStmt.caseClauses->clause->val;
+void weedSwitchBreak(STMT *stmt, int allow_cont){
   CASE_CLAUSE_LIST *curr_case_clause = stmt->val.switchStmt.caseClauses;
   STMT_LIST *curr_stmt;
-  curr_case_clause->clause->kind;
-  curr_stmt = curr_case_clause->clause->val.defaultClauses;
-  if (curr_case_clause->clause->kind == ck_default) {
-    //curr_case_clause->clause->val.defaultClauses;  
+  while (curr_case_clause != NULL && curr_case_clause->next != NULL) {
+    if (curr_case_clause->clause->kind == ck_default) { 
+      curr_stmt = curr_case_clause->clause->val.defaultClauses;
+    } else {
+      curr_stmt = curr_case_clause->clause->val.caseClause.clauses;
+    }
+    if (curr_stmt != NULL && curr_stmt->next == NULL) {
+      weedBreakCont(curr_stmt->stmt, allow_cont, 1);
+    } else {
+      while (curr_stmt != NULL && curr_stmt->next != NULL) {
+        curr_stmt = curr_stmt->next;
+        weedBreakCont(curr_stmt->stmt, allow_cont, 1);
+      }
+    }
+    curr_case_clause = curr_case_clause->next;
   }
-  /*CASE_CLAUSE_LIST *curr_case_clause = stmt->val.switchStmt.caseClauses;
-  STMT_LIST *curr_stmt;
-  if (curr_case_clause->clause->kind == ck_default){
-    curr_case_clause->clause->val;
-    //curr_stmt = curr_case_clause->clause->val.defaultClauses;
-  } else {
-    //curr_stmt = curr_case_clause->clause->val.caseClause.clauses;
-  }*/
+  if (curr_case_clause != NULL && curr_case_clause->clause != NULL) {
+    if (curr_case_clause->clause->kind == ck_default) {
+      curr_stmt = curr_case_clause->clause->val.defaultClauses;
+    } else {
+      curr_stmt = curr_case_clause->clause->val.caseClause.clauses;
+    }
+    if (curr_stmt->next == NULL) {
+      weedBreakCont(curr_stmt->stmt, allow_cont, 1);
+    } else {
+      while (curr_stmt->next != NULL) {
+        curr_stmt = curr_stmt->next;
+        weedBreakCont(curr_stmt->stmt, allow_cont, 1);
+      }
+    }
+  }
+  weedSwitchDefault(stmt);
 }
 
 // Checks if there are no misplaced break or continue statements
@@ -173,7 +189,7 @@ void weedBreakCont(STMT *stmt, int allow_cont, int allow_break) {
       }
       break;
     case sk_switch:
-      weedSwitchBreak(stmt, allow_cont, allow_break);
+      weedSwitchBreak(stmt, allow_cont);
       /*
       if (curr_stmt != NULL) {
         weedBreakCont(curr_stmt->stmt, allow_cont, 1);
@@ -219,7 +235,7 @@ void weedBreakCont(STMT *stmt, int allow_cont, int allow_break) {
 void weedFunction(FUNC_DECL *func_decl, int lineno) {
   if (func_decl->returnType != NULL) {
     if(!weedBlockReturns(func_decl->body)){
-      reportError("Function does not have return statement", lineno);
+      //reportError("Function does not have return statement", lineno);
     }
   }
   weedStatement(func_decl->body);
