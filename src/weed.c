@@ -238,8 +238,6 @@ int weedSwitchReturns(CASE_CLAUSE_LIST *c) {
   STMT *curr;
 
   int stmtListHasReturn;
-  int lastStmtListHasContinue = 0;
-  int curStmtHasContinue;
   while (clauses != NULL) {
     if(clauses->clause->val.defaultClauses == NULL 
       && clauses->clause->val.caseClause.clauses == NULL){
@@ -254,14 +252,10 @@ int weedSwitchReturns(CASE_CLAUSE_LIST *c) {
         break;
         // Check if each statement list has a a continue or a return
     }
-    curStmtHasContinue = 0;
     stmtListHasReturn = 0;
     while (s != NULL) {
       curr = s->stmt;
       switch (curr->kind) {
-        case sk_continue:
-          curStmtHasContinue = 1;
-          break;
         case sk_return:
           // If the statement has a return statement we can break;
           stmtListHasReturn = 1;
@@ -273,14 +267,9 @@ int weedSwitchReturns(CASE_CLAUSE_LIST *c) {
       if (stmtListHasReturn) {
         break;
       }
-      if (curStmtHasContinue) {
-        lastStmtListHasContinue = 1;
-        curStmtHasContinue = 0;
-        break;
-      }
       s = s->next;
     }
-    if (lastStmtListHasContinue && !stmtListHasReturn) {
+    if (!stmtListHasReturn) {
       return 0;
     }
     clauses = clauses->next;
