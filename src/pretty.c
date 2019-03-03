@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "tree.h"
 #include "pretty.h"
@@ -49,16 +50,21 @@ void prettyPrintDecl(DECL *decl, int tabCount) {
         s = cur->val.shortSpecs;
         while(s != NULL){
           prettyPrintExp(s->lhs);
+          if(s->next != NULL){
+            printf(", ");
+          }
           s = s->next;
         }
         printf(" := ");
         s = cur->val.shortSpecs;
         while(s != NULL){
           prettyPrintExp(s->rhs);
+          if(s->next != NULL){
+            printf(", ");
+          }
           s = s->next;
         } 
-        if(tabCount != 0) printf("\n");
-        //printf("\n");
+        if(tabCount != -1) printf("\n");
         break;
       case dk_type:
         printf("type ");
@@ -79,16 +85,17 @@ void prettyPrintDecl(DECL *decl, int tabCount) {
           printf("%s ", t->name);
           prettyPrintType(t->type, tabCount);
         }
-        if(tabCount != 0) printf("\n");
+        if(tabCount != -1) printf("\n");
         break;
       case dk_var:
         printf("var ");
-        if(decl->val.varSpecs->next != NULL){
-          printf("(\n");
-          v = decl->val.varSpecs;
+        if(cur->val.varSpecs->next != NULL){
+          printf("(");
+          v = cur->val.varSpecs;
           while(v != NULL){
-            printTab(tabCount);
-            printf("%s", v->id);
+            printf("\n");
+            printTab(nextTabCount);
+            printf("%s ", v->id);
             if(v->type != NULL){
               prettyPrintType(v->type, nextTabCount);
             }
@@ -98,21 +105,21 @@ void prettyPrintDecl(DECL *decl, int tabCount) {
             }
             v=v->next;
           }
-          printf(")");
+          printf("\n)");
         }
         else{
-          printf("%s ", decl->val.varSpecs->id);
-          if(decl->val.varSpecs->type != NULL){
-            prettyPrintType(decl->val.varSpecs->type, nextTabCount);
+          printf("%s ", cur->val.varSpecs->id);
+          if(cur->val.varSpecs->type != NULL){
+            prettyPrintType(cur->val.varSpecs->type, nextTabCount);
           }
-          if(decl->val.varSpecs->exp != NULL){
-            printf(" = ");
-            prettyPrintExp(decl->val.varSpecs->exp);
+          if(cur->val.varSpecs->exp != NULL){
+            printf("= ");
+            prettyPrintExp(cur->val.varSpecs->exp);
           }
         }
         //printf("\n");
-        //printf("func %s(", decl->val.varSpecs)
-        if(tabCount >= 0) printf("\n");
+        //printf("func %s(", cur->val.varSpecs)
+        if(tabCount != -1) printf("\n");
         break;
     }
     cur = cur->next;
@@ -120,6 +127,7 @@ void prettyPrintDecl(DECL *decl, int tabCount) {
 }
 
 void prettyPrintExp(EXP *exp) {
+  char *c;
   switch (exp->kind) {
     case ek_id:
       printf("%s", exp->val.id);
@@ -131,7 +139,13 @@ void prettyPrintExp(EXP *exp) {
       printf("%d", exp->val.intval);
       break;
     case ek_string:
-      printf("%s", exp->val.stringval);
+      //printf("%s", exp->val.stringval);
+      c = exp->val.stringval;
+      printf("\"");
+      for(int i = 1;  c[i+1]!= '\0'; i++){
+        getEscapedAsString(c[i]);
+      }
+      printf("\"");
       break;
     case ek_boolean:
       if (exp->val.booleanval == true) {
@@ -141,7 +155,9 @@ void prettyPrintExp(EXP *exp) {
       }
       break;
     case ek_rune:
-      printf("%c", exp->val.runeval);
+      printf("'");
+      getEscapedAsString(exp->val.runeval);
+      printf("'");
       break;
     case ek_plus:
       prettyPrintExp(exp->val.binary.lhs);
@@ -205,7 +221,7 @@ void prettyPrintExp(EXP *exp) {
       break;
     case ek_lt:
       prettyPrintExp(exp->val.binary.lhs);
-      printf(" > ");
+      printf(" < ");
       prettyPrintExp(exp->val.binary.rhs);
       break;
     case ek_and:
@@ -347,14 +363,14 @@ void prettyPrintStmt(STMT *stmt, int tabCount) {
       break;
     case sk_incr:
       printTab(tabCount);
-      printf("++");
       prettyPrintExp(stmt->val.exp);
+      printf("++");
       printf("\n");
       break;
     case sk_decr:
       printTab(tabCount);
-      printf("--");
       prettyPrintExp(stmt->val.exp);
+      printf("--");
       printf("\n");
       break;
     case sk_print:
@@ -371,11 +387,9 @@ void prettyPrintStmt(STMT *stmt, int tabCount) {
       break;
     case sk_return:
       printTab(tabCount);
-      printf("return");
+      printf("return ");
       if(stmt->val.exp != NULL){
-        printf("(");
         prettyPrintExp(stmt->val.exp);
-        printf(")");
       }
       printf("\n");
       break;
@@ -519,7 +533,7 @@ void prettyPrintSimpleStmt(STMT *stmt){
     case sk_decl:
     case sk_shortDecl:
       //Short Declarations have a 0 indentation so that we can 
-      prettyPrintDecl(stmt->val.decl, 0);
+      prettyPrintDecl(stmt->val.decl, -1);
       break;
     default:
       return;
@@ -561,10 +575,13 @@ void prettyPrintType(TYPE *type, int tabCount){
   FIELD_DECLS *d;
   switch(type->kind){
     case tk_array:
-      printf(" []%s", type->val.name);
+      printf("[");
+      prettyPrintExp(type->val.array.size);
+      printf("]");
+      prettyPrintType(type->val.array.elemType, tabCount);
       break;
    case tk_slice:
-      printf(" []%s", type->val.sliceType->val.name);
+      printf("[]%s", type->val.sliceType->val.name);
       break;
     case tk_struct:
       printf("struct {\n");
@@ -648,7 +665,7 @@ void prettyPrintIdList(ID_LIST *id_list) {
 void prettyPrintParamList(PARAM_LIST *param_list){
   PARAM_LIST *cur = param_list;
   while(cur != NULL) {
-    printf("%s", cur->id);
+    printf("%s ", cur->id);
     if(cur->type != NULL){
       prettyPrintType(cur->type, 0);
     }
@@ -657,4 +674,47 @@ void prettyPrintParamList(PARAM_LIST *param_list){
     }
     cur = cur->next;
   }
+}
+
+char *getEscapedAsString(char c){
+  char *string;
+  char strChar[1];
+  switch(c){
+    case '\a':
+      string = "\\a";
+      break;
+    case '\b':
+      string = "\\b";
+      break;
+    case '\f':
+      string = "\\f";
+      break;
+    case '\n':
+      string = "\\n";
+      break;
+    case '\r':
+      string = "\\r";
+      break;
+    case '\t':
+      string = "\\t";
+      break;
+    case '\v':
+      string = "\\v";
+      break;
+    case '\\':
+      string = "\\\\";
+      break;
+    case '\'':
+      string = "\\'";
+      break;
+    case '\"':
+      string = "\\\"";
+      break;
+    default:
+      //strChar[0] = c;
+      printf("%c", c);
+      return strdup(strChar);
+  }
+  printf("%s", string);
+  return strdup(string);
 }

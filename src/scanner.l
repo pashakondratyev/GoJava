@@ -238,13 +238,13 @@ ESCAPESYMBOLS \\[abfnrtv\\]
 <IN_COMMENT>"*"       // eat the lone star
 <IN_COMMENT>\n        yylineno++; if(semicolonRequired()){saveToken(tSEMICOLON); return tSEMICOLON;} //TODO: check if this is necessary , insert semicolon
 
-\'([^']|{ESCAPESYMBOLS}|\\\')\' {
+"'"([^']|{ESCAPESYMBOLS}|"\\\'")"'" {
   char rune;
-  if(yytext[0] == '\\'){
-    rune = getEscaped(yytext[1]);
+  if(yytext[1] == '\\'){
+    rune = getEscaped(yytext[2]);
   }
   else {
-    rune = yytext[0];
+    rune = yytext[1];
   }
 
   if (g_tokens){printf("tRUNEVAL(%c)\n", rune);}

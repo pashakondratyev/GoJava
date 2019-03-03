@@ -213,7 +213,7 @@ void weedBreakCont(STMT *stmt, int allow_cont, int allow_break) {
     case sk_fallthrough:
       break;
   }
-  return 0;
+  return;
 }
 
 void weedFunction(FUNC_DECL *func_decl, int lineno) {

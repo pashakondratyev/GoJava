@@ -18,4 +18,5 @@ void prettyPrintExpList(EXP_LIST *exp_list);
 void prettyPrintParamList(PARAM_LIST *param_list);
 void prettyPrintIdList(ID_LIST *id_list);
 
+char *getEscapedAsString(char c);
 #endif
