@@ -93,18 +93,19 @@ VAR_SPECS *makeVarSpecs(ID_LIST *idList, EXP_LIST *expList, TYPE *type, int line
   VAR_SPECS *lastSpec = NULL;
   while (curId != NULL) {
     VAR_SPECS *vs = malloc(sizeof(VAR_SPECS));
-    vs->id = strdup(idList->id);
+    vs->id = strdup(curId->id);
     vs->type = type;
     vs->exp = curExp == NULL ? NULL : curExp->exp;
     vs->next = NULL;
 
     if (lastSpec != NULL) {
       lastSpec->next = vs;
+      lastSpec=lastSpec->next;
     }
     if (firstSpec == NULL) {
       firstSpec = vs;
+      lastSpec = vs;
     }
-
     curId = curId->next;
     curExp = curExp == NULL ? NULL : curExp->next;
   }

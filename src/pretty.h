@@ -19,4 +19,5 @@ void prettyPrintParamList(PARAM_LIST *param_list);
 void prettyPrintIdList(ID_LIST *id_list);
 
 char *getEscapedAsString(char c);
+void printTab(int tabCount);
 #endif

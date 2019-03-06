@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "symbol.h"
 #include "tree.h"
 #include "pretty.h"
 #include "weed.h"
@@ -9,7 +10,7 @@ void yyparse();
 int yylex();
 int g_tokens;
 int lineno;
-
+SymbolTable *programSymbolTable;
 PROG *root = NULL;
 
 int main(int argc, char *argv[]) {
@@ -37,8 +38,14 @@ int main(int argc, char *argv[]) {
     yyparse();
     weedProgram(root);
     prettyPrint(root);
+  } else if (strcmp(argv[1], "symbol") == 0){
+    yyparse();
+    weedProgram(root);
+    symProgram(root, SymbolTablePrint);
+  } else if (strcmp(argv[1], "type") == 0){
+    printf("Not implemented\n");
   } else {
-    fprintf(stderr, "Error: invalid argument for compiler mode, valid options are (scan | tokens | parse | pretty)\n");
+    fprintf(stderr, "Error: invalid argument for compiler mode, valid options are (scan | tokens | parse | pretty | symbol | type)\n");
     return 1;
   }
   return 0;
