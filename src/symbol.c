@@ -32,6 +32,7 @@ SymbolTable *scopeSymbolTable(SymbolTable *s) {
   return t;
 }
 
+//TODO: Type has lineno consider refactoring
 SYMBOL *putSymbol(SymbolTable *t, DecKind kind, char *identifier, TYPE *type, int lineno) {
   int i = Hash(identifier);
   for(SYMBOL *s = t->table[i]; s; s = s->next){
@@ -42,7 +43,7 @@ SYMBOL *putSymbol(SymbolTable *t, DecKind kind, char *identifier, TYPE *type, in
   }
 
   SYMBOL *s = (SYMBOL*)malloc(sizeof(SYMBOL));
-  s->name = identifier;
+  s->name = strdup(identifier);
   s->type = type;
   s->kind = kind;
   s->next = t->table[i];
@@ -57,8 +58,14 @@ void putTypeDecl(SymbolTable *st, TYPE_SPECS *ts, int lineno){
       continue;
     }
     putSymbol(st, dk_type, ts->name, ts->type, lineno);
-    printf("%s [type] = %s ->", ts->name, ts->name);
-    printType(ts->type);
+    // Line 0 is the types loaded into the symbol table initially
+    printTab(tabCount);
+    if(lineno == 0){
+      printf("%s [type] = %s", ts->name, ts->name);
+    } else{
+      printf("%s [type] = %s ->", ts->name, ts->name);
+      printType(ts->type);
+    }
     ts = ts->next;     
     printf("\n");
   }
@@ -84,10 +91,9 @@ void putFuncDecl(SymbolTable *st, FUNC_DECL *fd, int lineno){
 
   }
   printf("\n");
-  //Need to create a new scope here
-  tabCount++;
-  symTypesStatements(fd->body, st);
-  tabCount--;
+  STMT *pl = paramListToStmt(fd->params, lineno);  
+  pl = combineStmt(pl, fd->body, lineno);
+  createScope(pl, st);
 }
 
 void putShortDecl(SymbolTable *st, SHORT_SPECS *ss, int lineno){
@@ -96,10 +102,11 @@ void putShortDecl(SymbolTable *st, SHORT_SPECS *ss, int lineno){
       ss=ss->next;
       continue;
     }
-    putSymbol(st, dk_type, ss->lhs->val.id, NULL, lineno);
+    //Even though storing NULL for type, can check if dk_short
+    putSymbol(st, dk_short, ss->lhs->val.id, NULL, lineno);
 
-    prettyPrintExp(ss->lhs);
     printTab(tabCount);
+    prettyPrintExp(ss->lhs);
     printf(" [variable] = <infer>\n");
     ss=ss->next;
   }
@@ -156,7 +163,12 @@ SYMBOL *getSymbol(SymbolTable *t, char *name) {
 void symProgram(PROG *root, SymbolTableMode m){
   mode = m; 
   programSymbolTable = initSymbolTable();
+  printf("{\n");
+  tabCount++;
+  symTypesDefaults(programSymbolTable);
   symTypesDeclarations(root->root_decl, programSymbolTable);
+  tabCount--;
+  printf("}\n");
 }
 
 void symTypesDeclarations(DECL *decl, SymbolTable *st){
@@ -181,12 +193,132 @@ void symTypesDeclarations(DECL *decl, SymbolTable *st){
 }
 
 void symTypesStatements(STMT *stmt, SymbolTable *st){
+  STMT_LIST *sl;
+  CASE_CLAUSE_LIST *ccl;
   switch(stmt->kind){
+    case sk_block:
+      sl = stmt->val.block;
+      while(sl != NULL){
+        symTypesStatements(sl->stmt, st);
+        sl = sl->next;
+      }
+      break;
+    case sk_if:
+      if(stmt->val.ifStmt.simpleStmt != NULL){
+        sl = makeStmtList(stmt->val.ifStmt.simpleStmt, stmt->val.ifStmt.body->val.block);
+        createScope(makeBlockStmt(sl, stmt->lineno), st);
+      }
+      else{
+        createScope(stmt->val.ifStmt.body, st);
+      }
+      if(stmt->val.ifStmt.elseStmt != NULL){
+        symTypesStatements(stmt->val.ifStmt.elseStmt, st);
+      }
+      break;
+    case sk_else:
+      createScope(stmt->val.elseBody, st);
+      break;
+    case sk_switch:
+      if(stmt->val.switchStmt.simpleStmt != NULL){
+        symTypesStatements(stmt->val.switchStmt.simpleStmt, st);
+      } 
+
+      ccl = stmt->val.switchStmt.caseClauses;
+      while(ccl != NULL){
+        STMT *newBlock;
+        if(ccl->clause->kind == ck_case){
+          newBlock = makeBlockStmt(ccl->clause->val.caseClause.clauses, stmt->lineno); 
+        }
+        else{ //Else is defauly
+          newBlock = makeBlockStmt(ccl->clause->val.defaultClauses, stmt->lineno);
+        }
+        createScope(newBlock, st);
+        ccl = ccl->next;
+      }
+      break;
+    case sk_for:
+      // Will need to add these statements into scope of body
+      sl = makeStmtList(stmt->val.forStmt.body, NULL);
+      if(stmt->val.forStmt.forClause != NULL){
+        if(stmt->val.forStmt.forClause->init != NULL){
+          sl = makeStmtList(stmt->val.forStmt.forClause->init, sl);
+        }
+        if(stmt->val.forStmt.forClause->post != NULL){
+          sl = makeStmtList(stmt->val.forStmt.forClause->post, sl);
+        }
+      }
+      createScope(makeBlockStmt(sl, stmt->lineno), st);
+      break;
+    case sk_decl:
+    case sk_shortDecl:
+      symTypesDeclarations(stmt->val.decl, st);
     default: break;
   }
-  if(st == NULL){
-    return;
+}
+
+void symTypesDefaults(SymbolTable *st){
+  //int 
+  TYPE *t = makeType((char*)"int", 0);
+  t->kind = tk_int;
+  TYPE_SPECS *ts = makeTypeSpec((char*)"int", t);
+  putTypeDecl(st, ts, 0);
+  //float64
+  t = makeType((char*)"float64", 0);
+  t->kind = tk_float;
+  ts = makeTypeSpec((char*)"float64", t);
+  putTypeDecl(st, ts, 0);
+  //rune 
+  t = makeType((char*)"rune", 0);
+  t->kind = tk_rune;
+  ts = makeTypeSpec((char*)"rune", t);
+  putTypeDecl(st, ts, 0);
+
+  //string
+  t = makeType((char*)"string", 0);
+  t->kind = tk_string;
+  ts = makeTypeSpec((char*)"string", t);
+  putTypeDecl(st, ts, 0);
+  //bool
+  t = makeType((char*)"bool", 0);
+  t->kind = tk_boolean;
+  ts = makeTypeSpec((char*)"bool", t);
+  putTypeDecl(st, ts, 0);
+  //true
+  printTab(tabCount);
+  putSymbol(st, dk_var, (char*)"true", t, 0); 
+  printf("true [constant] = bool\n");
+  //false
+  printTab(tabCount);
+  putSymbol(st, dk_var, (char*)"false", t, 0); 
+  printf("false [constant] = bool\n");
+}
+
+/* Converts a list of parameters into a list of decl statments */
+STMT *paramListToStmt(PARAM_LIST *pl, int lineno){
+  VAR_SPECS *vs = NULL; 
+  VAR_SPECS *last = NULL;
+  while(pl != NULL){
+    if(vs == NULL){
+      vs = (VAR_SPECS*)malloc(sizeof(VAR_SPECS));
+      last = vs;
+    }
+    else{
+      last->next = (VAR_SPECS*)malloc(sizeof(VAR_SPECS)); 
+      last = last->next;
+    }
+    last->id = pl->id;
+    last->type = pl->type;
+    pl = pl->next;
   }
+  DECL *d = makeVarDecl(vs, lineno);
+  return makeDeclStmt(d, lineno);
+}
+
+/* Combines two statements into a single statment */
+STMT *combineStmt(STMT *s1, STMT *s2, int lineno){
+  STMT_LIST *sl = makeStmtList(s2, NULL);
+  sl = makeStmtList(s1, sl);
+  return makeBlockStmt(sl, lineno);
 }
 
 void printType(TYPE *type){
