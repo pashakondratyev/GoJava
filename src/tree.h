@@ -307,7 +307,7 @@ struct TYPE {
   union {
     char *name;
     struct {
-      EXP *size;
+      int size;
       TYPE *elemType;
     } array;
     TYPE *sliceType;
@@ -386,7 +386,7 @@ EXP_LIST *makeExpList(EXP_LIST *listHead, EXP *nextExp);
 
 TYPE *makeType(char *name, int lineno);
 TYPE *makeSliceType(TYPE *elemType, int lineno);
-TYPE *makeArrayType(EXP *size, TYPE *elemType, int lineno);
+TYPE *makeArrayType(int size, TYPE *elemType, int lineno);
 TYPE *makeStructType(FIELD_DECLS *fields, int lineno);
 
 FIELD_DECLS *makeFieldDecls(ID_LIST *idList, TYPE *type, int lineno);

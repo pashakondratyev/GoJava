@@ -67,6 +67,7 @@ char getEscaped(char c){
       rune = '\'';
       break;
     default:
+      
       rune = c;
   }
   return rune;
@@ -77,6 +78,8 @@ OCTALDIGITS [0-7]
 HEXDECSYMBOLS [0-9a-f]
 
 STRINGSYMBOLS [~@#$%^&*\-+/`<>=_|'.,;:!?{}\[\]() ]
+RUNESYMBOLS [~@#$%^&*\-+/`<>=_|.,;:!?{}\[\]() ]
+ALPHNUM [a-zA-Z0-9]
 ESCAPESYMBOLS \\[abfnrtv\\]
 %option yylineno
 %option noyywrap
@@ -238,7 +241,7 @@ ESCAPESYMBOLS \\[abfnrtv\\]
 <IN_COMMENT>"*"       // eat the lone star
 <IN_COMMENT>\n        yylineno++; if(semicolonRequired()){saveToken(tSEMICOLON); return tSEMICOLON;} //TODO: check if this is necessary , insert semicolon
 
-"'"([^']|{ESCAPESYMBOLS}|"\\\'")"'" {
+"'"({ALPHNUM}|{RUNESYMBOLS}|{ESCAPESYMBOLS}|"\\\'")"'" {
   char rune;
   if(yytext[1] == '\\'){
     rune = getEscaped(yytext[2]);
@@ -254,7 +257,7 @@ ESCAPESYMBOLS \\[abfnrtv\\]
 }
 
   /* Valid Strings */
-\"([a-zA-Z0-9]|{STRINGSYMBOLS}|{ESCAPESYMBOLS}|\\\")*\" {
+\"({ALPHNUM}|{STRINGSYMBOLS}|{ESCAPESYMBOLS}|\\\")*\" {
   // Make one pass to count how long the string is if we count escapes
   int len = 0;
   for(int i = 0; yytext[i] != '\0'; i++){

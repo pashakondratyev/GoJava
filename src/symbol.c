@@ -326,7 +326,7 @@ void printType(TYPE *type){
   switch(type->kind){
     case tk_array:
       printf("[");
-      prettyPrintExp(type->val.array.size);
+      printf("%d", type->val.array.size);
       printf("]");
       printType(type->val.array.elemType);
       break;

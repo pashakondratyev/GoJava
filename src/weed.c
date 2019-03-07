@@ -28,10 +28,15 @@ void weedStatement(STMT *stmt) {
     case sk_decl:
     case sk_shortDecl:
       weedDeclaration(stmt->val.decl);
+      break;
+    case sk_exp:
+      weedExpStmt(stmt->val.exp);
     default:
       return;
   }
 }
+
+
 
 void weedDeclaration(DECL *decl) {
   // Checks if declaration list
@@ -52,6 +57,19 @@ void weedDeclaration(DECL *decl) {
       if (!isShortSpecIdentifierType(shortSpecList)) {
         reportError("left hand side of declaration should only contain identifiers", decl->lineno);
       }
+  }
+}
+
+void weedExpStmt(EXP *exp){
+  switch(exp->kind){
+    case ek_func:
+      return;
+    case ek_append:
+    case ek_cap:
+    case ek_len:
+      reportError("built-in function cannot be inside expression statement", exp->lineno);
+    default:
+      reportError("expression statments must be function calls", exp->lineno);
   }
 }
 
@@ -143,19 +161,24 @@ void weedSwitchBreak(STMT *stmt, int allow_cont) {
     curr_case_clause = curr_case_clause->next;
   }
   if (curr_case_clause != NULL && curr_case_clause->clause != NULL) {
+    
     if (curr_case_clause->clause->kind == ck_default) {
       curr_stmt = curr_case_clause->clause->val.defaultClauses;
     } else {
       curr_stmt = curr_case_clause->clause->val.caseClause.clauses;
     }
-    if (curr_stmt->next == NULL) {
+    while(curr_stmt != NULL){
+        weedBreakCont(curr_stmt->stmt, allow_cont, 1);
+        curr_stmt = curr_stmt->next; 
+    }
+    /*if (curr_stmt->next == NULL) {
       weedBreakCont(curr_stmt->stmt, allow_cont, 1);
     } else {
       while (curr_stmt->next != NULL) {
-        curr_stmt = curr_stmt->next;
         weedBreakCont(curr_stmt->stmt, allow_cont, 1);
+        curr_stmt = curr_stmt->next;
       }
-    }
+    } */
   }
   weedSwitchDefault(stmt);
 }
@@ -191,6 +214,15 @@ void weedBreakCont(STMT *stmt, int allow_cont, int allow_break) {
     case sk_switch:
       weedSwitchBreak(stmt, allow_cont);
       break;
+    case sk_if:
+      weedBreakCont(stmt->val.ifStmt.body, allow_cont, allow_break);
+      if (stmt->val.ifStmt.elseStmt != NULL) {
+        weedBreakCont(stmt->val.ifStmt.elseStmt, allow_cont, allow_break);
+      }
+      break;
+    case sk_else:
+      weedBreakCont(stmt->val.elseBody, allow_cont, allow_break);
+      break;
     case sk_exp:
     case sk_assign:
     case sk_assignOp:
@@ -201,25 +233,21 @@ void weedBreakCont(STMT *stmt, int allow_cont, int allow_break) {
     case sk_print:
     case sk_println:
     case sk_return:
-    case sk_if:
-    case sk_else:
     case sk_fallthrough:
       break;
   }
-  
 }
 
 int weedSwitchReturns(CASE_CLAUSE_LIST *c) {
   CASE_CLAUSE_LIST *clauses = c;
   STMT_LIST *s;
   STMT *curr;
-  //printf("valid\n");
+  // printf("valid\n");
   int stmtListHasReturn;
   while (clauses != NULL) {
-    if(clauses->clause->val.defaultClauses == NULL 
-      && clauses->clause->val.caseClause.clauses == NULL){
-        return 0;
-      }
+    if (clauses->clause->val.defaultClauses == NULL && clauses->clause->val.caseClause.clauses == NULL) {
+      return 0;
+    }
     switch (clauses->clause->kind) {
       case ck_default:
         s = clauses->clause->val.defaultClauses;
@@ -259,10 +287,9 @@ void weedFunction(FUNC_DECL *func_decl, int lineno) {
     if (!weedBlockReturns(func_decl->body)) {
       reportError("Function does not have return statement", lineno);
     }
-  }
-  else{
-    if(weedBlockReturns(func_decl->body)){
-      reportError("Too many arguments to return", lineno); 
+  } else {
+    if (weedBlockReturns(func_decl->body)) {
+      reportError("Too many arguments to return", lineno);
     }
   }
   weedStatement(func_decl->body);

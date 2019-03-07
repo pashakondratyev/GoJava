@@ -576,7 +576,7 @@ void prettyPrintType(TYPE *type, int tabCount){
   switch(type->kind){
     case tk_array:
       printf("[");
-      prettyPrintExp(type->val.array.size);
+      printf("%d", type->val.array.size);
       printf("]");
       prettyPrintType(type->val.array.elemType, tabCount);
       break;

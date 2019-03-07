@@ -276,7 +276,7 @@ ParameterDecl: IdentifierList Type  { $$ = makeParamListFromIdList($1, $2, @1.fi
 SliceType: tLSBRACE tRSBRACE Type    { $$ = makeSliceType($3, @3.first_line); }
     ;
 
-ArrayType: tLSBRACE Expression tRSBRACE Type { $$ = makeArrayType($2, $4, @2.first_line); }
+ArrayType: tLSBRACE tINTVAL tRSBRACE Type { $$ = makeArrayType($2, $4, @2.first_line); }
     ;
 
 StructType: tSTRUCT tLCBRACE FieldDeclList tRCBRACE { $$ = makeStructType($3, @3.first_line); }

@@ -9,6 +9,7 @@ void weedDeclaration(DECL *decl);
 void weedStatement(STMT *stmt);
 void weedFunction(FUNC_DECL *func_decl, int lineno);
 
+void weedExpStmt(EXP *exp);
 void weedSwitchDefault(STMT *stmt);
 void weedBreakCont(STMT *stmt, int allow_cont, int allow_break);
 void weedSwitchBreak(STMT *stmt, int allow_cont);

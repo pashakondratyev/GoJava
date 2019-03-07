@@ -633,7 +633,7 @@ TYPE *makeSliceType(TYPE *elemType, int lineno) {
   return t;
 }
 
-TYPE *makeArrayType(EXP *size, TYPE *elemType, int lineno) {
+TYPE *makeArrayType(int size, TYPE *elemType, int lineno) {
   TYPE *t = malloc(sizeof(TYPE));
   t->lineno = lineno;
   t->kind = tk_array;
