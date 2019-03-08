@@ -4,8 +4,8 @@ package test
 func foo() {
 	var a []int
 	var b [6]rune
-	var c [(4/2)]float64
-	var d [8+3]string
+	var c [4]float64
+	var d [8]string
 
 	var e int = a[8*2]
 	var f rune = b[2]
