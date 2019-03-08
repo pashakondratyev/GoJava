@@ -32,6 +32,7 @@ void createScope(STMT *stmt, SymbolTable *st);
 
 SYMBOL *putSymbol(SymbolTable *t, DecKind kind, char *identifier, TYPE *type, int lineno);
 SYMBOL *getSymbol(SymbolTable *t, char *name);
+SYMBOL *getSymbolCurrentScope(SymbolTable *t, char *name);
 
 void putTypeDecl(SymbolTable *st, TYPE_SPECS *ts, int lineno);
 void putFuncDecl(SymbolTable *st, FUNC_DECL *fd, int lineno);

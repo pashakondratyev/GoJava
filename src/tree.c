@@ -669,6 +669,7 @@ TYPE *makeType(char *name, int lineno) {
   TYPE *t = malloc(sizeof(TYPE));
   t->lineno = lineno;
   t->val.name = strdup(name);
+  t->kind = tk_ref;
   return t;
 }
 

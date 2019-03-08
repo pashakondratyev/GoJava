@@ -91,11 +91,19 @@ void putTypeDecl(SymbolTable *st, TYPE_SPECS *ts, int lineno) {
 
 // Functions are top level decl
 void putFuncDecl(SymbolTable *st, FUNC_DECL *fd, int lineno) {
-  putSymbol(st, dk_func, fd->name, NULL, lineno);
+  if(strcmp(fd->name, "init") == 0){
+    if(fd->params != NULL || fd->returnType != NULL){
+      fprintf(stderr, "Error: (line %d) init function cannot have return type of param list\n", lineno);
+      exit(1);
+    }
+  }
+  else{
+    putSymbol(st, dk_func, fd->name, NULL, lineno);
+  }
   if (mode == SymbolTablePrint) {
     printTab(tabCount);
     printf("%s [function] = ", fd->name);
-    if (strcmp(fd->name, "_") == 0) {
+    if (strcmp(fd->name, "_") == 0 || strcmp(fd->name, "init") == 0) {
       printf("<unmapped>");
     } else {
       printParamList(fd->params);
@@ -115,19 +123,29 @@ void putFuncDecl(SymbolTable *st, FUNC_DECL *fd, int lineno) {
 }
 
 void putShortDecl(SymbolTable *st, SHORT_SPECS *ss, int lineno) {
+  //Check if one of the lhs hasn't been declared yet
+  int newDecl = 0;
   while (ss != NULL) {
     if (strcmp(ss->lhs->val.id, "_") == 0) {
       ss = ss->next;
       continue;
     }
-    // Even though storing NULL for type, can check if dk_short
-    putSymbol(st, dk_short, ss->lhs->val.id, NULL, lineno);
-    if (mode == SymbolTablePrint) {
-      printTab(tabCount);
-      prettyPrintExp(ss->lhs);
-      printf(" [variable] = <infer>\n");
+    if(getSymbolCurrentScope(st, ss->lhs->val.id) == NULL){
+      putSymbol(st, dk_short, ss->lhs->val.id, NULL, lineno);
+
+      newDecl = 1;
+      if (mode == SymbolTablePrint) {
+        printTab(tabCount);
+        prettyPrintExp(ss->lhs);
+        printf(" [variable] = <infer>\n");
+      }
     }
     ss = ss->next;
+  }
+
+  if(newDecl == 0){
+    fprintf(stderr, "Error: (line %d) short declaration must have at least one previously undeclared variable", lineno);
+    exit(1);
   }
 }
 
@@ -217,6 +235,15 @@ SYMBOL *getSymbol(SymbolTable *t, char *name) {
   if (t->parent == NULL) return NULL;
   // Check the parent scopes
   return getSymbol(t->parent, name);
+}
+
+SYMBOL *getSymbolCurrentScope(SymbolTable *t, char *name) {
+  int i = Hash(name);
+  // Check the current scope
+  for (SYMBOL *s = t->table[i]; s; s = s->next) {
+    if (strcmp(s->name, name) == 0) return s;
+  }
+  return NULL;
 }
 
 void symProgram(PROG *root, SymbolTableMode m) {

@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
     printf("OK\n");
   } else if (strcmp(argv[1], "pretty") == 0) {
     yyparse();
-    weedProgram(root);
+    //weedProgram(root);
     prettyPrint(root);
   } else if (strcmp(argv[1], "symbol") == 0){
     yyparse();
