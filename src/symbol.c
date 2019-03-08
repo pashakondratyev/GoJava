@@ -32,6 +32,22 @@ SymbolTable *scopeSymbolTable(SymbolTable *s) {
   return t;
 }
 
+void openScope(){
+  if(mode == SymbolTablePrint){
+    printTab(tabCount);
+    printf("{\n"); 
+  }
+  tabCount++;
+}
+
+void closeScope(){
+  tabCount--;
+  if(mode == SymbolTablePrint){
+    printTab(tabCount);
+    printf("}\n");
+  }
+}
+
 //TODO: Type has lineno consider refactoring
 SYMBOL *putSymbol(SymbolTable *t, DecKind kind, char *identifier, TYPE *type, int lineno) {
   int i = Hash(identifier);
@@ -135,17 +151,56 @@ void putVarDecl(SymbolTable *st, VAR_SPECS *vs, int lineno){
 /* Scopes the symbol table and adjusts tab count as necessary */
 void createScope(STMT *stmt, SymbolTable *st){
   SymbolTable *scope = scopeSymbolTable(st);
-  if(mode == SymbolTablePrint){
-    printTab(tabCount);
-    printf("{\n"); 
-  }
-  tabCount++;
+  openScope();
   symTypesStatements(stmt, scope);
-  tabCount--;
-  if(mode == SymbolTablePrint){
-    printTab(tabCount);
-    printf("}\n");
+  closeScope();
+}
+
+/* Takes care of properly scoping an if statment and the else blocks associated with it */
+void createIfStmtScope(STMT *stmt, SymbolTable *st){
+  SymbolTable *scope = scopeSymbolTable(st);
+  openScope();
+  if(stmt->val.ifStmt.simpleStmt != NULL){
+    symTypesStatements(stmt->val.ifStmt.simpleStmt, scope);
   }
+  createScope(stmt->val.ifStmt.body, scope);
+  if(stmt->val.ifStmt.elseStmt != NULL){
+    createScope(stmt->val.ifStmt.elseStmt, scope);
+  }
+  closeScope();
+}
+
+void createForStmtScope(STMT *stmt, SymbolTable *st){
+  SymbolTable *scope = scopeSymbolTable(st);
+  openScope();
+  if(stmt->val.forStmt.forClause != NULL && stmt->val.forStmt.forClause->init != NULL){
+    symTypesStatements(stmt->val.forStmt.forClause->init, scope);
+  }
+  createScope(stmt->val.forStmt.body, scope);
+  closeScope();
+}
+
+void createSwitchStmtScope(STMT *stmt, SymbolTable *st){
+  SymbolTable *scope = scopeSymbolTable(st);
+
+  openScope();
+  if(stmt->val.switchStmt.simpleStmt != NULL){
+    symTypesStatements(stmt->val.switchStmt.simpleStmt, scope);
+  } 
+
+  CASE_CLAUSE_LIST *ccl = stmt->val.switchStmt.caseClauses;
+  while(ccl != NULL){
+    STMT *newBlock;
+    if(ccl->clause->kind == ck_case){
+      newBlock = makeBlockStmt(ccl->clause->val.caseClause.clauses, stmt->lineno); 
+    }
+    else{ //Else is defauly
+      newBlock = makeBlockStmt(ccl->clause->val.defaultClauses, stmt->lineno);
+    }
+    createScope(newBlock, st);
+    ccl = ccl->next;
+  }
+  closeScope();
 }
 
 SYMBOL *getSymbol(SymbolTable *t, char *name) {
@@ -163,12 +218,14 @@ SYMBOL *getSymbol(SymbolTable *t, char *name) {
 void symProgram(PROG *root, SymbolTableMode m){
   mode = m; 
   programSymbolTable = initSymbolTable();
-  printf("{\n");
-  tabCount++;
+  openScope();
   symTypesDefaults(programSymbolTable);
-  symTypesDeclarations(root->root_decl, programSymbolTable);
-  tabCount--;
-  printf("}\n");
+  openScope();
+  //  Default types should be one scope above the top level decls
+  SymbolTable *topLevel = scopeSymbolTable(programSymbolTable);
+  symTypesDeclarations(root->root_decl, topLevel);
+  closeScope();
+  closeScope();
 }
 
 void symTypesDeclarations(DECL *decl, SymbolTable *st){
@@ -195,6 +252,7 @@ void symTypesDeclarations(DECL *decl, SymbolTable *st){
 void symTypesStatements(STMT *stmt, SymbolTable *st){
   STMT_LIST *sl;
   CASE_CLAUSE_LIST *ccl;
+  SymbolTable *nextScope;
   switch(stmt->kind){
     case sk_block:
       sl = stmt->val.block;
@@ -204,50 +262,16 @@ void symTypesStatements(STMT *stmt, SymbolTable *st){
       }
       break;
     case sk_if:
-      if(stmt->val.ifStmt.simpleStmt != NULL){
-        sl = makeStmtList(stmt->val.ifStmt.simpleStmt, stmt->val.ifStmt.body->val.block);
-        createScope(makeBlockStmt(sl, stmt->lineno), st);
-      }
-      else{
-        createScope(stmt->val.ifStmt.body, st);
-      }
-      if(stmt->val.ifStmt.elseStmt != NULL){
-        symTypesStatements(stmt->val.ifStmt.elseStmt, st);
-      }
-      break;
-    case sk_else:
-      createScope(stmt->val.elseBody, st);
+      createIfStmtScope(stmt, st);
       break;
     case sk_switch:
-      if(stmt->val.switchStmt.simpleStmt != NULL){
-        symTypesStatements(stmt->val.switchStmt.simpleStmt, st);
-      } 
-
-      ccl = stmt->val.switchStmt.caseClauses;
-      while(ccl != NULL){
-        STMT *newBlock;
-        if(ccl->clause->kind == ck_case){
-          newBlock = makeBlockStmt(ccl->clause->val.caseClause.clauses, stmt->lineno); 
-        }
-        else{ //Else is defauly
-          newBlock = makeBlockStmt(ccl->clause->val.defaultClauses, stmt->lineno);
-        }
-        createScope(newBlock, st);
-        ccl = ccl->next;
-      }
+      createSwitchStmtScope(stmt, st);
       break;
     case sk_for:
-      // Will need to add these statements into scope of body
-      sl = makeStmtList(stmt->val.forStmt.body, NULL);
-      if(stmt->val.forStmt.forClause != NULL){
-        if(stmt->val.forStmt.forClause->init != NULL){
-          sl = makeStmtList(stmt->val.forStmt.forClause->init, sl);
-        }
-        if(stmt->val.forStmt.forClause->post != NULL){
-          sl = makeStmtList(stmt->val.forStmt.forClause->post, sl);
-        }
-      }
-      createScope(makeBlockStmt(sl, stmt->lineno), st);
+      createForStmtScope(stmt, st);
+      break;
+    case sk_else:
+      symTypesStatements(stmt->val.elseBody, st);
       break;
     case sk_decl:
     case sk_shortDecl:

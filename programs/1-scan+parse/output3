@@ -1,0 +1,723 @@
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		x [variable] = [5]int
+		main [function] = () -> void
+		{
+		}
+	}
+}
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		x [variable] = <infer>
+		main [function] = () -> void
+		{
+			{
+			}
+			a [variable] = int
+		}
+	}
+}
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		a [variable] = float64
+		b [variable] = float64
+		c [variable] = float64
+	}
+}
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		f [function] = (int, int) -> int
+		{
+			a [variable] = int
+			b [variable] = int
+		}
+		g [function] = (int, int) -> int
+		{
+			a [variable] = int
+			b [variable] = int
+		}
+		h [function] = () -> void
+		{
+			number [type] = number ->int
+			y [variable] = int
+			x [variable] = <infer>
+		}
+	}
+}
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		f [function] = (x, y) -> int
+		{
+			int [variable] = x
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		f [function] = (x, y) -> int
+		{
+			int [variable] = x
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		x [variable] = <infer>
+		main [function] = () -> void
+		{
+		}
+	}
+}
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		x [variable] = <infer>
+		y [variable] = <infer>
+		main [function] = () -> void
+		{
+			{
+				{
+				}
+				{
+				}
+			}
+		}
+	}
+}
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		a [variable] = int
+		b [variable] = int
+		c [variable] = int
+		d [variable] = int
+		e [variable] = int
+		f [variable] = int
+	}
+}
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		x [variable] = <infer>
+		z [variable] = <infer>
+	}
+}
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		loop [function] = () -> void
+		{
+			{
+			}
+		}
+	}
+}
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		loop [function] = () -> void
+		{
+			{
+			}
+		}
+	}
+}
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		f [function] = (int, int) -> int
+		{
+			a [variable] = int
+			b [variable] = int
+			{
+			}
+			{
+			}
+		}
+	}
+}
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		a [variable] = <infer>
+		b [variable] = <infer>
+		c [variable] = <infer>
+		d [variable] = <infer>
+		e [variable] = <infer>
+		f [variable] = <infer>
+		g [variable] = <infer>
+		h [variable] = <infer>
+		i [variable] = <infer>
+		j [variable] = <infer>
+		k [variable] = <infer>
+		main [function] = () -> void
+		{
+			l [variable] = <infer>
+			m [variable] = <infer>
+			n [variable] = <infer>
+			o [variable] = <infer>
+			p [variable] = <infer>
+			q [variable] = <infer>
+			r [variable] = <infer>
+		}
+	}
+}
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		main [function] = () -> void
+		{
+			a [variable] = <infer>
+			z [variable] = <infer>
+		}
+	}
+}
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		main [function] = () -> void
+		{
+		}
+	}
+}
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		a [variable] = rune
+		b [variable] = rune
+		c [variable] = rune
+		d [variable] = rune
+		e [variable] = rune
+		f [variable] = rune
+		g [variable] = rune
+		h [variable] = rune
+		i [variable] = rune
+		j [variable] = rune
+		k [variable] = rune
+		l [variable] = rune
+	}
+}
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		y [variable] = <infer>
+		main [function] = () -> void
+		{
+			{
+				x [variable] = <infer>
+			}
+			{
+			}
+		}
+	}
+}
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		a [variable] = string
+		b [variable] = <infer>
+	}
+}
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		main [function] = () -> void
+		{
+			x [variable] = <infer>
+			{
+			}
+			{
+			}
+			{
+			}
+			{
+			}
+			{
+			}
+			{
+			}
+		}
+	}
+}
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		x [variable] = <infer>
+		main [function] = () -> void
+		{
+			{
+			}
+			{
+			}
+		}
+	}
+}
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		x [variable] = <infer>
+		main [function] = () -> void
+		{
+			y [variable] = int
+			{
+			}
+			{
+			}
+			{
+			}
+			{
+			}
+		}
+	}
+}
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		x [variable] = <infer>
+		main [function] = () -> void
+		{
+			{
+			}
+			{
+			}
+		}
+	}
+}
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		main [function] = () -> int
+		{
+			i [variable] = <infer>
+			{
+			}
+			{
+			}
+			{
+			}
+		}
+	}
+}
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		natural [type] = natural ->int
+		real [type] = real ->float64
+		point [type] = point ->struct {x realy realz real}
+		num [type] = num ->int
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		printNumTo15 [function] = (int) -> void
+		{
+			num [variable] = int
+			{
+			}
+			{
+			}
+			{
+			}
+			{
+			}
+			{
+			}
+			{
+			}
+			{
+			}
+			{
+			}
+			{
+			}
+			{
+			}
+			{
+			}
+			{
+			}
+			{
+			}
+			{
+			}
+			{
+			}
+			{
+			}
+			{
+			}
+		}
+		w [variable] = <infer>
+		x [variable] = <infer>
+		y [variable] = <infer>
+		z [variable] = <infer>
+		main [function] = () -> void
+		{
+		}
+	}
+}
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		Vector [type] = Vector ->struct {x inty intz int}
+		createVector [function] = (int, int, int) -> Vector
+		{
+			x [variable] = int
+			y [variable] = int
+			z [variable] = int
+			v [variable] = Vector
+		}
+		addVectors [function] = (Vector, Vector) -> Vector
+		{
+			v1 [variable] = Vector
+			v2 [variable] = Vector
+			v [variable] = Vector
+		}
+		multiplyVector [function] = (Vector, int) -> Vector
+		{
+			v1 [variable] = Vector
+			multiple [variable] = int
+			v [variable] = Vector
+		}
+		equal [function] = (Vector, Vector) -> bool
+		{
+			v1 [variable] = Vector
+			v2 [variable] = Vector
+			isEqual [variable] = <infer>
+			{
+			}
+		}
+		v1 [variable] = <infer>
+		v2 [variable] = <infer>
+		v3 [variable] = <infer>
+		v4 [variable] = <infer>
+		main [function] = () -> void
+		{
+		}
+	}
+}
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		x [variable] = float64
+		guess [variable] = float64
+		iter [variable] = int
+		main [function] = () -> void
+		{
+			{
+				quot [variable] = float64
+			}
+		}
+	}
+}
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		sweep [function] = ([]int) -> void
+		{
+			nums [variable] = []int
+			firstIndex [variable] = int
+			secondIndex [variable] = int
+			{
+				firstNum [variable] = int
+				secondNum [variable] = int
+				{
+				}
+			}
+		}
+		bubbleSort [function] = ([]int) -> void
+		{
+			nums [variable] = []int
+			{
+				i [variable] = <infer>
+			}
+		}
+		printSlice [function] = ([]int) -> void
+		{
+			nums [variable] = []int
+			{
+				i [variable] = <infer>
+			}
+		}
+		main [function] = () -> void
+		{
+			nums [variable] = []int
+		}
+	}
+}
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		foundDuplicate [function] = (string, int) -> bool
+		{
+			str [variable] = string
+			curIndex [variable] = int
+			found [variable] = <infer>
+			{
+				i [variable] = <infer>
+				{
+				}
+			}
+		}
+		getFirstUniqueChar [function] = (string) -> string
+		{
+			str [variable] = string
+			output [variable] = <infer>
+			allChars [variable] = []string
+			{
+				i [variable] = <infer>
+			}
+			{
+				i [variable] = <infer>
+				{
+				}
+			}
+		}
+		main [function] = () -> void
+		{
+		}
+	}
+}
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		equals [function] = ([]int, []int) -> bool
+		{
+			s1 [variable] = []int
+			s2 [variable] = []int
+			result [variable] = bool
+			{
+			}
+			{
+				{
+				}
+				{
+					{
+						i [variable] = <infer>
+						{
+						}
+					}
+				}
+			}
+		}
+		s1 [variable] = []int
+		s2 [variable] = []int
+		s3 [variable] = []int
+		main [function] = () -> void
+		{
+		}
+	}
+}
+{
+	int [type] = int
+	float64 [type] = float64
+	rune [type] = rune
+	string [type] = string
+	bool [type] = bool
+	true [constant] = bool
+	false [constant] = bool
+	{
+		x1 [variable] = int
+		x2 [variable] = int
+		y [variable] = int
+		z [variable] = <infer>
+		a1 [variable] = int
+		b [variable] = int
+		c [variable] = <infer>
+		main [function] = () -> void
+		{
+			i [variable] = <infer>
+			j [variable] = <infer>
+			f [variable] = <infer>
+		}
+		a [function] = () -> int
+		{
+		}
+	}
+}
