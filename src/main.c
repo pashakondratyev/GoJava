@@ -5,6 +5,7 @@
 #include "tree.h"
 #include "pretty.h"
 #include "weed.h"
+#include "type.h"
 
 void yyparse();
 int yylex();
@@ -42,10 +43,15 @@ int main(int argc, char *argv[]) {
     yyparse();
     weedProgram(root);
     symProgram(root, SymbolTablePrint);
-  } else if (strcmp(argv[1], "type") == 0){
-    printf("Not implemented\n");
+  } else if (strcmp(argv[1], "typecheck") == 0){
+    yyparse();
+    weedProgram(root);
+    symProgram(root, SymbolTableConstruct);
+    // TODO: Complete typecheck
+    typeProgram(root, programSymbolTable);
+    printf("OK\n");
   } else {
-    fprintf(stderr, "Error: invalid argument for compiler mode, valid options are (scan | tokens | parse | pretty | symbol | type)\n");
+    fprintf(stderr, "Error: invalid argument for compiler mode, valid options are (scan | tokens | parse | pretty | symbol | typecheck)\n");
     return 1;
   }
   return 0;

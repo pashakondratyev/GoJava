@@ -1,3 +1,6 @@
+#ifndef SYMBOL_H
+#define SYMBOL_H
+
 #include "tree.h"
 
 #define HashSize 317
@@ -43,3 +46,5 @@ STMT *combineStmt(STMT *s1, STMT *s2, int lineno);
 
 void printType(TYPE *type);
 void printParamList(PARAM_LIST *pl);
+
+#endif
