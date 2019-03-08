@@ -14,11 +14,11 @@ func bar() {
 	return
 }
 
-func a() int {
+func a1() int {
 	return 4
 }
 
-func b() bool {
+func b1() bool {
 	return true
 }
 
@@ -47,7 +47,9 @@ func hello3() {
 
 // assignments
 func hi1() {
-	type point struct { x,y,z int }
+	type point struct { 
+		x,y,z int 
+	}
 	var p point
 	var s []int
 	var a [2]int
@@ -75,8 +77,8 @@ func yo1() {
 
 	var y = 4.2
 	var z = 12
-	for z==13 || y=4.2 {
-		y-=1;
+	for z==13 || y==4.2 {
+		y-=1.0;
 		z+=1;
 	}
 
