@@ -711,15 +711,17 @@ FIELD_DECLS *makeFieldDecls(ID_LIST *idList, TYPE *type, int lineno) {
 
     if (lastField != NULL) {
       lastField->next = fd;
+      lastField = lastField->next;
     }
 
     if (head == NULL) {
       head = fd;
+      lastField = fd;
     }
 
-    lastField = fd;
     curId = curId->next;
   }
+  lastField = head;
   return head;
 }
 
@@ -727,6 +729,11 @@ FIELD_DECLS *makeFieldDeclsList(FIELD_DECLS *firstField, FIELD_DECLS *fieldList)
   // if (firstField == NULL) {
   // 	printf("ERROR: Logical error in makeFieldDeclsList.\n");
   // }
-  firstField->next = fieldList;
+  FIELD_DECLS *temp = firstField;
+  while(temp->next != NULL){
+    temp = temp->next;
+  }
+  temp->next = fieldList;
+  
   return firstField;
 }
