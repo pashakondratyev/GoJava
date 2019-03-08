@@ -265,6 +265,14 @@ STMT *makeDeclStmt(DECL *decl, int lineno) {
   return s;
 }
 
+STMT *makeShortDeclStmt(DECL *decl, int lineno) {
+  STMT *s = malloc(sizeof(STMT));
+  s->lineno = lineno;
+  s->kind = sk_shortDecl;
+  s->val.decl = decl;
+  return s;
+}
+
 STMT *makeBlockStmt(STMT_LIST *stmts, int lineno) {
   STMT *s = malloc(sizeof(STMT));
   s->lineno = lineno;
@@ -590,6 +598,7 @@ EXP *makeArgumentExp(EXP *iden, EXP_LIST *args, TYPE *type, int lineno){
   e->val.convField.args = args;
   if(type != NULL){
     e->val.convField.type = type;
+    return e;
   }
   else{
     TYPE *t = malloc(sizeof(TYPE));
@@ -601,10 +610,8 @@ EXP *makeArgumentExp(EXP *iden, EXP_LIST *args, TYPE *type, int lineno){
       }
       iden = iden->val.parenExp;
     } 
-    t->val.name = iden->val.id;
-    e->val.convField.type = t;
+    return makeFunctionCall(iden->val.id, args, lineno);
   }
-  return e;
 }
 
 EXP *makeAppendCall(EXP *sliceExp, EXP *elem, int lineno) {

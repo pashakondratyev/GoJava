@@ -17,10 +17,29 @@ void weedProgram(PROG *prog) {
 
 void weedStatement(STMT *stmt) {
   STMT_LIST *cur;
-  if(stmt == NULL){
+  FOR_CLAUSE *fc;
+  if (stmt == NULL) {
     return;
   }
   switch (stmt->kind) {
+    case sk_for:
+      fc = stmt->val.forStmt.forClause;
+      // post stement cannot be short var decl
+      if (fc != NULL && fc->post != NULL) {
+        if (fc->post->kind == sk_shortDecl) {
+          reportError("Post declaration cannot be a short declaration", stmt->lineno);
+        }
+        if (fc->post->kind == sk_exp) {
+          weedExpStmt(fc->post->val.exp);
+        }
+      }
+      if (fc != NULL && fc->init != NULL) {
+        if (fc->init->kind == sk_exp) {
+          weedExpStmt(fc->init->val.exp);
+        }
+      }
+      weedStatement(stmt->val.forStmt.body);
+      break;
     case sk_block:
       cur = stmt->val.block;
       while (cur != NULL) {
@@ -38,8 +57,6 @@ void weedStatement(STMT *stmt) {
       return;
   }
 }
-
-
 
 void weedDeclaration(DECL *decl) {
   // Checks if declaration list
@@ -63,8 +80,8 @@ void weedDeclaration(DECL *decl) {
   }
 }
 
-void weedExpStmt(EXP *exp){
-  switch(exp->kind){
+void weedExpStmt(EXP *exp) {
+  switch (exp->kind) {
     case ek_func:
       return;
     case ek_append:
@@ -132,12 +149,13 @@ void weedSwitchDefault(STMT *stmt) {
   STMT_LIST *curr_stmt;
   if (curr_case_clause != NULL && curr_case_clause->next == NULL) {
     num_defaults = num_defaults + 1;
-  }
-  while (curr_case_clause != NULL){
-    if (curr_case_clause->clause->kind == ck_default){
-      num_defaults = num_defaults+1;
+  } else {
+    while (curr_case_clause != NULL) {
+      if (curr_case_clause->clause->kind == ck_default) {
+        num_defaults = num_defaults + 1;
+      }
+      curr_case_clause = curr_case_clause->next;
     }
-    curr_case_clause = curr_case_clause->next;
   }
   if (num_defaults > 1) {
     reportError("Too many default cases in switch statement", stmt->lineno);
@@ -165,15 +183,14 @@ void weedSwitchBreak(STMT *stmt, int allow_cont) {
     curr_case_clause = curr_case_clause->next;
   }
   if (curr_case_clause != NULL && curr_case_clause->clause != NULL) {
-    
     if (curr_case_clause->clause->kind == ck_default) {
       curr_stmt = curr_case_clause->clause->val.defaultClauses;
     } else {
       curr_stmt = curr_case_clause->clause->val.caseClause.clauses;
     }
-    while(curr_stmt != NULL){
-        weedBreakCont(curr_stmt->stmt, allow_cont, 1);
-        curr_stmt = curr_stmt->next; 
+    while (curr_stmt != NULL) {
+      weedBreakCont(curr_stmt->stmt, allow_cont, 1);
+      curr_stmt = curr_stmt->next;
     }
     /*if (curr_stmt->next == NULL) {
       weedBreakCont(curr_stmt->stmt, allow_cont, 1);
@@ -196,6 +213,9 @@ void weedBreakCont(STMT *stmt, int allow_cont, int allow_break) {
   switch (stmt->kind) {
     case sk_block:
       curr_stmt = stmt->val.block;
+      if (curr_stmt == NULL) {
+        break;
+      }
       weedBreakCont(curr_stmt->stmt, allow_cont, allow_break);
       while (curr_stmt->next != NULL) {
         curr_stmt = curr_stmt->next;

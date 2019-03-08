@@ -366,6 +366,7 @@ STMT *makeElseStmt(STMT *body, int lineno);
 STMT *makeForStmt(EXP *whileExp, FOR_CLAUSE *forClause, STMT *body, int lineno);
 STMT *makeSwitchStmt(STMT *simpleStmt, EXP *exp, CASE_CLAUSE_LIST *caseClauses, int lineno);
 STMT *makeEmptyStmt(int lineno);
+STMT *makeShortDeclStmt(DECL *decl, int lineno);
 STMT_LIST *makeStmtList(STMT *firstStmt, STMT_LIST *stmtList);
 
 FOR_CLAUSE *makeForClause(STMT *init, EXP *cond, STMT *post);

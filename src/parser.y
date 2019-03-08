@@ -220,7 +220,7 @@ CapExpression: tCAP tLPAREN Expression tRPAREN  { $$ = makeCapCall($3, @1.first_
     ;
 
 TypeDecl: tTYPE TypeSpec    { $$ = makeTypeDecl($2, @2.first_line); }
-    | tTYPE tLPAREN TypeSpecList tRPAREN    { $$ = makeTypeDecl($3, @3.first_line); }
+    | tTYPE tLPAREN TypeSpecList tRPAREN    { $$ = makeTypeDecl($3, @1.first_line); }
     ;
 
 TypeSpec: tIDENTIFIER Type { $$ = makeTypeSpec($1, $2); }
@@ -230,10 +230,11 @@ TypeSpecList: %empty    { $$ = NULL; }
     | TypeSpecList TypeSpec tSEMICOLON  { $$ = makeTypeSpecList($1, $2); }
     ;
 
-FuncDecl: tFUNC tIDENTIFIER Signature Block     { $$ = makeFuncDecl($2, $3, $4, @2.first_line); }
+FuncDecl: tFUNC tIDENTIFIER Signature Block     { $$ = makeFuncDecl($2, $3, $4, @1.first_line); }
     ;
 
 Block: tLCBRACE StatementList tRCBRACE  { $$ = makeBlockStmt($2, @2.first_line); }
+    | tLCBRACE tRCBRACE { $$ = makeBlockStmt(NULL, @1.first_line);}
     ;
 
 StatementList: Statement tSEMICOLON         { $$ = makeStmtList($1, NULL); }
@@ -257,7 +258,7 @@ SimpleStatement: %empty     { $$ = makeEmptyStmt(@0.first_line); }
     | Expression    { $$ = makeExpStmt($1, @1.first_line); }
     | IncDecStatement   { $$ = $1; }
     | AssignStatement   { $$ = $1; }
-    | ShortVarDecl  { $$ = makeDeclStmt($1, @1.first_line); }
+    | ShortVarDecl  { $$ = makeShortDeclStmt($1, @1.first_line); }
     ;
 
 Signature: Parameters   { $$ = makeSignature($1, NULL); }
