@@ -41,7 +41,7 @@ typedef enum {
   tk_ref  // user-constructed type
 } TypeKind;
 
-typedef enum { dk_type, dk_func, dk_var, dk_short } DecKind;
+typedef enum { dk_var, dk_short, dk_type, dk_func } DecKind;
 
 typedef enum {
   sk_block,
