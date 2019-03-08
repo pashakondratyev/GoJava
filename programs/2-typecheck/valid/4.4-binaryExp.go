@@ -40,19 +40,24 @@ func foo() {
 	var b int
 	var c float64
 	var d string
+	var e rune
 
 	b = 1 + 2
 	c = 345.235 + .234
 	d = "hello " + "world"
+	e = 'r' + 'e'
 
 	b = 1 - 2
 	c = 345.235 - .234
+	e = 'r' - 'e'
 
 	b = 1 * 2
 	c = 345.235 * .234
+	e = 'r' * 'e'
 
 	b = 1 / 2
 	c = 345.235 / .234
+	e = 'r' / 'e'
 
 	b = 1 % 2
 	b = 1 | 2
