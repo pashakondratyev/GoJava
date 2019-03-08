@@ -61,7 +61,8 @@ typedef enum {
   sk_for,
   sk_break,
   sk_continue,
-  sk_fallthrough
+  sk_fallthrough,
+  sk_empty
 } StmtKind;
 
 typedef enum {
@@ -116,7 +117,8 @@ typedef enum {
   ek_cap,
   ek_indexExp,  // for slice or array
   ek_structField,
-  ek_paren
+  ek_paren,
+  ek_conv
 } ExpKind;
 
 struct PROG {
@@ -293,6 +295,10 @@ struct EXP {
       char *fieldName;
     } structField;
     EXP *parenExp;
+    struct {
+      EXP_LIST *args;
+      TYPE *type;
+    } convField;
   } val;
 };
 
@@ -359,6 +365,7 @@ STMT *makeIfStmt(STMT *simpleStmt, EXP *cond, STMT *body, STMT *elseStmt, int li
 STMT *makeElseStmt(STMT *body, int lineno);
 STMT *makeForStmt(EXP *whileExp, FOR_CLAUSE *forClause, STMT *body, int lineno);
 STMT *makeSwitchStmt(STMT *simpleStmt, EXP *exp, CASE_CLAUSE_LIST *caseClauses, int lineno);
+STMT *makeEmptyStmt(int lineno);
 STMT_LIST *makeStmtList(STMT *firstStmt, STMT_LIST *stmtList);
 
 FOR_CLAUSE *makeForClause(STMT *init, EXP *cond, STMT *post);
@@ -382,6 +389,7 @@ EXP *makeCapCall(EXP *sliceOrArrayExp, int lineno);
 EXP *makeIndexExp(EXP *objectExp, EXP *indexExp, int lineno);
 EXP *makeParenExp(EXP *exp, int lineno);
 EXP *makeStructFieldAccess(EXP *structExp, char *fieldName, int lineno);
+EXP *makeArgumentExp(EXP *exp, EXP_LIST *args, TYPE *type, int lineno);
 EXP_LIST *makeExpList(EXP_LIST *listHead, EXP *nextExp);
 
 TYPE *makeType(char *name, int lineno);

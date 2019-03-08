@@ -93,8 +93,8 @@ void yyerror(const char *s) {
 %type <caseClauseList> ExprCaseClauseList
 %type <caseClause> ExprCaseClause
 %type <exprList> ExpressionList
-%type <exp> Expression ExpressionOrEmpty PrimaryExpression FunctionCall AppendExpression LenExpression CapExpression UnaryExpression
-%type <type> Type CompoundType ArrayType SliceType StructType
+%type <exp> Expression ExpressionOrEmpty PrimaryExpression AppendExpression LenExpression CapExpression UnaryExpression
+%type <type> Type CompoundType CompoundTypeParen ArrayType SliceType StructType
 %type <fieldDecls> FieldDecl FieldDeclList
 
 
@@ -117,8 +117,7 @@ prog: PackageDecl TopLevelDeclList { root = makeProg($1, $2, @1.first_line); }
 PackageDecl: tPACKAGE tIDENTIFIER tSEMICOLON { $$ = makePackage($2, @2.first_line); }
     ;
 
-TopLevelDeclList: Declaration tSEMICOLON
-    | FuncDecl tSEMICOLON
+TopLevelDeclList: %empty {$$ = NULL;}
     | Declaration tSEMICOLON TopLevelDeclList   { $$ = makeDecls($1, $3); }
     | FuncDecl tSEMICOLON TopLevelDeclList  { $$ = makeDecls($1, $3); }
     ;
@@ -145,11 +144,16 @@ VarSpecList: %empty     { $$ = NULL; }
 
 Type: tIDENTIFIER   { $$ = makeType($1, @1.first_line); }
     | CompoundType  { $$ = $1; }
+    | tLPAREN Type tRPAREN { $$ = $2; }
     ;
 
 CompoundType: ArrayType
     | SliceType
     | StructType
+    ;
+
+CompoundTypeParen: CompoundType { $$ = $1; }
+    | tLPAREN CompoundTypeParen tRPAREN { $$ = $2; }
     ;
 
 IdentifierList: tIDENTIFIER     { $$ = makeIdList(NULL, $1); }
@@ -198,14 +202,12 @@ PrimaryExpression: tIDENTIFIER  { $$ = makeIdentifierExp($1, @1.first_line); }
     | tLPAREN Expression tRPAREN    { $$ = makeParenExp($2, @1.first_line); }
     | PrimaryExpression tPERIOD tIDENTIFIER     { $$ = makeStructFieldAccess($1, $3, @1.first_line); }
     | PrimaryExpression tLSBRACE Expression tRSBRACE    { $$ = makeIndexExp($1, $3, @1.first_line); }  
-    | FunctionCall  { $$ = $1; }
+    | PrimaryExpression tLPAREN ExpressionList tRPAREN { $$ = makeArgumentExp($1, $3, NULL, @1.first_line); }
+    | PrimaryExpression tLPAREN tRPAREN { $$ = makeArgumentExp($1 , NULL, NULL, @1.first_line); }
+    | CompoundTypeParen tLPAREN ExpressionList tRPAREN { $$ = makeArgumentExp(NULL, $3, $1, @1.first_line); }
     | AppendExpression  { $$ = $1; }
     | LenExpression { $$ = $1; }
     | CapExpression { $$ = $1; }
-    ;
-
-FunctionCall: tIDENTIFIER tLPAREN ExpressionList tRPAREN    { $$ = makeFunctionCall($1, $3, @1.first_line); }
-    | tIDENTIFIER tLPAREN tRPAREN   { $$ = makeFunctionCall($1, NULL, @1.first_line); }
     ;
 
 AppendExpression: tAPPEND tLPAREN Expression tCOMMA Expression tRPAREN  { $$ = makeAppendCall($3, $5, @1.first_line); }
@@ -251,7 +253,7 @@ Statement: Declaration { $$ = makeDeclStmt($1, @1.first_line); }
     | BreakStatement    { $$ = $1; }
     ;
 
-SimpleStatement: %empty     { $$ = NULL; }
+SimpleStatement: %empty     { $$ = makeEmptyStmt(@0.first_line); }
     | Expression    { $$ = makeExpStmt($1, @1.first_line); }
     | IncDecStatement   { $$ = $1; }
     | AssignStatement   { $$ = $1; }
@@ -282,7 +284,7 @@ ArrayType: tLSBRACE tINTVAL tRSBRACE Type { $$ = makeArrayType($2, $4, @2.first_
 StructType: tSTRUCT tLCBRACE FieldDeclList tRCBRACE { $$ = makeStructType($3, @3.first_line); }
     ;
 
-FieldDeclList: FieldDecl tSEMICOLON     { $$ = $1; }
+FieldDeclList: %empty { $$ = NULL; }
     | FieldDecl tSEMICOLON FieldDeclList    { $$ = makeFieldDeclsList($1, $3); }
     ;
 

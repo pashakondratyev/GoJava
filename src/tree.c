@@ -413,6 +413,14 @@ STMT *makeForStmt(EXP *whileExp, FOR_CLAUSE *forClause, STMT *body, int lineno) 
   return s;
 }
 
+STMT *makeEmptyStmt(int lineno){
+  // Empty statement is easier to work with than checking if a stmt is null
+  STMT *s = malloc(sizeof(STMT));
+  s->lineno = lineno;
+  s->kind = sk_empty;
+  return s;
+}
+
 CASE_CLAUSE_LIST *makeCaseClauseList(CASE_CLAUSE *firstClause, CASE_CLAUSE_LIST *caseClauseList) {
   // if (firstClause == NULL) {
   // 	printf("ERROR: Logical error in makeCaseClauseList.\n");
@@ -564,6 +572,38 @@ EXP *makeFunctionCall(char *funcId, EXP_LIST *args, int lineno) {
   e->kind = ek_func;
   e->val.funcCall.funcId = strdup(funcId);
   e->val.funcCall.args = args;
+  return e;
+}
+
+EXP *makeArgumentExp(EXP *iden, EXP_LIST *args, TYPE *type, int lineno){
+  // The purpose of combining function calls and type casts is due to the similarities
+  // In their syntax, which would otherwise create shift/reduce errors so a more general
+  // CFG was created and depending on the types passed, it will process the expression
+  // to figure out if we are dealing with a function call or a typecast
+  // If the identifier is a pure identifier, it can be treated as a function call
+  if(iden->kind == ek_id){
+    return makeFunctionCall(iden->val.id, args, lineno);
+  }
+  EXP *e = malloc(sizeof(EXP));
+  e->lineno = lineno;
+  e->kind = ek_conv;
+  e->val.convField.args = args;
+  if(type != NULL){
+    e->val.convField.type = type;
+  }
+  else{
+    TYPE *t = malloc(sizeof(TYPE));
+    t->lineno = lineno;
+    // Unrolls the type identifier 
+    while(iden->kind != ek_id){
+      if(iden == NULL || iden->kind != ek_paren){
+        fprintf(stderr, "Error: (line %d) not a function call or type conversion expression\n", lineno);
+      }
+      iden = iden->val.parenExp;
+    } 
+    t->val.name = iden->val.id;
+    e->val.convField.type = t;
+  }
   return e;
 }
 

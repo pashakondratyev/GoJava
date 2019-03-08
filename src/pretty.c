@@ -307,6 +307,12 @@ void prettyPrintExp(EXP *exp) {
       prettyPrintExp(exp->val.parenExp);
       printf(")");
       break;
+    case ek_conv:
+      prettyPrintType(exp->val.convField.type, 0);
+      printf("(");
+      prettyPrintExpList(exp->val.convField.args);
+      printf(")");
+      break;
   }
   return;
 }
@@ -493,7 +499,9 @@ void prettyPrintStmt(STMT *stmt, int tabCount) {
     case sk_fallthrough:
       printTab(tabCount);
       printf("fallthrough\n");
-      return;
+      break;
+    case sk_empty:
+      break;
   }
   return;
 }

@@ -17,6 +17,9 @@ void weedProgram(PROG *prog) {
 
 void weedStatement(STMT *stmt) {
   STMT_LIST *cur;
+  if(stmt == NULL){
+    return;
+  }
   switch (stmt->kind) {
     case sk_block:
       cur = stmt->val.block;
@@ -116,6 +119,7 @@ int weedBlockReturns(STMT *stmt) {
     case sk_break:
     case sk_continue:
     case sk_fallthrough:
+    case sk_empty:
       return 0;
   }
   return 0;
@@ -234,6 +238,7 @@ void weedBreakCont(STMT *stmt, int allow_cont, int allow_break) {
     case sk_println:
     case sk_return:
     case sk_fallthrough:
+    case sk_empty:
       break;
   }
 }
@@ -283,6 +288,8 @@ int weedSwitchReturns(CASE_CLAUSE_LIST *c) {
 }
 
 void weedFunction(FUNC_DECL *func_decl, int lineno) {
+  // Weed body first
+  weedStatement(func_decl->body);
   if (func_decl->returnType != NULL) {
     if (!weedBlockReturns(func_decl->body)) {
       reportError("Function does not have return statement", lineno);
@@ -292,7 +299,6 @@ void weedFunction(FUNC_DECL *func_decl, int lineno) {
       reportError("Too many arguments to return", lineno);
     }
   }
-  weedStatement(func_decl->body);
   weedBreakCont(func_decl->body, 0, 0);
 }
 
