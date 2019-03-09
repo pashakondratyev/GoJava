@@ -135,8 +135,6 @@ void typeExp(EXP *exp, SymbolTable *st) {
 				break;
 			case ek_bitOr:
 				break;
-			case ek_plus:
-				break;
 			case ek_eq:
 				break;
 			case ek_ne:
