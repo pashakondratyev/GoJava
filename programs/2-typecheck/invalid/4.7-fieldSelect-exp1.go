@@ -3,5 +3,5 @@ package test
 
 func foo() {
 	var a int = 5;
-	a.value
+	println(a.value)
 }

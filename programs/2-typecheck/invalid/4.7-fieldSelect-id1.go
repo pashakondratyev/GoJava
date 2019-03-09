@@ -6,5 +6,5 @@ func foo() {
 		x,y int 
 	}
 	var structElem structType
-	var a = structElem.a
+	var a = structElem.val
 }
