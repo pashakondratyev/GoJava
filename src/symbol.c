@@ -119,7 +119,7 @@ void putFuncDecl(SymbolTable *st, FUNC_DECL *fd, int lineno) {
 
   STMT *pl = paramListToStmt(fd->params, lineno);
   pl = combineStmt(pl, fd->body, lineno);
-  createScope(pl, st);
+  symTypesStatements(pl, st);
 }
 
 void putShortDecl(SymbolTable *st, SHORT_SPECS *ss, int lineno) {
@@ -186,9 +186,9 @@ void createIfStmtScope(STMT *stmt, SymbolTable *st) {
   if (stmt->val.ifStmt.simpleStmt != NULL) {
     symTypesStatements(stmt->val.ifStmt.simpleStmt, scope);
   }
-  createScope(stmt->val.ifStmt.body, scope);
+  symTypesStatements(stmt->val.ifStmt.body, scope);
   if (stmt->val.ifStmt.elseStmt != NULL) {
-    createScope(stmt->val.ifStmt.elseStmt, scope);
+    symTypesStatements(stmt->val.ifStmt.elseStmt, scope);
   }
   closeScope();
 }
@@ -199,7 +199,7 @@ void createForStmtScope(STMT *stmt, SymbolTable *st) {
   if (stmt->val.forStmt.forClause != NULL && stmt->val.forStmt.forClause->init != NULL) {
     symTypesStatements(stmt->val.forStmt.forClause->init, scope);
   }
-  createScope(stmt->val.forStmt.body, scope);
+  symTypesStatements(stmt->val.forStmt.body, scope);
   closeScope();
 }
 
@@ -219,7 +219,7 @@ void createSwitchStmtScope(STMT *stmt, SymbolTable *st) {
     } else {  // Else is defauly
       newBlock = makeBlockStmt(ccl->clause->val.defaultClauses, stmt->lineno);
     }
-    createScope(newBlock, st);
+    symTypesStatements(newBlock, st);
     ccl = ccl->next;
   }
   closeScope();
@@ -283,14 +283,17 @@ void symTypesDeclarations(DECL *decl, SymbolTable *st) {
 void symTypesStatements(STMT *stmt, SymbolTable *st) {
   STMT_LIST *sl;
   CASE_CLAUSE_LIST *ccl;
-  SymbolTable *nextScope;
+  SymbolTable *block;
   switch (stmt->kind) {
     case sk_block:
+      block = scopeSymbolTable(st);
+      openScope();
       sl = stmt->val.block;
       while (sl != NULL) {
-        symTypesStatements(sl->stmt, st);
+        symTypesStatements(sl->stmt, block);
         sl = sl->next;
       }
+      closeScope();
       break;
     case sk_if:
       createIfStmtScope(stmt, st);
@@ -375,7 +378,12 @@ STMT *paramListToStmt(PARAM_LIST *pl, int lineno) {
 
 /* Combines two statements into a single statment */
 STMT *combineStmt(STMT *s1, STMT *s2, int lineno) {
-  STMT_LIST *sl = makeStmtList(s2, NULL);
+  STMT_LIST *sl;
+  if(s2->kind == sk_block){
+    sl = s2->val.block;
+  } else {
+    sl = makeStmtList(s2, NULL);
+  }
   sl = makeStmtList(s1, sl);
   return makeBlockStmt(sl, lineno);
 }

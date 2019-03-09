@@ -22,7 +22,7 @@ void prettyPrintPackage(PACKAGE *package) {
 
 void prettyPrintDecl(DECL *decl, int tabCount) {
   DECL *cur = decl;
-  int nextTabCount = tabCount + 1;
+  int nextTabCount = tabCount == -1 ? -1 : tabCount + 1;
   SHORT_SPECS *s;
   TYPE_SPECS *t;
   VAR_SPECS *v;
@@ -42,9 +42,8 @@ void prettyPrintDecl(DECL *decl, int tabCount) {
           prettyPrintType(type, nextTabCount);
         }
 
-        printf("{\n");
-        prettyPrintStmt(cur->val.funcDecl->body, nextTabCount);
-        printf("}\n");
+        prettyPrintStmt(cur->val.funcDecl->body, 0);
+        printf("\n");
         break;
       case dk_short:
         s = cur->val.shortSpecs;
@@ -64,7 +63,7 @@ void prettyPrintDecl(DECL *decl, int tabCount) {
           }
           s = s->next;
         } 
-        if(tabCount != -1) printf("\n");
+        if(tabCount == 0) printf("\n");
         break;
       case dk_type:
         printf("type ");
@@ -76,7 +75,7 @@ void prettyPrintDecl(DECL *decl, int tabCount) {
             printTab(nextTabCount);
             printf("%s ", t->name);
             prettyPrintType(t->type, nextTabCount);
-            printf("\n");
+            if (t->next != NULL) printf("\n");
             t = t->next;
           }
           printf(")");
@@ -85,7 +84,7 @@ void prettyPrintDecl(DECL *decl, int tabCount) {
           printf("%s ", t->name);
           prettyPrintType(t->type, tabCount);
         }
-        if(tabCount != -1) printf("\n");
+        if(tabCount == 0) printf("\n");
         break;
       case dk_var:
         printf("var ");
@@ -119,7 +118,7 @@ void prettyPrintDecl(DECL *decl, int tabCount) {
         }
         //printf("\n");
         //printf("func %s(", cur->val.varSpecs)
-        if(tabCount != -1) printf("\n");
+        if(tabCount == 0) printf("\n");
         break;
     }
     cur = cur->next;
@@ -319,7 +318,7 @@ void prettyPrintExp(EXP *exp) {
 
 // Invariant: Each statement must print its own newline
 void prettyPrintStmt(STMT *stmt, int tabCount) {
-  int newTabCount = tabCount+1;
+  int newTabCount = tabCount == -1 ? -1 : tabCount + 1;
   STMT_LIST *sl;
   ASSIGN *a;
   FOR_CLAUSE *f;
@@ -327,20 +326,21 @@ void prettyPrintStmt(STMT *stmt, int tabCount) {
   CASE_CLAUSE_LIST *clause_list;
   switch (stmt->kind) {
     case sk_block:
+      printf("{\n");
       sl = stmt->val.block;
       while(sl != NULL){
-        prettyPrintStmt(sl->stmt, tabCount);
-        //printf("\n");
+        printTab(newTabCount);
+        prettyPrintStmt(sl->stmt, newTabCount);
+        printf("\n");
         sl = sl->next;
       }
+      printTab(tabCount);
+      printf("}");
       break;
     case sk_exp:
-      printTab(tabCount);
       prettyPrintExp(stmt->val.exp);
-      printf("\n");
       break;
     case sk_assign:
-      printTab(tabCount);
       a = stmt->val.assign;
       while(a != NULL){
         prettyPrintExp(a->lhs);
@@ -352,71 +352,52 @@ void prettyPrintStmt(STMT *stmt, int tabCount) {
         prettyPrintExp(a->rhs);
         a = a->next;
       }
-      printf("\n");
       break;
     case sk_assignOp:
-      printTab(tabCount);
       prettyPrintExp(stmt->val.assignOp.lhs);
       prettyPrintAssignOp(stmt->val.assignOp.kind);
       prettyPrintExp(stmt->val.assignOp.rhs);
-      printf("\n");
       break;
     case sk_decl:
     case sk_shortDecl:
-      printTab(tabCount);
       prettyPrintDecl(stmt->val.decl, tabCount);
       //printf("\n");
       break;
     case sk_incr:
-      printTab(tabCount);
       prettyPrintExp(stmt->val.exp);
       printf("++");
-      printf("\n");
       break;
     case sk_decr:
-      printTab(tabCount);
       prettyPrintExp(stmt->val.exp);
       printf("--");
-      printf("\n");
       break;
     case sk_print:
-      printTab(tabCount);
       printf("print(");
       prettyPrintExpList(stmt->val.printExps);
-      printf(")\n");
+      printf(")");
       break;
     case sk_println:
-      printTab(tabCount);
       printf("println(");
       prettyPrintExpList(stmt->val.printExps);
-      printf(")\n");
+      printf(")");
       break;
     case sk_return:
-      printTab(tabCount);
       printf("return ");
       if(stmt->val.exp != NULL){
         prettyPrintExp(stmt->val.exp);
       }
-      printf("\n");
       break;
     case sk_if:
-      printTab(tabCount);
       printf("if ");
       if(stmt->val.ifStmt.simpleStmt != NULL){
         prettyPrintSimpleStmt(stmt->val.ifStmt.simpleStmt);
         printf("; ");
       }
       prettyPrintExp(stmt->val.ifStmt.cond);
-      printf(" {\n");
-      prettyPrintStmt(stmt->val.ifStmt.body, newTabCount);
-      printTab(tabCount);
+      prettyPrintStmt(stmt->val.ifStmt.body, tabCount);
       // Handle condition where there is an else statment
-      printf("} ");
       if(stmt->val.ifStmt.elseStmt != NULL){
         prettyPrintStmt(stmt->val.ifStmt.elseStmt, tabCount);
-      }
-      else {
-        printf("\n");
       }
       break;
     case sk_else:
@@ -431,27 +412,18 @@ void prettyPrintStmt(STMT *stmt, int tabCount) {
         }
 
         prettyPrintExp(elseStmt->val.ifStmt.cond);
-        printf(" {\n"); 
-        prettyPrintStmt(elseStmt->val.ifStmt.body, newTabCount);
-        printTab(tabCount);
-        printf("} ");
+        //Body is a block
+        prettyPrintStmt(elseStmt->val.ifStmt.body, tabCount);
       }
       else{
-        printf(" {\n"); 
-        prettyPrintStmt(elseStmt, newTabCount);
-        printTab(tabCount);
-        printf("} ");
+        prettyPrintStmt(elseStmt, tabCount);
       }
       // If this is an else if and has an else/else if statement
       if(elseStmt->kind == sk_if && elseStmt->val.ifStmt.elseStmt != NULL){
         prettyPrintStmt(elseStmt->val.ifStmt.elseStmt, tabCount);
       }
-      else {
-        printf("\n");
-      }
       break;
     case sk_switch:
-      printTab(tabCount);
       printf("switch ");
       if(stmt->val.switchStmt.simpleStmt != NULL){
         prettyPrintSimpleStmt(stmt->val.switchStmt.simpleStmt);
@@ -466,11 +438,11 @@ void prettyPrintStmt(STMT *stmt, int tabCount) {
         prettyPrintCase(clause_list->clause, newTabCount);
         clause_list=clause_list->next;
       }
+      printf("\n");
       printTab(tabCount);
-      printf("}\n");
+      printf("}");
       break;
     case sk_for:
-      printTab(tabCount);
       printf("for ");
       if(stmt->val.forStmt.whileExp != NULL){
         prettyPrintExp(stmt->val.forStmt.whileExp);
@@ -483,22 +455,16 @@ void prettyPrintStmt(STMT *stmt, int tabCount) {
         printf("; ");
         prettyPrintSimpleStmt(f->post);
       }
-      printf("{\n");
-      prettyPrintStmt(stmt->val.forStmt.body, newTabCount);
-      printTab(tabCount);
-      printf("}\n");
+      prettyPrintStmt(stmt->val.forStmt.body, tabCount);
       break;
     case sk_break:
-      printTab(tabCount);
-      printf("break\n");
+      printf("break");
       break;
     case sk_continue:
-      printTab(tabCount);
-      printf("continue\n");
+      printf("continue");
       break;
     case sk_fallthrough:
-      printTab(tabCount);
-      printf("fallthrough\n");
+      printf("fallthrough");
       break;
     case sk_empty:
       break;
@@ -538,6 +504,7 @@ void prettyPrintSimpleStmt(STMT *stmt){
       prettyPrintExp(stmt->val.assignOp.lhs);
       prettyPrintAssignOp(stmt->val.assignOp.kind);
       prettyPrintExp(stmt->val.assignOp.rhs);
+      break;
     case sk_decl:
     case sk_shortDecl:
       //Short Declarations have a 0 indentation so that we can 
@@ -549,7 +516,7 @@ void prettyPrintSimpleStmt(STMT *stmt){
 }
 
 void prettyPrintCase(CASE_CLAUSE *c, int tabCount){
-  int newTabCount = tabCount + 1;
+  int newTabCount = tabCount == -1 ? -1 : tabCount + 1;
   STMT_LIST *sl;
   switch(c->kind){
     case ck_case:
@@ -561,6 +528,7 @@ void prettyPrintCase(CASE_CLAUSE *c, int tabCount){
       }
       sl = c->val.caseClause.clauses;
       while(sl != NULL){
+        printTab(newTabCount);
         prettyPrintStmt(sl->stmt, newTabCount);
         sl=sl->next;
       }
@@ -570,6 +538,7 @@ void prettyPrintCase(CASE_CLAUSE *c, int tabCount){
       printf("default:\n");
       sl = c->val.defaultClauses;
       while(sl != NULL){
+        printTab(tabCount);
         prettyPrintStmt(sl->stmt, newTabCount);
         sl=sl->next;
       }
@@ -579,7 +548,7 @@ void prettyPrintCase(CASE_CLAUSE *c, int tabCount){
 }
 
 void prettyPrintType(TYPE *type, int tabCount){
-  int nextTabCount = tabCount + 1;
+  int nextTabCount = tabCount == -1 ? -1 : tabCount + 1;
   FIELD_DECLS *d;
   switch(type->kind){
     case tk_array:
@@ -598,9 +567,10 @@ void prettyPrintType(TYPE *type, int tabCount){
         printTab(nextTabCount);
         printf("%s ", d->id);
         prettyPrintType(d->type, nextTabCount);
-        printf("\n");
+        if(d->next != NULL) printf("\n");
         d = d->next;
       }
+      printf("\n");
       printTab(tabCount);
       printf("}");
       break;
