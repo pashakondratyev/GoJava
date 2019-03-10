@@ -13,3 +13,10 @@ func g() int {
 func h() {
 	return 
 }
+
+// valid - see Facebook page
+func fib(n int) int {
+	for {
+		
+	}
+}
