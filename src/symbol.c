@@ -91,7 +91,7 @@ void putTypeDecl(SymbolTable *st, TYPE_SPECS *ts, int lineno) {
 
 // Functions are top level decl
 void putFuncDecl(SymbolTable *st, FUNC_DECL *fd, int lineno) {
-  if(strcmp(fd->name, "init") == 0){
+  if(strcmp(fd->name, "init") == 0 || strcmp(fd->name, "_") == 0){
     if(fd->params != NULL || fd->returnType != NULL){
       fprintf(stderr, "Error: (line %d) init function cannot have return type of param list\n", lineno);
       exit(1);
