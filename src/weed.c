@@ -41,7 +41,7 @@ void weedStatement(STMT *stmt) {
       weedStatement(stmt->val.forStmt.body);
       break;
     case sk_block:
-      cur = stmt->val.block;
+      cur = stmt->val.block.blockStatements;
       while (cur != NULL) {
         weedStatement(cur->stmt);
         cur = cur->next;
@@ -104,7 +104,7 @@ int weedBlockReturns(STMT *stmt) {
   CASE_CLAUSE_LIST *curr_case_clause;
   switch (stmt->kind) {
     case sk_block:
-      curr_stmt = stmt->val.block;
+      curr_stmt = stmt->val.block.blockStatements;
       while (curr_stmt != NULL && curr_stmt->stmt != NULL) {
         if (weedBlockReturns(curr_stmt->stmt)) {
           return 1;
@@ -212,7 +212,7 @@ void weedBreakCont(STMT *stmt, int allow_cont, int allow_break) {
   CASE_CLAUSE *c;
   switch (stmt->kind) {
     case sk_block:
-      curr_stmt = stmt->val.block;
+      curr_stmt = stmt->val.block.blockStatements;
       if (curr_stmt == NULL) {
         break;
       }

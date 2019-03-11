@@ -29,6 +29,14 @@ typedef struct EXP_LIST EXP_LIST;
 typedef struct TYPE TYPE;
 typedef struct FIELD_DECLS FIELD_DECLS;
 
+typedef struct SymbolTable SymbolTable;
+
+TYPE *baseInt;
+TYPE *baseFloat;
+TYPE *baseBool;
+TYPE *baseString;
+TYPE *baseRune;
+
 typedef enum {
   tk_int,
   tk_float,
@@ -187,7 +195,10 @@ struct STMT {
   int lineno;
   StmtKind kind;
   union {
-    STMT_LIST *block;
+    struct {
+      STMT_LIST *blockStatements;
+      SymbolTable *scope;
+    } block;
     DECL *decl;
     // for all expression-based statements: expression, increment, decrement,
     // return
@@ -203,17 +214,20 @@ struct STMT {
       STMT *simpleStmt;
       EXP *exp;
       CASE_CLAUSE_LIST *caseClauses;
+      SymbolTable *scope;
     } switchStmt;
     struct {
       EXP *whileExp;
       FOR_CLAUSE *forClause;
       STMT *body;
+      SymbolTable *scope;
     } forStmt;
     struct {
       STMT *simpleStmt;
       EXP *cond;
       STMT *body;
       STMT *elseStmt;
+      SymbolTable *scope;
     } ifStmt;  // elseStmt is optional
     STMT *elseBody;
   } val;
@@ -238,6 +252,7 @@ struct ID_LIST {
 struct CASE_CLAUSE {
   int lineno;
   CaseKind kind;
+  SymbolTable *scope;
   union {
     struct {
       EXP_LIST *cases;
@@ -261,6 +276,7 @@ struct FOR_CLAUSE {
 struct EXP {
   int lineno;
   ExpKind kind;
+  TYPE *type;
   union {
     char *id;
     double floatval;

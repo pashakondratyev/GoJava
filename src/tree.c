@@ -277,7 +277,8 @@ STMT *makeBlockStmt(STMT_LIST *stmts, int lineno) {
   STMT *s = malloc(sizeof(STMT));
   s->lineno = lineno;
   s->kind = sk_block;
-  s->val.block = stmts;
+  s->val.block.blockStatements = stmts;
+  s->val.block.scope = NULL;
   return s;
 }
 
@@ -514,6 +515,7 @@ EXP *makeIdentifierExp(char *id, int lineno) {
   e->lineno = lineno;
   e->kind = ek_id;
   e->val.id = strdup(id);
+  e->type = NULL;
   return e;
 }
 
@@ -522,6 +524,7 @@ EXP *makeIntValExp(int intval, int lineno) {
   e->lineno = lineno;
   e->kind = ek_int;
   e->val.intval = intval;
+  e->type = NULL;
   return e;
 }
 
@@ -530,6 +533,7 @@ EXP *makeFloatValExp(double floatval, int lineno) {
   e->lineno = lineno;
   e->kind = ek_float;
   e->val.floatval = floatval;
+  e->type = NULL;
   return e;
 }
 
@@ -538,6 +542,7 @@ EXP *makeStringValExp(char *stringval, int lineno) {
   e->lineno = lineno;
   e->kind = ek_string;
   e->val.stringval = strdup(stringval);
+  e->type = NULL;
   return e;
 }
 
@@ -546,6 +551,7 @@ EXP *makeRuneValExp(char runeval, int lineno) {
   e->lineno = lineno;
   e->kind = ek_rune;
   e->val.runeval = runeval;
+  e->type = NULL;
   return e;
 }
 
@@ -554,6 +560,7 @@ EXP *makeBooleanValExp(bool booleanval, int lineno) {
   e->lineno = lineno;
   e->kind = ek_boolean;
   e->val.booleanval = booleanval;
+  e->type = NULL;
   return e;
 }
 
@@ -563,6 +570,7 @@ EXP *makeBinaryExp(ExpKind kind, EXP *lhs, EXP *rhs, int lineno) {
   e->kind = kind;
   e->val.binary.lhs = lhs;
   e->val.binary.rhs = rhs;
+  e->type = NULL;
   return e;
 }
 
@@ -571,6 +579,7 @@ EXP *makeUnaryExp(ExpKind kind, EXP *exp, int lineno) {
   e->lineno = lineno;
   e->kind = kind;
   e->val.unary.exp = exp;
+  e->type = NULL;
   return e;
 }
 
@@ -580,9 +589,11 @@ EXP *makeFunctionCall(char *funcId, EXP_LIST *args, int lineno) {
   e->kind = ek_func;
   e->val.funcCall.funcId = strdup(funcId);
   e->val.funcCall.args = args;
+  e->type = NULL;
   return e;
 }
 
+// TODO: Test this thoroughly
 EXP *makeArgumentExp(EXP *iden, EXP_LIST *args, TYPE *type, int lineno){
   // The purpose of combining function calls and type casts is due to the similarities
   // In their syntax, which would otherwise create shift/reduce errors so a more general
@@ -596,6 +607,7 @@ EXP *makeArgumentExp(EXP *iden, EXP_LIST *args, TYPE *type, int lineno){
   e->lineno = lineno;
   e->kind = ek_conv;
   e->val.convField.args = args;
+  e->type = NULL;
   if(type != NULL){
     e->val.convField.type = type;
     return e;
@@ -620,6 +632,7 @@ EXP *makeAppendCall(EXP *sliceExp, EXP *elem, int lineno) {
   e->kind = ek_append;
   e->val.append.sliceExp = sliceExp;
   e->val.append.elem = elem;
+  e->type = NULL;
   return e;
 }
 
@@ -628,6 +641,7 @@ EXP *makeLenCall(EXP *sliceOrArrayExp, int lineno) {
   e->lineno = lineno;
   e->kind = ek_len;
   e->val.lenExp = sliceOrArrayExp;
+  e->type = NULL;
   return e;
 }
 
@@ -636,6 +650,7 @@ EXP *makeCapCall(EXP *sliceOrArrayExp, int lineno) {
   e->lineno = lineno;
   e->kind = ek_cap;
   e->val.capExp = sliceOrArrayExp;
+  e->type = NULL;
   return e;
 }
 
@@ -645,6 +660,7 @@ EXP *makeIndexExp(EXP *objectExp, EXP *indexExp, int lineno) {
   e->kind = ek_indexExp;
   e->val.indexExp.objectExp = objectExp;
   e->val.indexExp.indexExp = indexExp;
+  e->type = NULL;
   return e;
 }
 
@@ -653,6 +669,7 @@ EXP *makeParenExp(EXP *exp, int lineno){
   e->lineno = lineno;
   e->kind = ek_paren;
   e->val.parenExp = exp;
+  e->type = NULL;
   return e;
 }
 
@@ -662,6 +679,7 @@ EXP *makeStructFieldAccess(EXP *structExp, char *fieldName, int lineno) {
   e->kind = ek_structField;
   e->val.structField.structExp = structExp;
   e->val.structField.fieldName = strdup(fieldName);
+  e->type = NULL;
   return e;
 }
 

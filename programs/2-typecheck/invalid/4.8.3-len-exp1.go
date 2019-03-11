@@ -6,5 +6,5 @@ func foo() {
 		x,y int
 	}
 	var a point
-	len(a)
+	b := len(a)
 }

@@ -3,5 +3,5 @@ package test
 
 func foo() {
 	var a []int
-	append(a,"hi")
+	b := append(a,"hi")
 }

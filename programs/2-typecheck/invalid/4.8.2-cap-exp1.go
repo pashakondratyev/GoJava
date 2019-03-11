@@ -6,5 +6,5 @@ func foo() {
 		x,y int
 	}
 	var a point
-	cap(a)
+	b := cap(a)
 }

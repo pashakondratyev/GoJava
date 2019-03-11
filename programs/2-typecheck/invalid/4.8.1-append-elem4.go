@@ -3,5 +3,5 @@ package test
 
 func foo() {
 	var a []string
-	append(a,'r')
+	b := append(a,'r')
 }

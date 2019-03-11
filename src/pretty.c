@@ -327,7 +327,7 @@ void prettyPrintStmt(STMT *stmt, int tabCount) {
   switch (stmt->kind) {
     case sk_block:
       printf("{\n");
-      sl = stmt->val.block;
+      sl = stmt->val.block.blockStatements;
       while(sl != NULL){
         printTab(newTabCount);
         prettyPrintStmt(sl->stmt, newTabCount);

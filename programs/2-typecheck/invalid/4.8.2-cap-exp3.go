@@ -3,5 +3,5 @@ package test
 
 func foo() {
 	var a string
-	cap(a)
+	b := cap(a)
 }

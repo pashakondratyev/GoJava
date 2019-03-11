@@ -11,6 +11,7 @@ extern SymbolTable *programSymbolTable;
 int tabCount = 0;
 SymbolTableMode mode;
 
+// TODO: Add expression check 
 int Hash(char *str) {
   unsigned int hash = 0;
   while (*str) hash = (hash << 1) + *str++;
@@ -67,6 +68,7 @@ SYMBOL *putSymbol(SymbolTable *t, DecKind kind, char *identifier, TYPE *type, in
   return s;
 }
 
+// TODO: probably should store Struct values
 void putTypeDecl(SymbolTable *st, TYPE_SPECS *ts, int lineno) {
   while (ts != NULL) {
     if (strcmp(ts->name, "_") == 0) {
@@ -130,6 +132,8 @@ void putShortDecl(SymbolTable *st, SHORT_SPECS *ss, int lineno) {
       ss = ss->next;
       continue;
     }
+    symTypesExpressions(ss->rhs, st);
+    
     if(getSymbolCurrentScope(st, ss->lhs->val.id) == NULL){
       putSymbol(st, dk_short, ss->lhs->val.id, NULL, lineno);
 
@@ -155,6 +159,9 @@ void putVarDecl(SymbolTable *st, VAR_SPECS *vs, int lineno) {
       vs = vs->next;
       continue;
     }
+    if(vs->exp != NULL){
+      symTypesExpressions(vs->exp, st);
+    }
     putSymbol(st, dk_var, vs->id, vs->type, lineno);
     if (mode == SymbolTablePrint) {
       printTab(tabCount);
@@ -175,6 +182,7 @@ void putVarDecl(SymbolTable *st, VAR_SPECS *vs, int lineno) {
 void createScope(STMT *stmt, SymbolTable *st) {
   SymbolTable *scope = scopeSymbolTable(st);
   openScope();
+  // Add scope into stmt
   symTypesStatements(stmt, scope);
   closeScope();
 }
@@ -185,6 +193,9 @@ void createIfStmtScope(STMT *stmt, SymbolTable *st) {
   openScope();
   if (stmt->val.ifStmt.simpleStmt != NULL) {
     symTypesStatements(stmt->val.ifStmt.simpleStmt, scope);
+  }
+  if (stmt->val.ifStmt.cond != NULL){
+    symTypesExpressions(stmt->val.ifStmt.cond, scope);
   }
   symTypesStatements(stmt->val.ifStmt.body, scope);
   if (stmt->val.ifStmt.elseStmt != NULL) {
@@ -288,7 +299,9 @@ void symTypesStatements(STMT *stmt, SymbolTable *st) {
     case sk_block:
       block = scopeSymbolTable(st);
       openScope();
-      sl = stmt->val.block;
+      sl = stmt->val.block.blockStatements;
+      //Add scope to the block stmt 
+      stmt->val.block.scope = block;
       while (sl != NULL) {
         symTypesStatements(sl->stmt, block);
         sl = sl->next;
@@ -315,6 +328,100 @@ void symTypesStatements(STMT *stmt, SymbolTable *st) {
   }
 }
 
+void symTypesExpressions(EXP *exp, SymbolTable *st){
+  EXP_LIST *el;
+  switch (exp->kind) {
+			case ek_id:
+        getSymbol(st, exp->val.id);
+        if(getSymbol(st, exp->val.id) == NULL){
+          fprintf(stderr, "Error: (line %d) %s is not declared", exp->lineno, exp->val.id);
+          exit(1);
+        }
+				break;
+			case ek_float:
+				break;
+			case ek_int:
+				break;
+			case ek_string:
+				break;
+			case ek_boolean:
+				break;
+			case ek_rune:
+				break;
+			case ek_plus:
+			case ek_minus:
+			case ek_times:
+			case ek_div:
+			case ek_mod:
+			case ek_bitAnd:
+			case ek_bitOr:
+			case ek_eq:
+			case ek_ne:
+			case ek_ge:
+			case ek_le:
+			case ek_gt:
+			case ek_lt:
+			case ek_and:
+			case ek_or:
+			case ek_bitXor:
+			case ek_bitLeftShift:
+			case ek_bitRightShift:
+      case ek_bitClear:
+        symTypesExpressions(exp->val.binary.lhs, st);
+        symTypesExpressions(exp->val.binary.rhs, st);
+        break;
+			case ek_uplus:
+			case ek_uminus:
+			case ek_bang:
+			case ek_ubitXor:
+        symTypesExpressions(exp->val.unary.exp, st);
+        break;
+			case ek_func:
+        if(getSymbol(st,exp->val.funcCall.funcId) == NULL){
+          fprintf(stderr, "Error: (line %d) %s is not declared", exp->lineno, exp->val.funcCall.funcId);
+          exit(1); 
+        }
+        el = exp->val.funcCall.args;
+        while(el != NULL){
+          symTypesExpressions(el->exp, st);
+          el = el->next;
+        }
+				break;
+			case ek_append:
+        symTypesExpressions(exp->val.append.elem, st);
+        symTypesExpressions(exp->val.append.sliceExp, st);
+				break;
+			case ek_len:
+        symTypesExpressions(exp->val.lenExp, st);
+				break;
+			case ek_cap:
+        symTypesExpressions(exp->val.capExp, st);
+				break;
+			case ek_indexExp:
+        symTypesExpressions(exp->val.indexExp.indexExp, st);
+        symTypesExpressions(exp->val.indexExp.objectExp, st);
+				break;
+			case ek_structField:
+        if(getSymbol(st,exp->val.structField.fieldName) == NULL){
+          fprintf(stderr, "Error: (line %d) %s is not declared", exp->lineno, exp->val.structField.fieldName);
+          exit(1); 
+        } 
+        symTypesExpressions(exp->val.structField.structExp, st);
+				break;
+			case ek_paren:
+        symTypesExpressions(exp->val.parenExp, st);
+				break;
+			case ek_conv:
+        el = exp->val.convField.args;
+        while(el != NULL){
+          symTypesExpressions(el->exp, st);
+          el = el->next;
+        }
+        // TODO: Check if convField.type is well defined
+				break;
+		}
+}
+
 void symTypesDefaults(SymbolTable *st) {
   // int
   TYPE *t = makeType((char *)"int", 0);
@@ -324,22 +431,26 @@ void symTypesDefaults(SymbolTable *st) {
   // float64
   t = makeType((char *)"float64", 0);
   t->kind = tk_float;
+  baseFloat = t;
   ts = makeTypeSpec((char *)"float64", t);
   putTypeDecl(st, ts, 0);
   // rune
   t = makeType((char *)"rune", 0);
   t->kind = tk_rune;
+  baseRune = t;
   ts = makeTypeSpec((char *)"rune", t);
   putTypeDecl(st, ts, 0);
 
   // string
   t = makeType((char *)"string", 0);
   t->kind = tk_string;
+  baseString = t;
   ts = makeTypeSpec((char *)"string", t);
   putTypeDecl(st, ts, 0);
   // bool
   t = makeType((char *)"bool", 0);
   t->kind = tk_boolean;
+  baseBool = t;
   ts = makeTypeSpec((char *)"bool", t);
   putTypeDecl(st, ts, 0);
   // true
@@ -380,7 +491,7 @@ STMT *paramListToStmt(PARAM_LIST *pl, int lineno) {
 STMT *combineStmt(STMT *s1, STMT *s2, int lineno) {
   STMT_LIST *sl;
   if(s2->kind == sk_block){
-    sl = s2->val.block;
+    sl = s2->val.block.blockStatements;
   } else {
     sl = makeStmtList(s2, NULL);
   }

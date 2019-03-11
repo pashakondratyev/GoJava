@@ -6,5 +6,5 @@ func foo() {
 		x,y int
 	}
 	var a point
-	append(a,4)
+	b := append(a,4)
 }
