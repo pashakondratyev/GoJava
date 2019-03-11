@@ -310,7 +310,7 @@ int weedSwitchReturns(CASE_CLAUSE_LIST *c) {
 void weedFunction(FUNC_DECL *func_decl, int lineno) {
   // Weed body first
   weedStatement(func_decl->body);
-  if (func_decl->returnType != NULL) {
+  /*if (func_decl->returnType != NULL) {
     if (!weedBlockReturns(func_decl->body)) {
       reportError("Function does not have return statement", lineno);
     }
@@ -318,7 +318,7 @@ void weedFunction(FUNC_DECL *func_decl, int lineno) {
     if (weedBlockReturns(func_decl->body)) {
       reportError("Too many arguments to return", lineno);
     }
-  }
+  }*/
   weedBreakCont(func_decl->body, 0, 0);
 }
 

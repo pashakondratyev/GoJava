@@ -1,7 +1,7 @@
 all: goc
 
 goc: lex.yy.c parser.tab.c main.c tree.c weed.c pretty.c symbol.c type.c
-	gcc lex.yy.c parser.tab.c main.c tree.c weed.c pretty.c symbol.c type.c -ll -o goc
+	gcc lex.yy.c parser.tab.c main.c tree.c weed.c pretty.c symbol.c type.c -o goc
 
 lex.yy.c: scanner.l
 	flex scanner.l
