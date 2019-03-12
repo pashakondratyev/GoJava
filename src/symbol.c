@@ -91,7 +91,7 @@ void putTypeDecl(SymbolTable *st, TYPE_SPECS *ts, int lineno) {
   }
 }
 
-// Functions are top level decl
+// Functions are top level decl TODO: will want to store fd->params
 void putFuncDecl(SymbolTable *st, FUNC_DECL *fd, int lineno) {
   if(strcmp(fd->name, "init") == 0 || strcmp(fd->name, "_") == 0){
     if(fd->params != NULL || fd->returnType != NULL){
@@ -100,7 +100,7 @@ void putFuncDecl(SymbolTable *st, FUNC_DECL *fd, int lineno) {
     }
   }
   else{
-    putSymbol(st, dk_func, fd->name, NULL, lineno);
+    putSymbol(st, dk_func, fd->name, fd->returnType, lineno);
   }
   if (mode == SymbolTablePrint) {
     printTab(tabCount);
@@ -265,6 +265,7 @@ void symProgram(PROG *root, SymbolTableMode m) {
   openScope();
   //  Default types should be one scope above the top level decls
   SymbolTable *topLevel = scopeSymbolTable(programSymbolTable);
+  programSymbolTable = topLevel;
   symTypesDeclarations(root->root_decl, topLevel);
   closeScope();
   closeScope();
@@ -402,10 +403,10 @@ void symTypesExpressions(EXP *exp, SymbolTable *st){
         symTypesExpressions(exp->val.indexExp.objectExp, st);
 				break;
 			case ek_structField:
-        if(getSymbol(st,exp->val.structField.fieldName) == NULL){
+        /*if(getSymbol(st,exp->val.structField.fieldName) == NULL){
           fprintf(stderr, "Error: (line %d) %s is not declared", exp->lineno, exp->val.structField.fieldName);
           exit(1); 
-        } 
+        } */
         symTypesExpressions(exp->val.structField.structExp, st);
 				break;
 			case ek_paren:
@@ -426,6 +427,7 @@ void symTypesDefaults(SymbolTable *st) {
   // int
   TYPE *t = makeType((char *)"int", 0);
   t->kind = tk_int;
+  baseInt = t;
   TYPE_SPECS *ts = makeTypeSpec((char *)"int", t);
   putTypeDecl(st, ts, 0);
   // float64
@@ -515,11 +517,12 @@ void printType(TYPE *type) {
       printf("struct {");
       d = type->val.structFields;
       while (d != NULL) {
-        printf("%s ", d->id);
+        printf(" %s ", d->id);
         printType(d->type);
+        printf(";");
         d = d->next;
       }
-      printf("}");
+      printf(" }");
       break;
     default:
       printf("%s", type->val.name);
