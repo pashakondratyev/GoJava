@@ -50,7 +50,7 @@ void closeScope() {
 }
 
 // TODO: Type has lineno consider refactoring
-SYMBOL *putSymbol(SymbolTable *t, DecKind kind, char *identifier, TYPE *type, int lineno) {
+SYMBOL *putSymbol(SymbolTable *t, DecKind kind, char *identifier, TYPE *type, PARAM_LIST *pl, int lineno) {
   int i = Hash(identifier);
   for (SYMBOL *s = t->table[i]; s; s = s->next) {
     if (strcmp(s->name, identifier) == 0) {
@@ -61,7 +61,51 @@ SYMBOL *putSymbol(SymbolTable *t, DecKind kind, char *identifier, TYPE *type, in
 
   SYMBOL *s = (SYMBOL *)malloc(sizeof(SYMBOL));
   s->name = strdup(identifier);
-  s->type = type;
+  switch(kind){
+    case dk_func:
+      s->val.functionDecl.paramList = pl;
+      s->val.functionDecl.returnType = type;
+      break;
+    case dk_short:
+      s->val.type = NULL;
+      break; 
+    case dk_type:
+      s->val.typeDecl.type = type;
+      SYMBOL *resolvesTo;
+      switch(type->kind){
+        case tk_ref:
+          resolvesTo = getSymbol(t, type->val.name);
+          if(resolvesTo->kind != dk_type){
+            printf("Error: (line %d) attempting to declare type which references a non-type\n", lineno);
+            exit(1);
+          }
+          // TODO: check if we only need this
+          s->val.typeDecl.resolvesTo = resolvesTo->val.typeDecl.resolvesTo;
+          break;
+        case tk_int:
+          s->val.typeDecl.resolvesTo = baseInt;
+          break;
+        case tk_float:
+          s->val.typeDecl.resolvesTo = baseFloat;
+          break;
+        case tk_boolean:
+          s->val.typeDecl.resolvesTo = baseBool;
+          break;
+        case tk_rune:
+          s->val.typeDecl.resolvesTo = baseRune;
+          break;
+        case tk_string:
+          s->val.typeDecl.resolvesTo = baseString;
+          break;
+        default:
+          s->val.typeDecl.resolvesTo = NULL;
+          break;
+      }
+      break;
+    case dk_var:
+      s->val.type = type;
+      break;
+  }
   s->kind = kind;
   s->next = t->table[i];
   t->table[i] = s;
@@ -75,7 +119,7 @@ void putTypeDecl(SymbolTable *st, TYPE_SPECS *ts, int lineno) {
       ts = ts->next;
       continue;
     }
-    putSymbol(st, dk_type, ts->name, ts->type, lineno);
+    putSymbol(st, dk_type, ts->name, ts->type, NULL, lineno);
     // Line 0 is the types loaded into the symbol table initially
     if (mode == SymbolTablePrint) {
       printTab(tabCount);
@@ -100,7 +144,7 @@ void putFuncDecl(SymbolTable *st, FUNC_DECL *fd, int lineno) {
     }
   }
   else{
-    putSymbol(st, dk_func, fd->name, fd->returnType, lineno);
+    putSymbol(st, dk_func, fd->name, fd->returnType, fd->params, lineno);
   }
   if (mode == SymbolTablePrint) {
     printTab(tabCount);
@@ -121,6 +165,8 @@ void putFuncDecl(SymbolTable *st, FUNC_DECL *fd, int lineno) {
 
   STMT *pl = paramListToStmt(fd->params, lineno);
   pl = combineStmt(pl, fd->body, lineno);
+  //Since we are adjusting the body we need to change it
+  fd->body = pl;
   symTypesStatements(pl, st);
 }
 
@@ -135,7 +181,7 @@ void putShortDecl(SymbolTable *st, SHORT_SPECS *ss, int lineno) {
     symTypesExpressions(ss->rhs, st);
     
     if(getSymbolCurrentScope(st, ss->lhs->val.id) == NULL){
-      putSymbol(st, dk_short, ss->lhs->val.id, NULL, lineno);
+      putSymbol(st, dk_short, ss->lhs->val.id, NULL, NULL, lineno);
 
       newDecl = 1;
       if (mode == SymbolTablePrint) {
@@ -162,7 +208,7 @@ void putVarDecl(SymbolTable *st, VAR_SPECS *vs, int lineno) {
     if(vs->exp != NULL){
       symTypesExpressions(vs->exp, st);
     }
-    putSymbol(st, dk_var, vs->id, vs->type, lineno);
+    putSymbol(st, dk_var, vs->id, vs->type, NULL, lineno);
     if (mode == SymbolTablePrint) {
       printTab(tabCount);
       printf("%s [variable] = ", vs->id);
@@ -300,9 +346,9 @@ void symTypesStatements(STMT *stmt, SymbolTable *st) {
     case sk_block:
       block = scopeSymbolTable(st);
       openScope();
+      stmt->val.block.scope = block;
       sl = stmt->val.block.blockStatements;
       //Add scope to the block stmt 
-      stmt->val.block.scope = block;
       while (sl != NULL) {
         symTypesStatements(sl->stmt, block);
         sl = sl->next;
@@ -456,13 +502,13 @@ void symTypesDefaults(SymbolTable *st) {
   ts = makeTypeSpec((char *)"bool", t);
   putTypeDecl(st, ts, 0);
   // true
-  putSymbol(st, dk_var, (char *)"true", t, 0);
+  putSymbol(st, dk_var, (char *)"true", t, NULL, 0);
   if (mode == SymbolTablePrint) {
     printTab(tabCount);
     printf("true [constant] = bool\n");
   }
   // false
-  putSymbol(st, dk_var, (char *)"false", t, 0);
+  putSymbol(st, dk_var, (char *)"false", t, NULL, 0);
   if (mode == SymbolTablePrint) {
     printTab(tabCount);
     printf("false [constant] = bool\n");

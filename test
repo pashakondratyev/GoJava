@@ -1,0 +1,5 @@
+package test
+func fib(n int){
+  a = 5
+  var a int
+}

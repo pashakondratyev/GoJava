@@ -21,6 +21,7 @@ int typeNumeric(TYPE *type);
 int typeInteger(TYPE *type);
 int typeString(TYPE *type);
 int typeBool(TYPE *type);
+int typeList(TYPE *type);
 
 int resolves(TYPE *source, TYPE *target);
 

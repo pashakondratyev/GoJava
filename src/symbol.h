@@ -9,7 +9,17 @@ typedef struct SYMBOL {
   char *name;
   struct SYMBOL *next;
   DecKind kind;
-  TYPE *type; 
+  union{
+    TYPE *type;
+    struct {
+      TYPE *returnType;
+      PARAM_LIST *paramList;
+    } functionDecl;
+    struct {
+      TYPE *type;
+      TYPE *resolvesTo;
+    } typeDecl;
+  } val;
 } SYMBOL;
 
 typedef struct SymbolTable {
@@ -33,7 +43,7 @@ void symTypesDefaults(SymbolTable *st);
 
 void createScope(STMT *stmt, SymbolTable *st);
 
-SYMBOL *putSymbol(SymbolTable *t, DecKind kind, char *identifier, TYPE *type, int lineno);
+SYMBOL *putSymbol(SymbolTable *t, DecKind kind, char *identifier, TYPE *type, PARAM_LIST *pl, int lineno);
 SYMBOL *getSymbol(SymbolTable *t, char *name);
 SYMBOL *getSymbolCurrentScope(SymbolTable *t, char *name);
 
