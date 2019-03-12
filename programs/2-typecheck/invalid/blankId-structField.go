@@ -6,5 +6,5 @@ var a struct {
 }
 
 func main() {
-	a._
+	var y = a._
 }
