@@ -37,12 +37,13 @@ void typeVarDecl(VAR_SPECS *vs, SymbolTable *st) {
     // If rhs is not null
     if (vs->exp != NULL) {
       typeExp(vs->exp, st);
-      SYMBOL *s = getSymbol(st, vs->type->val.name);
-      TYPE *t = vs->type->kind == tk_ref ? getSymbol(st, vs->type->val.name)->val.type : vs->type;
-      if (vs->exp->type != t) {
-        fprintf(stderr, "Error: (line %d) %s is not assignment compatible with %s in assign statement", vs->exp->lineno,
-                vs->type->val.name, vs->exp->type->val.name);
-        exit(1);
+      if(strcmp(vs->id, "_") != 0){
+        //SYMBOL *s = getSymbol(st, vs->type->val.name);
+        //TYPE *t = vs->type->kind == tk_ref ? getSymbol(st, vs->type->val.name)->val.type : vs->type;
+        if(!typeCompare(vs->exp->type, vs->type, st)){
+          fprintf(stderr, "Error: (line %d) %s is not assignment compatible with %s in assign statement\n", vs->exp->lineno, vs->type->val.name, vs->exp->type->val.name);
+          exit(1);
+        }
       }
     }
     typeVarDecl(vs->next, st);
@@ -53,11 +54,13 @@ void typeVarDecl(VAR_SPECS *vs, SymbolTable *st) {
 void typeShortDecl(SHORT_SPECS *ss, SymbolTable *st) {
   if (ss != NULL) {
     typeExp(ss->rhs, st);
-    SYMBOL *s = getSymbol(st, ss->lhs->val.id);
-    if (s->val.type != NULL && s->val.type != ss->rhs->type) {
-      fprintf(stderr, "Error: (line %d) %s is not assignment compatible with %s in assign statement", ss->rhs->lineno,
-              s->val.type->val.name, ss->rhs->type->val.name);
-      exit(1);
+    if(strcmp(ss->lhs->val.id, "_") != 0){
+      SYMBOL *s = getSymbol(st, ss->lhs->val.id);
+      if (s->val.type != NULL && s->val.type != ss->rhs->type) {
+        fprintf(stderr, "Error: (line %d) %s is not assignment compatible with %s in assign statement\n", ss->rhs->lineno,
+                s->val.type->val.name, ss->rhs->type->val.name);
+        exit(1);
+      }
     }
     typeShortDecl(ss->next, st);
   }
@@ -100,10 +103,13 @@ void typeStmt(STMT *stmt, SymbolTable *st) {
       case sk_assign:
         al = stmt->val.assign;
         while (al != NULL) {
-          typeExp(al->lhs, st);
           typeExp(al->rhs, st);
-          if (al->lhs->type != al->rhs->type) {
-            fprintf(stderr, "Error: (line %d) %s is not assignment compatible with %s in assign statement",
+          // If we have a blank identifier we only need to type check the rhs;
+          if(strcmp(al->lhs->val.id,"_") == 0) break;
+          typeExp(al->lhs, st);
+          // TODO : compare types when they are compound @Kabilan
+          if (!typeCompare(al->lhs->type, al->rhs->type, st)){
+            fprintf(stderr, "Error: (line %d) %s is not assignment compatible with %s in assign statement\n",
                     stmt->lineno, al->lhs->type->val.name, al->rhs->type->val.name);
             exit(1);
           }
@@ -125,19 +131,19 @@ void typeStmt(STMT *stmt, SymbolTable *st) {
           case aok_bitLeftShift:
           case aok_bitRightShift:
           case aok_bitClear:
-		  	break;
+            break;
         }
 
         break;
       case sk_decl:
-        typeVarDecl(stmt->val.decl->val.varSpecs, st);
+        typeDeclarations(stmt->val.decl, st);
         break;
       case sk_shortDecl:
         typeShortDecl(stmt->val.decl->val.shortSpecs, st);
         break;
       case sk_incr:
-        break;
       case sk_decr:
+        typeExp(stmt->val.exp, st);
         break;
       case sk_print:
         break;
@@ -197,11 +203,8 @@ void typeStmt(STMT *stmt, SymbolTable *st) {
         typeStmt(stmt->val.forStmt.body, st);
         break;
       case sk_break:
-        break;
       case sk_continue:
-        break;
       case sk_fallthrough:
-        break;
       case sk_empty:
         break;
     }
@@ -215,14 +218,15 @@ void typeExp(EXP *exp, SymbolTable *st) {
   if (exp != NULL) {
     switch (exp->kind) {
       case ek_id:
-	  	s = getSymbol(st, exp->val.id);
+        if(strcmp(exp->val.id, "_") == 0){
+          exp->type = NULL;
+          break;
+        }
+        s = getSymbol(st, exp->val.id);
         if (getSymbol(st, exp->val.id) == NULL) {
           fprintf(stderr, "Error: (line %d) use of undeclared identifier \"%s\"", exp->lineno, exp->val.id);
           exit(1);
-		  //I broke the getSymbol and idk how :()
-      //yikes
         }
-        s = getSymbol(st, exp->val.id);
         switch (s->kind) {
           case dk_func:
             // TODO: check if this is enough
@@ -256,8 +260,8 @@ void typeExp(EXP *exp, SymbolTable *st) {
         break;
       case ek_plus:
         typeExp(exp->val.binary.lhs, st);
-        typeExp(exp->val.binary.lhs, st);
-        if (exp->val.binary.rhs->type == exp->val.binary.lhs->type) {
+        typeExp(exp->val.binary.rhs, st);
+        if (exp->val.binary.lhs->type == exp->val.binary.rhs->type) {
           if (typeNumeric(exp->val.binary.lhs->type) || typeString(exp->val.binary.lhs->type)) {
             exp->type = exp->val.binary.lhs->type;
           } else {
@@ -273,7 +277,7 @@ void typeExp(EXP *exp, SymbolTable *st) {
       case ek_times:
       case ek_div:
         typeExp(exp->val.binary.lhs, st);
-        typeExp(exp->val.binary.lhs, st);
+        typeExp(exp->val.binary.rhs, st);
         if (exp->val.binary.rhs->type == exp->val.binary.lhs->type) {
           if (typeNumeric(exp->val.binary.lhs->type)) {
             exp->type = exp->val.binary.lhs->type;
@@ -343,7 +347,7 @@ void typeExp(EXP *exp, SymbolTable *st) {
         if (typeInteger(exp->val.binary.lhs->type) && typeInteger(exp->val.binary.rhs->type)) {
           exp->type = exp->val.binary.lhs->type;
         } else {
-          fprintf(stderr, "Error: (line %d) Logical operators and/or only accept two bools", exp->lineno);
+          fprintf(stderr, "Error: (line %d) Logical operators and/or only accept two bools\n", exp->lineno);
           exit(1);
         }
         break;
@@ -353,7 +357,7 @@ void typeExp(EXP *exp, SymbolTable *st) {
         if (typeNumeric(exp->val.unary.exp->type)) {
           exp->type = exp->val.unary.exp->type;
         } else {
-          fprintf(stderr, "Error: (line %d) Unary plus/minus only accepts numeric types", exp->lineno);
+          fprintf(stderr, "Error: (line %d) Unary plus/minus only accepts numeric types\n", exp->lineno);
           exit(1);
         }
         break;
@@ -362,7 +366,7 @@ void typeExp(EXP *exp, SymbolTable *st) {
         if (typeBool(exp->val.unary.exp->type)) {
           exp->type = baseBool;
         } else {
-          fprintf(stderr, "Error: (line %d) Negation operator only accepts booleans", exp->lineno);
+          fprintf(stderr, "Error: (line %d) Negation operator only accepts booleans\n", exp->lineno);
           exit(1);
         }
         break;
@@ -371,7 +375,7 @@ void typeExp(EXP *exp, SymbolTable *st) {
         if (typeInteger(exp->val.unary.exp->type)) {
           exp->type = exp->val.unary.exp->type;
         } else {
-          fprintf(stderr, "Error: (line %d) Bitwise negation operator only accepts integer types", exp->lineno);
+          fprintf(stderr, "Error: (line %d) Bitwise negation operator only accepts integer types\n", exp->lineno);
           exit(1);
         }
         break;
@@ -386,28 +390,43 @@ void typeExp(EXP *exp, SymbolTable *st) {
         }
         break;
       case ek_append:
+        typeExp(exp->val.append.sliceExp, st);
+        typeExp(exp->val.append.elem, st);
+        if(!resolvesToTSlice(exp->val.append.elem->type, exp->val.append.sliceExp->type, st)){
+          fprintf(stderr, "Error: (line %d) slice expression should resolve to a slice of the elemnt type\n", exp->lineno);
+          exit(1);
+        }
+        printf("meme!!!\n");
+
         break;
       case ek_len:
         typeExp(exp->val.lenExp, st);
-        if (typeList(exp->val.lenExp->type) || typeString(exp->val.lenExp->type)){
+        if (typeList(exp->val.lenExp->type) || typeString(exp->val.lenExp->type)) {
           exp->type = baseInt;
         } else {
-          fprintf(stderr, "Error: (line %d) Length only applies to slice, array or string types", exp->lineno);
+          fprintf(stderr, "Error: (line %d) Length only applies to slice, array or string types\n", exp->lineno);
           exit(1);
         }
         break;
       case ek_cap:
         typeExp(exp->val.capExp, st);
-        if (typeList(exp->val.capExp->type)){
+        if (typeList(exp->val.capExp->type)) {
           exp->type = baseInt;
         } else {
-          fprintf(stderr, "Error: (line %d) Capacity only applies to slice or array types", exp->lineno);
+          fprintf(stderr, "Error: (line %d) Capacity only applies to slice or array types\n", exp->lineno);
           exit(1);
         }
         break;
       case ek_indexExp:
+        printf("meme\n");
         break;
       case ek_structField:
+        typeExp(exp->val.structField.structExp, st);
+        printf("%d", exp->val.structField.structExp->type->kind);
+        if(exp->val.structField.structExp->type->kind != tk_struct){
+          printf("meme3\n");
+        }
+        printf("meme2\n");
         break;
       case ek_paren:
         typeExp(exp->val.parenExp, st);
@@ -499,6 +518,31 @@ int typeComparable(TYPE *type) {
   return 0;
 }
 
+int typeCompare(TYPE *type1, TYPE *type2, SymbolTable *st){
+  SYMBOL *s1;
+  SYMBOL *s2;
+  if(type1->kind != type2->kind) return 0;
+  switch (type1->kind){
+    case tk_int:
+    case tk_float:
+    case tk_rune:
+    case tk_string:
+    case tk_boolean:
+    case tk_ref:
+      return type1 == type2;
+    case tk_slice:
+      return typeCompare(type1->val.sliceType, type2->val.sliceType, st);
+    case tk_array:
+      if(type1->val.array.size != type2->val.array.size){
+        fprintf(stderr, "Error: (line %d) size of arrays is different", type1->lineno);
+        exit(1);
+      }
+      return typeCompare(type1->val.array.elemType, type2->val.array.elemType, st);
+    case tk_struct:
+      return 1;
+  }
+}
+
 int typeOrdered(TYPE *type) {
   if (type != NULL) {
     switch (type->kind) {
@@ -529,6 +573,27 @@ int typeList(TYPE *type) {
 
 int typeIsBase(TYPE *type) {
   return type == baseBool || type == baseFloat || type == baseInt || type == baseRune || type == baseString;
+}
+
+/* Returns wheter s resolves */
+int resolvesToTSlice(TYPE *s, TYPE *t, SymbolTable *st){
+  SYMBOL *sym;
+  while(1){
+    switch(s->kind){
+      case tk_slice:
+        return t->val.sliceType == t;
+      case tk_ref:
+        sym = getSymbol(st, s->val.name);
+        if(sym->kind != dk_type){
+          fprintf(stderr, "Error: (line %d) does not resolve to a type declaration", s->lineno);
+          exit(1);
+        }
+        resolvesToTSlice(sym->val.typeDecl.type, t, st);
+      default:
+        return 0;
+    }
+  }
+  return 0;
 }
 
 int resolvesToBase(TYPE *type, SymbolTable *st) {

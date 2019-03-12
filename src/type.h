@@ -15,6 +15,8 @@ void typeFuncDecl(FUNC_DECL *fd, SymbolTable *st);
 void typeStmt(STMT *stmt, SymbolTable *st);
 void typeExp(EXP *exp, SymbolTable *st);
 
+int typeCompare(TYPE *type1, TYPE *type2, SymbolTable *st);
+
 int typeComparable(TYPE *type);
 int typeOrdered(TYPE *type);
 int typeNumeric(TYPE *type);
@@ -24,5 +26,7 @@ int typeBool(TYPE *type);
 int typeList(TYPE *type);
 
 int resolves(TYPE *source, TYPE *target);
+int typeIsBase(TYPE *type);
+int resolvesToTSlice(TYPE *s, TYPE *t, SymbolTable *st);
 
 #endif

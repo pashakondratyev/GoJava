@@ -137,11 +137,13 @@ void putTypeDecl(SymbolTable *st, TYPE_SPECS *ts, int lineno) {
 
 // Functions are top level decl TODO: will want to store fd->params
 void putFuncDecl(SymbolTable *st, FUNC_DECL *fd, int lineno) {
-  if(strcmp(fd->name, "init") == 0 || strcmp(fd->name, "_") == 0){
+  if(strcmp(fd->name, "init") == 0){
     if(fd->params != NULL || fd->returnType != NULL){
       fprintf(stderr, "Error: (line %d) init function cannot have return type of param list\n", lineno);
       exit(1);
     }
+  } else if(strcmp(fd->name, "_") == 0){
+    // Do nothing
   }
   else{
     putSymbol(st, dk_func, fd->name, fd->returnType, fd->params, lineno);
@@ -194,7 +196,7 @@ void putShortDecl(SymbolTable *st, SHORT_SPECS *ss, int lineno) {
   }
 
   if(newDecl == 0){
-    fprintf(stderr, "Error: (line %d) short declaration must have at least one previously undeclared variable", lineno);
+    fprintf(stderr, "Error: (line %d) short declaration must have at least one previously undeclared variable\n", lineno);
     exit(1);
   }
 }
@@ -208,6 +210,11 @@ void putVarDecl(SymbolTable *st, VAR_SPECS *vs, int lineno) {
     if(vs->exp != NULL){
       symTypesExpressions(vs->exp, st);
     }
+
+    if(vs->type->kind == tk_ref){
+      vs->type = getSymbol(st, vs->type->val.name)->val.typeDecl.type;
+    }
+
     putSymbol(st, dk_var, vs->id, vs->type, NULL, lineno);
     if (mode == SymbolTablePrint) {
       printTab(tabCount);
