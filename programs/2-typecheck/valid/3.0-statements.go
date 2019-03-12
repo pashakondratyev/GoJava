@@ -121,3 +121,8 @@ func yo4() {
 	z++;
 	z--;
 }
+
+
+var z struct {
+	b int
+}
