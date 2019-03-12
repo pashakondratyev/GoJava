@@ -119,11 +119,25 @@ void typeStmt(STMT *stmt, SymbolTable *st) {
       case sk_assignOp:
         typeExp(stmt->val.assignOp.lhs, st);
         typeExp(stmt->val.assignOp.rhs, st);
+        if (stmt->val.assignOp.lhs->type != stmt->val.assignOp.rhs->type){
+          fprintf(stderr, "Error: (line %d) Both sides of assignment mus be the same\n", stmt->lineno);
+          exit(1);
+        }
         switch (stmt->val.assignOp.kind) {
           case aok_plus:
+            if (!typeNumeric(stmt->val.assignOp.lhs->type) && !typeString(stmt->val.assignOp.lhs->type)) {
+              fprintf(stderr, "Error: (line %d) Plus assign operator only works with numeric or string types\n", stmt->lineno);
+              exit(1);
+            }
+            break;
           case aok_minus:
           case aok_times:
           case aok_div:
+            if (!typeNumeric(stmt->val.assignOp.lhs->type)) {
+              fprintf(stderr, "Error: (line %d) Operation only works with numeric types\n", stmt->lineno);
+              exit(1);
+            }
+            break;
           case aok_mod:
           case aok_bitAnd:
           case aok_bitOr:
@@ -131,6 +145,10 @@ void typeStmt(STMT *stmt, SymbolTable *st) {
           case aok_bitLeftShift:
           case aok_bitRightShift:
           case aok_bitClear:
+            if (!typeInteger(stmt->val.assignOp.lhs->type)) {
+              fprintf(stderr, "Error: (line %d) Operation only works with integer types\n", stmt->lineno);
+              exit(1);
+            }
             break;
         }
 
@@ -222,6 +240,7 @@ void typeExp(EXP *exp, SymbolTable *st) {
           exp->type = NULL;
           break;
         }
+
         s = getSymbol(st, exp->val.id);
         if (getSymbol(st, exp->val.id) == NULL) {
           fprintf(stderr, "Error: (line %d) use of undeclared identifier \"%s\"", exp->lineno, exp->val.id);
@@ -392,12 +411,11 @@ void typeExp(EXP *exp, SymbolTable *st) {
       case ek_append:
         typeExp(exp->val.append.sliceExp, st);
         typeExp(exp->val.append.elem, st);
-        if(!resolvesToTSlice(exp->val.append.elem->type, exp->val.append.sliceExp->type, st)){
+        if(!resolvesToTSlice(exp->val.append.sliceExp->type, exp->val.append.elem->type, st)){
           fprintf(stderr, "Error: (line %d) slice expression should resolve to a slice of the elemnt type\n", exp->lineno);
           exit(1);
         }
-        printf("meme!!!\n");
-
+        exp->type = exp->val.append.sliceExp->type;
         break;
       case ek_len:
         typeExp(exp->val.lenExp, st);
@@ -418,15 +436,10 @@ void typeExp(EXP *exp, SymbolTable *st) {
         }
         break;
       case ek_indexExp:
-        printf("meme\n");
         break;
       case ek_structField:
         typeExp(exp->val.structField.structExp, st);
-        printf("%d", exp->val.structField.structExp->type->kind);
-        if(exp->val.structField.structExp->type->kind != tk_struct){
-          printf("meme3\n");
-        }
-        printf("meme2\n");
+        
         break;
       case ek_paren:
         typeExp(exp->val.parenExp, st);
@@ -581,7 +594,8 @@ int resolvesToTSlice(TYPE *s, TYPE *t, SymbolTable *st){
   while(1){
     switch(s->kind){
       case tk_slice:
-        return t->val.sliceType == t;
+        sym = getSymbol(st, s->val.sliceType->val.name);
+        return sym->val.typeDecl.type == t;
       case tk_ref:
         sym = getSymbol(st, s->val.name);
         if(sym->kind != dk_type){

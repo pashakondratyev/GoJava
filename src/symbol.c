@@ -146,8 +146,13 @@ void putFuncDecl(SymbolTable *st, FUNC_DECL *fd, int lineno) {
     // Do nothing
   }
   else{
+    if(fd->returnType != NULL && fd->returnType->kind == tk_ref){
+      fd->returnType = getSymbol(st, fd->returnType->val.name)->val.typeDecl.type;
+    }
     putSymbol(st, dk_func, fd->name, fd->returnType, fd->params, lineno);
   }
+
+
   if (mode == SymbolTablePrint) {
     printTab(tabCount);
     printf("%s [function] = ", fd->name);
@@ -243,6 +248,7 @@ void createScope(STMT *stmt, SymbolTable *st) {
 /* Takes care of properly scoping an if statment and the else blocks associated with it */
 void createIfStmtScope(STMT *stmt, SymbolTable *st) {
   SymbolTable *scope = scopeSymbolTable(st);
+  stmt->val.ifStmt.scope = scope;
   openScope();
   if (stmt->val.ifStmt.simpleStmt != NULL) {
     symTypesStatements(stmt->val.ifStmt.simpleStmt, scope);
@@ -259,6 +265,7 @@ void createIfStmtScope(STMT *stmt, SymbolTable *st) {
 
 void createForStmtScope(STMT *stmt, SymbolTable *st) {
   SymbolTable *scope = scopeSymbolTable(st);
+  stmt->val.forStmt.scope = scope;
   openScope();
   if (stmt->val.forStmt.forClause != NULL && stmt->val.forStmt.forClause->init != NULL) {
     symTypesStatements(stmt->val.forStmt.forClause->init, scope);
@@ -269,7 +276,7 @@ void createForStmtScope(STMT *stmt, SymbolTable *st) {
 
 void createSwitchStmtScope(STMT *stmt, SymbolTable *st) {
   SymbolTable *scope = scopeSymbolTable(st);
-
+  stmt->val.switchStmt.scope = scope;
   openScope();
   if (stmt->val.switchStmt.simpleStmt != NULL) {
     symTypesStatements(stmt->val.switchStmt.simpleStmt, scope);
