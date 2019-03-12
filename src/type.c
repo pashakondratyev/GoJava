@@ -35,28 +35,44 @@ void typeDeclarations(DECL *dcl, SymbolTable *st) {
 // TODO: Implement
 void typeVarDecl(VAR_SPECS *vs, SymbolTable *st) {
 	if (vs != NULL) {
-
+		// If rhs is not null
+		if(vs->exp != NULL){
+			typeExp(vs->exp, st);
+			SYMBOL *s = getSymbol(st, vs->type->val.name);
+			TYPE *t = vs->type->kind == tk_ref ? getSymbol(st, vs->type->val.name)->type : vs->type;
+			if(vs->exp->type != t){
+				fprintf(stderr, "Error: (line %d) %s is not assignment compatible with %s in assign statement", vs->exp->lineno, vs->type->val.name, vs->exp->type->val.name);
+				exit(1);
+			}
+		}
+		typeVarDecl(vs->next, st);
 	}
 }
 
 // TODO: Implement
 void typeShortDecl(SHORT_SPECS *ss, SymbolTable *st) {
 	if (ss != NULL) {
-
+		typeExp(ss->rhs, st);
+		SYMBOL *s = getSymbol(st, ss->lhs->val.id);
+		if(s->type != NULL && s->type != ss->rhs->type){
+			fprintf(stderr, "Error: (line %d) %s is not assignment compatible with %s in assign statement", ss->rhs->lineno, s->type->val.name, ss->rhs->type->val.name);
+		}
+		typeShortDecl(ss->next, st);
 	}
 }
 
 // TODO: Implement
 void typeTypeDecl(TYPE_SPECS *ts, SymbolTable *st) {
-	if (ts != NULL) {
-
+	if (ts != NULL) {	
+		typeTypeDecl(ts->next, st);
 	}
 }
 
 // TODO: Implement
 void typeFuncDecl(FUNC_DECL *fd, SymbolTable *st) {
 	if (fd != NULL) {
-
+		//TODO: Typecheck return statements
+		typeStmt(fd->body, st);
 	}
 }
 
@@ -94,8 +110,10 @@ void typeStmt(STMT *stmt, SymbolTable *st) {
 			case sk_assignOp:
 				break;
 			case sk_decl:
+				typeVarDecl(stmt->val.decl->val.varSpecs, st);
 				break;
 			case sk_shortDecl:
+				typeShortDecl(stmt->val.decl->val.shortSpecs, st);
 				break;
 			case sk_incr:
 				break;
@@ -113,6 +131,10 @@ void typeStmt(STMT *stmt, SymbolTable *st) {
 					typeStmt(stmt->val.ifStmt.simpleStmt, st);
 				}
 				typeExp(stmt->val.ifStmt.cond, st);
+				if(!typeBool(stmt->val.ifStmt.cond->type)){
+					fprintf(stderr, "Error: (line %d) if statement condition must evaluate to a boolean", stmt->lineno);
+					exit(1);
+				}
 				typeStmt(stmt->val.ifStmt.body, st);
 				if(stmt->val.ifStmt.elseStmt != NULL){
 					typeStmt(stmt->val.ifStmt.elseStmt, st);
@@ -170,6 +192,7 @@ void typeStmt(STMT *stmt, SymbolTable *st) {
 // TODO: Implement
 void typeExp(EXP *exp, SymbolTable *st) {
 	TYPE *type;
+	SYMBOL *s;
 	if (exp != NULL) {
 		switch (exp->kind) {
 			case ek_id:
@@ -280,7 +303,7 @@ void typeExp(EXP *exp, SymbolTable *st) {
 			case ek_bitClear:
 				typeExp(exp->val.binary.lhs, st);
 				typeExp(exp->val.binary.rhs, st);
-				if (typeInteger(exp->val.binary.lhs->type) && typeInteger(exp->val.binary.rhs->type == baseBool)){
+				if (typeInteger(exp->val.binary.lhs->type) && typeInteger(exp->val.binary.rhs->type)){
 					exp->type = exp->val.binary.lhs->type;
 				} else {
 					fprintf(stderr, "Error: (line %d) Logical operators and/or only accept two bools", exp->lineno);
@@ -316,6 +339,14 @@ void typeExp(EXP *exp, SymbolTable *st) {
 				}
 				break;
 			case ek_func:
+				s = getSymbol(st, exp->val.funcCall.funcId);
+				// If Type decl
+				if(s->kind == dk_type){
+					// TODO: resolve types
+					exp->type = s->type;
+				} else if (s->kind == dk_func){
+					exp->type = s->type;
+				}
 				break;
 			case ek_append:
 				break;
@@ -329,7 +360,7 @@ void typeExp(EXP *exp, SymbolTable *st) {
 				break;
 			case ek_paren:
 				typeExp(exp->val.parenExp, st);
-				exp->type = exp->val.parenExp;
+				exp->type = exp->val.parenExp->type;
 				break;
 			case ek_conv:
 				break;
@@ -433,4 +464,13 @@ int typeOrdered(TYPE *type){
 	return 0;
 }
 
+int typeIsBase(TYPE *type){
+	return type == baseBool || type == baseFloat || type == baseInt || type == baseRune || type == baseString; 
+}
 
+int resolvesToBase(TYPE *type, SymbolTable *st){
+	while(1){
+		break;
+	} 
+	return 0;
+}
