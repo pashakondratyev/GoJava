@@ -126,3 +126,8 @@ func yo4() {
 var z struct {
 	b int
 }
+
+func func1() {
+	var a int
+	(a) = 7
+}
