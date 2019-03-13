@@ -46,7 +46,8 @@ typedef enum {
   tk_struct,
   tk_array,
   tk_slice,
-  tk_ref  // user-constructed type
+  tk_ref, // user-constructed type
+  tk_res  // type which needs to be fixed to point to proper type
 } TypeKind;
 
 typedef enum { dk_var, dk_short, dk_type, dk_func } DecKind;

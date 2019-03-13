@@ -18,6 +18,7 @@ typedef struct SYMBOL {
     struct {
       TYPE *type;
       TYPE *resolvesTo;
+      TypeKind resolvesToKind;
     } typeDecl;
   } val;
 } SYMBOL;
@@ -56,6 +57,8 @@ STMT *paramListToStmt(PARAM_LIST *pl, int lineno);
 STMT *combineStmt(STMT *s1, STMT *s2, int lineno);
 
 void printType(TYPE *type);
+char *getTypeString(char *BUFFER, TYPE *type);
+TYPE *fixType(SymbolTable *st, TYPE *type);
 void printParamList(PARAM_LIST *pl);
 
 #endif

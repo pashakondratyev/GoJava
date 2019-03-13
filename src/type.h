@@ -27,6 +27,8 @@ int typeList(TYPE *type);
 
 int resolves(TYPE *source, TYPE *target);
 int typeIsBase(TYPE *type);
+int resolvesToList(TYPE *type, SymbolTable *st);
+TYPE *typeOfList(TYPE *type, SymbolTable *st);
 int resolvesToTSlice(TYPE *s, TYPE *t, SymbolTable *st);
 
 #endif

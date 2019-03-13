@@ -37,14 +37,27 @@ void typeVarDecl(VAR_SPECS *vs, SymbolTable *st) {
     // If rhs is not null
     if (vs->exp != NULL) {
       typeExp(vs->exp, st);
+    
+      
+      if(vs->type != NULL){
+        vs->type = fixType(st, vs->type);
+      }
+
       if(strcmp(vs->id, "_") != 0){
         //SYMBOL *s = getSymbol(st, vs->type->val.name);
         //TYPE *t = vs->type->kind == tk_ref ? getSymbol(st, vs->type->val.name)->val.type : vs->type;
         if(!typeCompare(vs->exp->type, vs->type, st)){
-          fprintf(stderr, "Error: (line %d) %s is not assignment compatible with %s in assign statement\n", vs->exp->lineno, vs->type->val.name, vs->exp->type->val.name);
+          char buffer1[1024];
+          char buffer2[1024];
+          getTypeString(buffer1, vs->type);
+          getTypeString(buffer2, vs->exp->type);
+          fprintf(stderr, "Error: (line %d) %s is not assignment compatible with %s in assign statement\n", vs->exp->lineno, buffer1, buffer2);
           exit(1);
         }
       }
+    } else{
+      printf("memememe\n");
+      vs->type = fixType(st, vs->type);
     }
     typeVarDecl(vs->next, st);
   }
@@ -56,9 +69,19 @@ void typeShortDecl(SHORT_SPECS *ss, SymbolTable *st) {
     typeExp(ss->rhs, st);
     if(strcmp(ss->lhs->val.id, "_") != 0){
       SYMBOL *s = getSymbol(st, ss->lhs->val.id);
+
+      // If the lhs's type is null we can se the type to the type of the exp
+      if (s->val.type == NULL){
+        s->val.type = ss->rhs->type;
+      }
+
       if (s->val.type != NULL && s->val.type != ss->rhs->type) {
-        fprintf(stderr, "Error: (line %d) %s is not assignment compatible with %s in assign statement\n", ss->rhs->lineno,
-                s->val.type->val.name, ss->rhs->type->val.name);
+          char buffer1[1024];
+          char buffer2[1024];
+          
+          getTypeString(buffer1, s->val.type);
+          getTypeString(buffer2, ss->rhs->type);
+          fprintf(stderr, "Error: (line %d) %s is not assignment compatible with %s in assign statement\n", ss->rhs->lineno, buffer1, buffer2);
         exit(1);
       }
     }
@@ -69,6 +92,7 @@ void typeShortDecl(SHORT_SPECS *ss, SymbolTable *st) {
 // TODO: Implement
 void typeTypeDecl(TYPE_SPECS *ts, SymbolTable *st) {
   if (ts != NULL) {
+    ts->type = fixType(st, ts->type);
     typeTypeDecl(ts->next, st);
   }
 }
@@ -194,6 +218,15 @@ void typeStmt(STMT *stmt, SymbolTable *st) {
         }
         typeExp(stmt->val.switchStmt.exp, st);
         ccl = stmt->val.switchStmt.caseClauses;
+        if (stmt->val.switchStmt.exp == NULL){
+          // if no expression then all case expressions must be booleans
+          while (ccl != NULL){
+            
+            ccl = ccl->next;
+          }
+        } else {
+          // if expression is not empty then all case expressions must have the same type as it
+        }
         while (ccl != NULL) {
           if (ccl->clause->kind == ck_case) {
             // TODO: Kabilan do the rest
@@ -240,7 +273,6 @@ void typeExp(EXP *exp, SymbolTable *st) {
           exp->type = NULL;
           break;
         }
-
         s = getSymbol(st, exp->val.id);
         if (getSymbol(st, exp->val.id) == NULL) {
           fprintf(stderr, "Error: (line %d) use of undeclared identifier \"%s\"", exp->lineno, exp->val.id);
@@ -255,7 +287,11 @@ void typeExp(EXP *exp, SymbolTable *st) {
             exp->type = NULL;
             break;
           case dk_type:
-            exp->type = s->val.typeDecl.type;
+            if(s->val.typeDecl.type != NULL){
+              exp->type = s->val.typeDecl.type;
+            } else {
+              exp->type = NULL;
+            }
             break;
           case dk_var:
             exp->type = s->val.type;
@@ -436,16 +472,43 @@ void typeExp(EXP *exp, SymbolTable *st) {
         }
         break;
       case ek_indexExp:
+        typeExp(exp->val.indexExp.indexExp, st);
+        if(exp->val.indexExp.indexExp->type->kind != tk_int){
+          fprintf(stderr, "Error: (line %d) index must be well typed and resolve to type int\n", exp->lineno);
+          exit(1);
+        }
+        typeExp(exp->val.indexExp.objectExp, st);
+        EXP *e = exp->val.indexExp.objectExp; 
+        TYPE *resolvesTo = typeOfList(e->type, st);
+        if(resolvesTo == NULL){
+          fprintf(stderr, "Error: (line %d) expression must resolve to an array or slice\n", e->lineno);
+          exit(1);
+        } else{
+          exp->type = resolvesTo;
+        }
         break;
       case ek_structField:
         typeExp(exp->val.structField.structExp, st);
-        
+        TYPE *t = exp->val.structField.structExp->type;
+        FIELD_DECLS *d = t->val.structFields;
+        while(d != NULL){
+          if(strcmp(d->id, exp->val.structField.fieldName) == 0){
+            exp->type = d->type;
+            return;
+          }
+          d = d->next;
+        }
+        // If the code left this while loop then  the struct does not  contain the field accessed
+        fprintf(stderr, "Error: (line %d) structfield does not contain field %s\n", exp->lineno, exp->val.structField.fieldName);
+        exit(1);
+
         break;
       case ek_paren:
         typeExp(exp->val.parenExp, st);
         exp->type = exp->val.parenExp->type;
         break;
       case ek_conv:
+        printf("conv not implemented\n");
         break;
     }
   }
@@ -525,6 +588,7 @@ int typeComparable(TYPE *type) {
         return typeComparable(type->val.array.elemType);
       case tk_slice:
       case tk_ref:
+      case tk_res:
         return 0;
     }
   }
@@ -536,6 +600,9 @@ int typeCompare(TYPE *type1, TYPE *type2, SymbolTable *st){
   SYMBOL *s2;
   if(type1->kind != type2->kind) return 0;
   switch (type1->kind){
+    case tk_res:
+      fprintf(stderr, "Error: (line %d) shouldn't be reached\n", type1->lineno);
+      exit(1);
     case tk_int:
     case tk_float:
     case tk_rune:
@@ -547,7 +614,7 @@ int typeCompare(TYPE *type1, TYPE *type2, SymbolTable *st){
       return typeCompare(type1->val.sliceType, type2->val.sliceType, st);
     case tk_array:
       if(type1->val.array.size != type2->val.array.size){
-        fprintf(stderr, "Error: (line %d) size of arrays is different", type1->lineno);
+        fprintf(stderr, "Error: (line %d) size of arrays is different\n", type1->lineno);
         exit(1);
       }
       return typeCompare(type1->val.array.elemType, type2->val.array.elemType, st);
@@ -584,11 +651,50 @@ int typeList(TYPE *type) {
   return 0;
 }
 
+int resolvesToList(TYPE *type, SymbolTable *st){
+  SYMBOL *s;
+  switch(type->kind){
+    case tk_slice:
+    case tk_array:
+      return 1;
+    case tk_ref:
+      s = getSymbol(st, type->val.name);
+      if(s->val.typeDecl.resolvesToKind == tk_slice || s->val.typeDecl.resolvesToKind == tk_array){
+        return 0;
+      } else if(s->val.typeDecl.resolvesToKind == tk_ref) {
+        return resolvesToList(s->val.typeDecl.type, st);
+      }
+    default:
+      return 0;
+  }
+  return 0;
+}
+
+TYPE *typeOfList(TYPE *type, SymbolTable *st){
+  SYMBOL *s;
+  switch(type->kind){
+    case tk_slice:
+      return type->val.sliceType;
+    case tk_array:
+      return type->val.array.elemType;
+    case tk_ref:
+      s = getSymbol(st, type->val.name);
+      if(s->val.typeDecl.resolvesToKind == tk_slice || s->val.typeDecl.resolvesToKind == tk_array){
+        return 0;
+      } else if(s->val.typeDecl.resolvesToKind == tk_ref) {
+        return typeOfList(s->val.typeDecl.type, st);
+      }
+    default:
+      return NULL;
+  }
+  return NULL;
+}
+
 int typeIsBase(TYPE *type) {
   return type == baseBool || type == baseFloat || type == baseInt || type == baseRune || type == baseString;
 }
 
-/* Returns wheter s resolves */
+/* Returns wheter s resolves to a slice of type t */
 int resolvesToTSlice(TYPE *s, TYPE *t, SymbolTable *st){
   SYMBOL *sym;
   while(1){
