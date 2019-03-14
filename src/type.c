@@ -281,18 +281,20 @@ void typeStmt(STMT *stmt, SymbolTable *st) {
         } else {
           // if expression is not empty then all case expressions must have the same type as it
           typeExp(stmt->val.switchStmt.exp, st);
-          while (ccl != NULL){
+          while (ccl != NULL) {
             switch (ccl->clause->kind) {
               case ck_case:
-              el = ccl->clause->val.caseClause.cases;
+                el = ccl->clause->val.caseClause.cases;
                 while (el != NULL) {
                   typeExp(el->exp, st);
-                  if (!typeCompare(stmt->val.switchStmt.exp->type, el->exp->type, st)){
+                  if (!typeCompare(stmt->val.switchStmt.exp->type, el->exp->type, st)) {
                     char buffer1[1024];
                     char buffer2[1024];
                     getTypeString(buffer1, stmt->val.switchStmt.exp->type);
                     getTypeString(buffer2, el->exp->type);
-                    fprintf(stderr, "Error: (line %d) Switch expression and case expression must have matching types, got %s and %s instead\n",
+                    fprintf(stderr,
+                            "Error: (line %d) Switch expression and case expression must have matching types, got %s "
+                            "and %s instead\n",
                             stmt->lineno, buffer1, buffer2);
                     exit(1);
                   }
@@ -325,6 +327,10 @@ void typeStmt(STMT *stmt, SymbolTable *st) {
           }
           if (fc->cond != NULL) {
             typeExp(fc->cond, st);
+            if (!typeBool(fc->cond->type)) {
+              fprintf(stderr, "Error: (line %d) condition requires boolean\n", stmt->lineno);
+              exit(1);
+            }
           }
           if (fc->post != NULL) {
             typeStmt(fc->post, st);
@@ -526,7 +532,21 @@ void typeExp(EXP *exp, SymbolTable *st) {
         // If Type decl
         if (s->kind == dk_type) {
           // TODO: resolve types
+          // This will only be a type decl if it's a compound type
+          // printf("meme\n");
+          EXP_LIST *el = exp->val.funcCall.args;
+          if (el->next != NULL) {
+            fprintf(stderr, "Error: (line %d) type cast only expected 1 argument\n", exp->lineno);
+            exit(1);
+          }
+          typeExp(el->exp, st);
+          // Resolve these types 
+          if (!resolveToSame(el->exp->type, s->val.typeDecl.type, st)) {
+            fprintf(stderr, "Error: (line %d) type cast cannot cast these types\n", exp->lineno);
+            exit(1);
+          }
           exp->type = s->val.typeDecl.type;
+
         } else if (s->kind == dk_func) {
           EXP_LIST *passedParams = exp->val.funcCall.args;
           PARAM_LIST *pl = s->val.functionDecl.paramList;
@@ -821,7 +841,7 @@ int resolvesToTSlice(TYPE *s, TYPE *t, SymbolTable *st) {
         fprintf(stderr, "Error: (line %d) does not resolve to a type declaration", s->lineno);
         exit(1);
       }
-      if(s == sym->val.typeDecl.resolvesTo){
+      if (s == sym->val.typeDecl.resolvesTo) {
         return 0;
       }
       return resolvesToTSlice(sym->val.typeDecl.resolvesTo, t, st);
@@ -849,4 +869,30 @@ int resolvesToBase(TYPE *type, SymbolTable *st) {
     break;
   }
   return 0;
+}
+
+TYPE *typeResolve(TYPE *type, SymbolTable *st){
+  SYMBOL *s;
+   switch (type->kind) {
+    case tk_res:
+      fprintf(stderr, "Error: (line %d) shouldn't be reached\n", type->lineno);
+      exit(1);
+    case tk_int:
+    case tk_float:
+    case tk_rune:
+    case tk_string:
+    case tk_boolean:
+      return type;
+    case tk_ref:
+      s = getSymbol(st, type->val.name);
+      return typeResolve(s->val.typeDecl.resolvesTo, st);
+    default:
+      return NULL;
+  } 
+}
+
+int resolveToSame(TYPE *type1, TYPE *type2, SymbolTable *st){
+  type1 = typeResolve(type1, st);
+  type2 = typeResolve(type2, st);
+  return type1 == type2;
 }
