@@ -6,11 +6,12 @@ func foo() {
 	type natural num
 
 	var a num = num(5)
-	var b natural = natural(a+7)
+	var b natural = natural(a+num(7))
+	var c natural = natural(12)
 
-	var c int = int(5.72)
-	var d float64 = float64(4)
+	var d int = int(5.72)
+	var e float64 = float64(4)
 
-	var e string = string(456)
-	var f string = string('r')
+	var f string = string(456)
+	var g string = string('r')
 }
