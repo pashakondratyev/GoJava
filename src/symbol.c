@@ -61,6 +61,7 @@ SYMBOL *putSymbol(SymbolTable *t, DecKind kind, char *identifier, TYPE *type, PA
 
   SYMBOL *s = (SYMBOL *)malloc(sizeof(SYMBOL));
   PARAM_LIST *plOld;
+  TYPE *ref = type;
   s->name = strdup(identifier);
   switch (kind) {
     case dk_func:
@@ -78,6 +79,10 @@ SYMBOL *putSymbol(SymbolTable *t, DecKind kind, char *identifier, TYPE *type, PA
       s->val.type = NULL;
       break;
     case dk_type:
+      if(lineno != 0 && typeIsBase(type)){
+        // TODO: this might need more rigorous testing
+        type = makeRefType(identifier, lineno);
+      }
       s->val.typeDecl.type = fixType(t, type);
       SYMBOL *resolvesTo;
       switch (type->kind) {
@@ -96,14 +101,13 @@ SYMBOL *putSymbol(SymbolTable *t, DecKind kind, char *identifier, TYPE *type, PA
           s->val.typeDecl.resolvesToKind = resolvesTo->val.typeDecl.resolvesToKind;
           break;
         case tk_ref:
-          resolvesTo = getSymbol(t, type->val.name);
-          if (resolvesTo->kind != dk_type) {
+          if (ref == NULL) {
             fprintf(stderr, "Error: (line %d) attempting to declare type which references a non-type\n", lineno);
             exit(1);
           }
           // TODO: check if we only need this
-          s->val.typeDecl.resolvesTo = resolvesTo->val.typeDecl.resolvesTo;
-          s->val.typeDecl.resolvesToKind = resolvesTo->val.typeDecl.resolvesToKind;
+          s->val.typeDecl.resolvesTo = ref;
+          s->val.typeDecl.resolvesToKind = ref->kind;
           break;
         case tk_int:
           s->val.typeDecl.resolvesTo = baseInt;
@@ -126,8 +130,8 @@ SYMBOL *putSymbol(SymbolTable *t, DecKind kind, char *identifier, TYPE *type, PA
           s->val.typeDecl.resolvesToKind = tk_string;
           break;
         default:
-          s->val.typeDecl.resolvesTo = NULL;
-          s->val.typeDecl.resolvesToKind = type->kind;
+          s->val.typeDecl.resolvesTo = ref;
+          s->val.typeDecl.resolvesToKind = ref->kind;
           break;
       }
       break;
@@ -626,7 +630,6 @@ void printType(TYPE *type) {
 
 char *getTypeString(char *BUFFER, TYPE *type) {
   FIELD_DECLS *d;
-  printf("%d\n", type->kind);
   switch (type->kind) {
     case tk_array:
       sprintf(BUFFER, "[");
@@ -712,4 +715,8 @@ TYPE *fixType(SymbolTable *st, TYPE *type) {
     case tk_string:
       return type;
   }
+}
+
+int typeIsBase(TYPE *type) {
+  return type == baseBool || type == baseFloat || type == baseInt || type == baseRune || type == baseString;
 }

@@ -60,5 +60,5 @@ void printType(TYPE *type);
 char *getTypeString(char *BUFFER, TYPE *type);
 TYPE *fixType(SymbolTable *st, TYPE *type);
 void printParamList(PARAM_LIST *pl);
-
+int typeIsBase(TYPE *type);
 #endif

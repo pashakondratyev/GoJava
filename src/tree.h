@@ -411,6 +411,7 @@ EXP *makeArgumentExp(EXP *exp, EXP_LIST *args, TYPE *type, int lineno);
 EXP_LIST *makeExpList(EXP_LIST *listHead, EXP *nextExp);
 
 TYPE *makeType(char *name, int lineno);
+TYPE *makeRefType(char *name, int lineno);
 TYPE *makeSliceType(TYPE *elemType, int lineno);
 TYPE *makeArrayType(int size, TYPE *elemType, int lineno);
 TYPE *makeStructType(FIELD_DECLS *fields, int lineno);
