@@ -3,5 +3,5 @@ package test
 
 func foo() {
 	var a []int
-	a.value
+	print(a.value)
 }

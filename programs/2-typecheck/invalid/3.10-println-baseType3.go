@@ -2,7 +2,7 @@
 package test
 
 func foo() {
-	type point struct { x, y int }
+	type point struct { x, y int; }
 	var a point
 	println(a)
 }

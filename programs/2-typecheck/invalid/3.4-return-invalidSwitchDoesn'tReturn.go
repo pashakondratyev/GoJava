@@ -1,7 +1,7 @@
-// all cases of switch statement have a return
+// all cases of switch statement must have a return
 package test
 
-func main() int {
+func foo() int {
 	var i = 3
 	switch i {
 		case 0: return 0

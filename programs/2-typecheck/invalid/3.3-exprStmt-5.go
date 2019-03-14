@@ -3,5 +3,5 @@ package test
 
 func foo() {
 	var a [5]int
-	len(a)
+	var b string = len(a)
 }

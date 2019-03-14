@@ -1,4 +1,4 @@
-// function declaration - terminate with wrong typw
+// function declaration - terminate with wrong type
 package test
 
 func f1(a int, b float64) int {
