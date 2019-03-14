@@ -104,4 +104,7 @@ tags
 lex.yy.c
 goc
 parser.output
+
+test-solution.sh
+programs-solution
 # End of https://www.gitignore.io/api/c,vim,flex
