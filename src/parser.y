@@ -161,25 +161,25 @@ IdentifierList: tIDENTIFIER     { $$ = makeIdList(NULL, $1); }
     ;
 
 Expression: UnaryExpression %prec UNARY     { $$ = $1; }
-    | Expression tOR Expression %prec BINARY   { $$ = makeBinaryExp(ek_or, $1, $3, @1.first_line); }
-    | Expression tAND Expression %prec BINARY   { $$ = makeBinaryExp(ek_and, $1, $3, @1.first_line); }
-    | Expression tEQ Expression %prec BINARY   { $$ = makeBinaryExp(ek_eq, $1, $3, @1.first_line); }
-    | Expression tNOTEQ Expression %prec BINARY   { $$ = makeBinaryExp(ek_ne, $1, $3, @1.first_line); }
-    | Expression tLESS Expression %prec BINARY   { $$ = makeBinaryExp(ek_lt, $1, $3, @1.first_line); }
-    | Expression tLTEQ Expression %prec BINARY   { $$ = makeBinaryExp(ek_le, $1, $3, @1.first_line); }
-    | Expression tGREATER Expression %prec BINARY   { $$ = makeBinaryExp(ek_gt, $1, $3, @1.first_line); }
-    | Expression tGTEQ Expression %prec BINARY   { $$ = makeBinaryExp(ek_ge, $1, $3, @1.first_line); }
-    | Expression tPLUS Expression %prec BINARY   { $$ = makeBinaryExp(ek_plus, $1, $3, @1.first_line); }
-    | Expression tMINUS Expression %prec BINARY   { $$ = makeBinaryExp(ek_minus, $1, $3, @1.first_line); }
-    | Expression tBITOR Expression %prec BINARY   { $$ = makeBinaryExp(ek_bitOr, $1, $3, @1.first_line); }
-    | Expression tBITXOR Expression %prec BINARY   { $$ = makeBinaryExp(ek_bitXor, $1, $3, @1.first_line); }
-    | Expression tTIMES Expression %prec BINARY   { $$ = makeBinaryExp(ek_times, $1, $3, @1.first_line); }
-    | Expression tDIV Expression %prec BINARY   { $$ = makeBinaryExp(ek_div, $1, $3, @1.first_line); }
-    | Expression tMOD Expression %prec BINARY   { $$ = makeBinaryExp(ek_mod, $1, $3, @1.first_line); }
-    | Expression tLEFTSHIFT Expression %prec BINARY   { $$ = makeBinaryExp(ek_bitLeftShift, $1, $3, @1.first_line); }
-    | Expression tRIGHTSHIFT Expression %prec BINARY   { $$ = makeBinaryExp(ek_bitRightShift, $1, $3, @1.first_line); }
-    | Expression tBITAND Expression %prec BINARY   { $$ = makeBinaryExp(ek_bitAnd, $1, $3, @1.first_line); }
-    | Expression tBITCLEAR Expression %prec BINARY   { $$ = makeBinaryExp(ek_bitClear, $1, $3, @1.first_line); }
+    | Expression tOR Expression    { $$ = makeBinaryExp(ek_or, $1, $3, @1.first_line); }
+    | Expression tAND Expression    { $$ = makeBinaryExp(ek_and, $1, $3, @1.first_line); }
+    | Expression tEQ Expression   { $$ = makeBinaryExp(ek_eq, $1, $3, @1.first_line); }
+    | Expression tNOTEQ Expression    { $$ = makeBinaryExp(ek_ne, $1, $3, @1.first_line); }
+    | Expression tLESS Expression   { $$ = makeBinaryExp(ek_lt, $1, $3, @1.first_line); }
+    | Expression tLTEQ Expression   { $$ = makeBinaryExp(ek_le, $1, $3, @1.first_line); }
+    | Expression tGREATER Expression   { $$ = makeBinaryExp(ek_gt, $1, $3, @1.first_line); }
+    | Expression tGTEQ Expression    { $$ = makeBinaryExp(ek_ge, $1, $3, @1.first_line); }
+    | Expression tPLUS Expression   { $$ = makeBinaryExp(ek_plus, $1, $3, @1.first_line); }
+    | Expression tMINUS Expression   { $$ = makeBinaryExp(ek_minus, $1, $3, @1.first_line); }
+    | Expression tBITOR Expression  { $$ = makeBinaryExp(ek_bitOr, $1, $3, @1.first_line); }
+    | Expression tBITXOR Expression   { $$ = makeBinaryExp(ek_bitXor, $1, $3, @1.first_line); }
+    | Expression tTIMES Expression   { $$ = makeBinaryExp(ek_times, $1, $3, @1.first_line); }
+    | Expression tDIV Expression  { $$ = makeBinaryExp(ek_div, $1, $3, @1.first_line); }
+    | Expression tMOD Expression   { $$ = makeBinaryExp(ek_mod, $1, $3, @1.first_line); }
+    | Expression tLEFTSHIFT Expression   { $$ = makeBinaryExp(ek_bitLeftShift, $1, $3, @1.first_line); }
+    | Expression tRIGHTSHIFT Expression   { $$ = makeBinaryExp(ek_bitRightShift, $1, $3, @1.first_line); }
+    | Expression tBITAND Expression   { $$ = makeBinaryExp(ek_bitAnd, $1, $3, @1.first_line); }
+    | Expression tBITCLEAR Expression   { $$ = makeBinaryExp(ek_bitClear, $1, $3, @1.first_line); }
     ;
 
 ExpressionList: Expression  { $$ = makeExpList(NULL, $1); }

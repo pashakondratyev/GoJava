@@ -37,10 +37,14 @@ void typeVarDecl(VAR_SPECS *vs, SymbolTable *st) {
     // If rhs is not null
     if (vs->exp != NULL) {
       typeExp(vs->exp, st);
-    
       
       if(vs->type != NULL){
         vs->type = fixType(st, vs->type);
+      } else if (strcmp(vs->id, "_") != 0){
+        // We need to resolve the type 
+        SYMBOL *s = getSymbol(st, vs->id);
+        s->val.type = vs->exp->type;
+        vs->type = vs->exp->type;
       }
 
       if(strcmp(vs->id, "_") != 0){
@@ -56,8 +60,9 @@ void typeVarDecl(VAR_SPECS *vs, SymbolTable *st) {
         }
       }
     } else{
-      printf("memememe\n");
-      vs->type = fixType(st, vs->type);
+      if(vs->type != NULL){
+        vs->type = fixType(st, vs->type);
+      }
     }
     typeVarDecl(vs->next, st);
   }
@@ -274,7 +279,7 @@ void typeExp(EXP *exp, SymbolTable *st) {
           break;
         }
         s = getSymbol(st, exp->val.id);
-        if (getSymbol(st, exp->val.id) == NULL) {
+        if (s == NULL) {
           fprintf(stderr, "Error: (line %d) use of undeclared identifier \"%s\"", exp->lineno, exp->val.id);
           exit(1);
         }
@@ -284,7 +289,11 @@ void typeExp(EXP *exp, SymbolTable *st) {
             exp->type = s->val.functionDecl.returnType;
             break;
           case dk_short:
-            exp->type = NULL;
+            if(s->val.type != NULL){
+              exp->type = s->val.type;
+            } else{
+              exp->type = NULL;
+            }
             break;
           case dk_type:
             if(s->val.typeDecl.type != NULL){
@@ -349,15 +358,16 @@ void typeExp(EXP *exp, SymbolTable *st) {
       case ek_ne:
         typeExp(exp->val.binary.lhs, st);
         typeExp(exp->val.binary.rhs, st);
+
         if (exp->val.binary.lhs->type == exp->val.binary.rhs->type) {
           if (typeComparable(exp->val.binary.lhs->type)) {
             exp->type = baseBool;
           } else {
-            fprintf(stderr, "Error: (line %d) Types not comparable", exp->lineno);
+            fprintf(stderr, "Error: (line %d) Types not comparable\n", exp->lineno);
             exit(1);
           }
         } else {
-          fprintf(stderr, "Error: (line %d) Both sides of equality test must be of same type", exp->lineno);
+          fprintf(stderr, "Error: (line %d) Both sides of equality test must be of same type\n", exp->lineno);
           exit(1);
         }
         break;
@@ -375,7 +385,7 @@ void typeExp(EXP *exp, SymbolTable *st) {
             exit(1);
           }
         } else {
-          fprintf(stderr, "Error: (line %d) Both sides of comparison must be of same type", exp->lineno);
+          fprintf(stderr, "Error: (line %d) Both sides of comparison must be of same type\n", exp->lineno);
           exit(1);
         }
         break;
@@ -386,7 +396,7 @@ void typeExp(EXP *exp, SymbolTable *st) {
         if (typeBool(exp->val.binary.lhs->type) && typeBool(exp->val.binary.rhs->type)) {
           exp->type = baseBool;
         } else {
-          fprintf(stderr, "Error: (line %d) Logical operators and/or only accept two bools", exp->lineno);
+          fprintf(stderr, "Error: (line %d) Logical operators and/or only accept two bools\n", exp->lineno);
           exit(1);
         }
         break;
