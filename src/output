@@ -1,5 +1,0 @@
-"string"       if (g_tokens){printf("tSTRING\n");} return tSTRING;
-"bool"         if (g_tokens){printf("tBOOLEAN\n");} return tBOOLEAN;
-"rune"         if (g_tokens){printf("tRUNE\n");} return tRUNE;
-"float"        if (g_tokens){printf("tFLOAT\n");} return tFLOAT;
-"int"          if (g_tokens){printf("tFLOAT\n");} return tFLOAT;
