@@ -12,7 +12,7 @@ void typeShortDecl(SHORT_SPECS *ss, SymbolTable *st);
 void typeTypeDecl(TYPE_SPECS *ts, SymbolTable *st);
 void typeFuncDecl(FUNC_DECL *fd, SymbolTable *st);
 
-void typeStmt(STMT *stmt, SymbolTable *st);
+int typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType);
 void typeExp(EXP *exp, SymbolTable *st);
 
 int typeCompare(TYPE *type1, TYPE *type2, SymbolTable *st);
@@ -31,6 +31,13 @@ int resolvesToList(TYPE *type, SymbolTable *st);
 int isLValue(EXP *exp);
 TYPE *typeOfList(TYPE *type, SymbolTable *st);
 int resolvesToTSlice(TYPE *s, TYPE *t, SymbolTable *st);
-int resolveToSame(TYPE *s, TYPE *t, SymbolTable *st);
+int resolvesToSame(TYPE *s, TYPE *t, SymbolTable *st);
+int resolvesToBase(TYPE *type, SymbolTable *st);
+int resolvesToInteger(TYPE *type, SymbolTable *st);
+int resolvesToString(TYPE *type, SymbolTable *st);
+int resolvesToBool(TYPE *type, SymbolTable *st);
+int resolvesToNumeric(TYPE *type, SymbolTable *st);
+int resolvesToOrdered(TYPE *type, SymbolTable *st);
+int resolvesToComparable(TYPE *type, SymbolTable *st);
 
 #endif

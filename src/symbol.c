@@ -182,6 +182,11 @@ void putFuncDecl(SymbolTable *st, FUNC_DECL *fd, int lineno) {
       fprintf(stderr, "Error: (line %d) init function cannot have return type of param list\n", lineno);
       exit(1);
     }
+  } else if (strcmp(fd->name, "main") == 0){
+    if (fd->params != NULL || fd->returnType != NULL) {
+      fprintf(stderr, "Error: (line %d) main function cannot have return type of param list\n", lineno);
+      exit(1);
+    }
   } else if (strcmp(fd->name, "_") == 0) {
     // Do nothing
   } else {
@@ -423,6 +428,10 @@ void symTypesStatements(STMT *stmt, SymbolTable *st) {
     case sk_decl:
     case sk_shortDecl:
       symTypesDeclarations(stmt->val.decl, st);
+      break;
+    case sk_exp:
+      symTypesExpressions(stmt->val.exp, st);
+      break;
     default:
       break;
   }
@@ -477,8 +486,12 @@ void symTypesExpressions(EXP *exp, SymbolTable *st) {
       symTypesExpressions(exp->val.unary.exp, st);
       break;
     case ek_func:
+      if(strcmp(exp->val.funcCall.funcId, "_") == 0){
+        fprintf(stderr, "Error: (line %d) function name may not contain the blank identifier\n", exp->lineno);
+        exit(1); 
+      }
       if (getSymbol(st, exp->val.funcCall.funcId) == NULL) {
-        fprintf(stderr, "Error: (line %d) %s is not declared", exp->lineno, exp->val.funcCall.funcId);
+        fprintf(stderr, "Error: (line %d) %s is not declared\n", exp->lineno, exp->val.funcCall.funcId);
         exit(1);
       }
       el = exp->val.funcCall.args;
@@ -502,16 +515,17 @@ void symTypesExpressions(EXP *exp, SymbolTable *st) {
       symTypesExpressions(exp->val.indexExp.objectExp, st);
       break;
     case ek_structField:
-      /*if(getSymbol(st,exp->val.structField.fieldName) == NULL){
-        fprintf(stderr, "Error: (line %d) %s is not declared", exp->lineno, exp->val.structField.fieldName);
-        exit(1);
-      } */
+      if (strcmp(exp->val.structField.fieldName, "_") == 0){
+        fprintf(stderr, "Error: (line %d) selector field may not contain blank identifier\n", exp->lineno);
+        exit(1); 
+      }
       symTypesExpressions(exp->val.structField.structExp, st);
       break;
     case ek_paren:
       symTypesExpressions(exp->val.parenExp, st);
       break;
     case ek_conv:
+      printf("MEME\n");
       el = exp->val.convField.args;
       while (el != NULL) {
         symTypesExpressions(el->exp, st);
@@ -630,11 +644,15 @@ void printType(TYPE *type) {
 
 char *getTypeString(char *BUFFER, TYPE *type) {
   FIELD_DECLS *d;
+  if(type == NULL){
+    sprintf(BUFFER, " ");
+    return BUFFER;
+  }
   switch (type->kind) {
     case tk_array:
       sprintf(BUFFER, "[");
-      sprintf(BUFFER, "%d", type->val.array.size);
-      sprintf(BUFFER, "]");
+      sprintf(BUFFER + strlen(BUFFER), "%d", type->val.array.size);
+      sprintf(BUFFER + strlen(BUFFER), "]");
       getTypeString(BUFFER, type->val.array.elemType);
       break;
     case tk_slice:
@@ -644,12 +662,12 @@ char *getTypeString(char *BUFFER, TYPE *type) {
       sprintf(BUFFER, "struct {");
       d = type->val.structFields;
       while (d != NULL) {
-        sprintf(BUFFER, " %s ", d->id);
-        getTypeString(BUFFER, d->type);
-        sprintf(BUFFER, ";");
+        sprintf(BUFFER + strlen(BUFFER), " %s ", d->id);
+        getTypeString(BUFFER + strlen(BUFFER), d->type);
+        sprintf(BUFFER + strlen(BUFFER), ";");
         d = d->next;
       }
-      sprintf(BUFFER, " }");
+      sprintf(BUFFER + strlen(BUFFER), " }");
       break;
     default:
       sprintf(BUFFER, "%s", type->val.name);
@@ -682,6 +700,11 @@ TYPE *fixStructType(SymbolTable *st, TYPE *type) {
 
 TYPE *fixResType(SymbolTable *st, TYPE *type) {
   SYMBOL *s = getSymbol(st, type->val.name);
+  if(s == NULL){
+    fprintf(stderr, "Error: (line %d) type %s has not been declared\n",
+            type->lineno, type->val.name);
+    exit(1);
+  }
   //res should resolve to type directly
   return s->val.typeDecl.type;
 }

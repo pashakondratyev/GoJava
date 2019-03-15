@@ -37,6 +37,10 @@ void typeVarDecl(VAR_SPECS *vs, SymbolTable *st) {
     // If rhs is not null
     if (vs->exp != NULL) {
       typeExp(vs->exp, st);
+      if(vs->exp->type == NULL){
+        fprintf(stderr, "Error: (line %d) void cannot be used as a value in a declaration\n", vs->exp->lineno);
+        exit(1);
+      }
 
       if (vs->type != NULL) {
         vs->type = fixType(st, vs->type);
@@ -45,7 +49,7 @@ void typeVarDecl(VAR_SPECS *vs, SymbolTable *st) {
         SYMBOL *s = getSymbol(st, vs->id);
         s->val.type = vs->exp->type;
         vs->type = vs->exp->type;
-      }
+      } 
 
       if (strcmp(vs->id, "_") != 0) {
         // SYMBOL *s = getSymbol(st, vs->type->val.name);
@@ -81,6 +85,11 @@ void typeShortDecl(SHORT_SPECS *ss, SymbolTable *st) {
         s->val.type = ss->rhs->type;
       }
 
+      if (ss->rhs->type == NULL){
+        fprintf(stderr, "Error: (line %d) void cannot be used as a value in a short declaration\n", ss->rhs->lineno);
+        exit(1); 
+      }
+
       if (s->val.type != NULL && s->val.type != ss->rhs->type) {
         char buffer1[1024];
         char buffer2[1024];
@@ -108,12 +117,20 @@ void typeTypeDecl(TYPE_SPECS *ts, SymbolTable *st) {
 void typeFuncDecl(FUNC_DECL *fd, SymbolTable *st) {
   if (fd != NULL) {
     // TODO: Typecheck return statements
-    typeStmt(fd->body, st);
+    if(fd->returnType != NULL){
+      fd->returnType = fixType(st, fd->returnType);
+    }
+
+    if(!typeStmt(fd->body, st, fd->returnType) && fd->returnType != NULL){
+      fprintf(stderr, "Error: (line %d) function %s does not have a terminating statement", fd->body->lineno, fd->name);
+      exit(1);
+    }
   }
 }
 
 // TODO: Implement
-void typeStmt(STMT *stmt, SymbolTable *st) {
+int typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
+  int returns = 0;
   STMT_LIST *sl;
   ASSIGN *al;
   EXP_LIST *el;
@@ -125,10 +142,12 @@ void typeStmt(STMT *stmt, SymbolTable *st) {
         st = stmt->val.block.scope != NULL ? stmt->val.block.scope : st;
         sl = stmt->val.block.blockStatements;
         while (sl != NULL) {
-          typeStmt(sl->stmt, st);
+          if(typeStmt(sl->stmt, st, returnType)){
+            returns = 1;
+          };
           sl = sl->next;
         }
-        break;
+        return returns;
       case sk_exp:
         typeExp(stmt->val.exp, st);
         break;
@@ -205,6 +224,10 @@ void typeStmt(STMT *stmt, SymbolTable *st) {
       case sk_incr:
       case sk_decr:
         typeExp(stmt->val.exp, st);
+        if(!resolvesToNumeric(stmt->val.exp->type, st)){
+            fprintf(stderr, "Error: (line %d) cannot increment non numeric type\n", stmt->lineno);
+            exit(1);
+        }
         break;
       case sk_print:
       case sk_println:
@@ -219,35 +242,71 @@ void typeStmt(STMT *stmt, SymbolTable *st) {
         }
         break;
       case sk_return:
+        if(returnType == NULL && stmt->val.exp == NULL){
+          return 1;
+        }
+
+        if(returnType != NULL && stmt->val.exp == NULL){
+            fprintf(stderr, "Error: (line %d) invalid return [function has void return type] %s\n", stmt->lineno);
+            exit(1); 
+        }
+
+
+        if(returnType == NULL && stmt->val.exp != NULL){
+            fprintf(stderr, "Error: (line %d) invalid return [function has non-void return type]\n", 
+              stmt->lineno);
+            exit(1); 
+        }
+
+        if(stmt->val.exp != NULL){
+          typeExp(stmt->val.exp, st);
+        }
+
+        if(!typeCompare(returnType, stmt->val.exp->type, st)){
+            char buffer1[1024];
+            char buffer2[1024];
+            getTypeString(buffer1, returnType);
+            getTypeString(buffer2, stmt->val.exp->type);
+            fprintf(stderr, "Error: (line %d) %s is not assignment compatible with %s in return statement\n", stmt->lineno, buffer1, buffer2);
+            exit(1); 
+        }
+
+        returns = 1;
         break;
       case sk_if:
         st = stmt->val.ifStmt.scope;
         if (stmt->val.ifStmt.simpleStmt != NULL) {
-          typeStmt(stmt->val.ifStmt.simpleStmt, st);
+          typeStmt(stmt->val.ifStmt.simpleStmt, st, returnType);
         }
         typeExp(stmt->val.ifStmt.cond, st);
         if (!typeBool(stmt->val.ifStmt.cond->type)) {
-          fprintf(stderr, "Error: (line %d) if statement condition must evaluate to a boolean\n", stmt->lineno);
+          char buffer[1024];
+          getTypeString(buffer, stmt->val.ifStmt.cond->type);
+          fprintf(stderr, "Error: (line %d) Condition evaluates to %s instead of boolean\n", stmt->lineno, buffer);
           exit(1);
         }
-        typeStmt(stmt->val.ifStmt.body, st);
+        returns = typeStmt(stmt->val.ifStmt.body, st, returnType);
         if (stmt->val.ifStmt.elseStmt != NULL) {
-          typeStmt(stmt->val.ifStmt.elseStmt, st);
+          returns = returns && typeStmt(stmt->val.ifStmt.elseStmt, st, returnType);
+        } else {
+          returns = 0;
         }
         break;
       case sk_else:
-        typeStmt(stmt->val.elseBody, st);
+        returns = typeStmt(stmt->val.elseBody, st, returnType);
         break;
       case sk_switch:
         st = stmt->val.switchStmt.scope;
         if (stmt->val.switchStmt.simpleStmt != NULL) {
-          typeStmt(stmt->val.switchStmt.simpleStmt, st);
+          typeStmt(stmt->val.switchStmt.simpleStmt, st, returnType);
         }
         // typeExp(stmt->val.switchStmt.exp, st);
         ccl = stmt->val.switchStmt.caseClauses;
         if (stmt->val.switchStmt.exp == NULL) {
+          returns = ccl == NULL ? 0 : 1;
           // if no expression then all case expressions must be booleans
           while (ccl != NULL) {
+            int clauseReturns = 0;
             switch (ccl->clause->kind) {
               case ck_case:
                 el = ccl->clause->val.caseClause.cases;
@@ -264,24 +323,31 @@ void typeStmt(STMT *stmt, SymbolTable *st) {
                 }
                 sl = ccl->clause->val.caseClause.clauses;
                 while (sl != NULL) {
-                  typeStmt(sl->stmt, st);
+                  if(typeStmt(sl->stmt, st, returnType)){
+                    clauseReturns = 1;
+                  };
                   sl = sl->next;
                 }
                 break;
               case ck_default:
                 sl = ccl->clause->val.defaultClauses;
                 while (sl != NULL) {
-                  typeStmt(sl->stmt, st);
+                  if(typeStmt(sl->stmt, st, returnType)){
+                    clauseReturns = 1;
+                  }
                   sl = sl->next;
                 }
                 break;
             }
+            returns = returns && clauseReturns;
             ccl = ccl->next;
           }
         } else {
           // if expression is not empty then all case expressions must have the same type as it
           typeExp(stmt->val.switchStmt.exp, st);
+          returns = ccl == NULL ? 0 : 1;
           while (ccl != NULL) {
+            int clauseReturns = 0;
             switch (ccl->clause->kind) {
               case ck_case:
                 el = ccl->clause->val.caseClause.cases;
@@ -302,18 +368,23 @@ void typeStmt(STMT *stmt, SymbolTable *st) {
                 }
                 sl = ccl->clause->val.caseClause.clauses;
                 while (sl != NULL) {
-                  typeStmt(sl->stmt, st);
+                  if(typeStmt(sl->stmt, st, returnType)){
+                    clauseReturns = 1;
+                  };
                   sl = sl->next;
                 }
                 break;
               case ck_default:
                 sl = ccl->clause->val.defaultClauses;
                 while (sl != NULL) {
-                  typeStmt(sl->stmt, st);
+                  if(typeStmt(sl->stmt, st, returnType)){
+                    clauseReturns = 1;
+                  }
                   sl = sl->next;
                 }
                 break;
             }
+            returns = returns && clauseReturns;
             ccl = ccl->next;
           }
         }
@@ -323,22 +394,30 @@ void typeStmt(STMT *stmt, SymbolTable *st) {
         if (stmt->val.forStmt.forClause != NULL) {
           FOR_CLAUSE *fc = stmt->val.forStmt.forClause;
           if (fc->init != NULL) {
-            typeStmt(fc->init, st);
+            typeStmt(fc->init, st, returnType);
           }
           if (fc->cond != NULL) {
             typeExp(fc->cond, st);
-            if (!typeBool(fc->cond->type)) {
-              fprintf(stderr, "Error: (line %d) condition requires boolean\n", stmt->lineno);
+            if (!resolvesToBool(fc->cond->type,st)) {
+              char buffer[1024];
+              getTypeString(buffer, fc->cond->type);
+              fprintf(stderr, "Error: (line %d) Condition evaluates to %s instead of boolean\n", stmt->lineno, buffer);
               exit(1);
             }
           }
           if (fc->post != NULL) {
-            typeStmt(fc->post, st);
+            typeStmt(fc->post, st, returnType);
           }
-        } else {
+        } else if (stmt->val.forStmt.whileExp != NULL) {
           typeExp(stmt->val.forStmt.whileExp, st);
+          if(!resolvesToBool(stmt->val.forStmt.whileExp->type, st)){
+            char buffer[1024];
+            getTypeString(buffer, stmt->val.forStmt.whileExp->type);
+            fprintf(stderr, "Error: (line %d) Condition evaluates to %s instead of boolean\n", stmt->lineno, buffer);
+            exit(1);
+          }
         }
-        typeStmt(stmt->val.forStmt.body, st);
+        returns = typeStmt(stmt->val.forStmt.body, st, returnType);
         break;
       case sk_break:
       case sk_continue:
@@ -346,6 +425,7 @@ void typeStmt(STMT *stmt, SymbolTable *st) {
       case sk_empty:
         break;
     }
+    return returns;
   }
 }
 
@@ -407,8 +487,8 @@ void typeExp(EXP *exp, SymbolTable *st) {
       case ek_plus:
         typeExp(exp->val.binary.lhs, st);
         typeExp(exp->val.binary.rhs, st);
-        if (exp->val.binary.lhs->type == exp->val.binary.rhs->type) {
-          if (typeNumeric(exp->val.binary.lhs->type) || typeString(exp->val.binary.lhs->type)) {
+        if (typeCompare(exp->val.binary.lhs->type, exp->val.binary.rhs->type, st)) {
+          if (resolvesToNumeric(exp->val.binary.lhs->type, st) || resolvesToString(exp->val.binary.lhs->type, st)) {
             exp->type = exp->val.binary.lhs->type;
           } else {
             fprintf(stderr, "Error: (line %d) Operation only works with numeric or string types", exp->lineno);
@@ -441,15 +521,21 @@ void typeExp(EXP *exp, SymbolTable *st) {
         typeExp(exp->val.binary.lhs, st);
         typeExp(exp->val.binary.rhs, st);
 
-        if (exp->val.binary.lhs->type == exp->val.binary.rhs->type) {
-          if (typeComparable(exp->val.binary.lhs->type)) {
+        if (typeCompare(exp->val.binary.lhs->type, exp->val.binary.rhs->type, st)) {
+          if (resolvesToComparable(exp->val.binary.lhs->type, st)) {
             exp->type = baseBool;
           } else {
-            fprintf(stderr, "Error: (line %d) Types not comparable\n", exp->lineno);
+            char buffer[1024];
+            getTypeString(buffer, exp->val.binary.lhs->type);
+            fprintf(stderr, "Error: (line %d) Cannot compare two %ss\n", exp->lineno, buffer);
             exit(1);
           }
         } else {
-          fprintf(stderr, "Error: (line %d) Both sides of equality test must be of same type\n", exp->lineno);
+          char buffer1[1024];
+          char buffer2[1024];
+          getTypeString(buffer1, exp->val.binary.lhs->type);
+          getTypeString(buffer2, exp->val.binary.rhs->type);
+          fprintf(stderr, "Error: (line %d) Cannot compare %s with %s\n", exp->lineno, buffer1, buffer2);
           exit(1);
         }
         break;
@@ -459,15 +545,21 @@ void typeExp(EXP *exp, SymbolTable *st) {
       case ek_lt:
         typeExp(exp->val.binary.lhs, st);
         typeExp(exp->val.binary.rhs, st);
-        if (exp->val.binary.lhs->type == exp->val.binary.rhs->type) {
-          if (typeOrdered(exp->val.binary.lhs->type)) {
+        if (typeCompare(exp->val.binary.lhs->type, exp->val.binary.rhs->type, st)) {
+          if (resolvesToOrdered(exp->val.binary.lhs->type, st)) {
             exp->type = baseBool;
           } else {
-            fprintf(stderr, "Error: (line %d) Types not ordered", exp->lineno);
+            char buffer[1024];
+            getTypeString(buffer, exp->val.binary.lhs->type);
+            fprintf(stderr, "Error: (line %d) Cannot compare two %ss\n", exp->lineno, buffer);
             exit(1);
           }
         } else {
-          fprintf(stderr, "Error: (line %d) Both sides of comparison must be of same type\n", exp->lineno);
+          char buffer1[1024];
+          char buffer2[1024];
+          getTypeString(buffer1, exp->val.binary.lhs->type);
+          getTypeString(buffer2, exp->val.binary.rhs->type);
+          fprintf(stderr, "Error: (line %d) Cannot compare %s with %s\n", exp->lineno, buffer1, buffer2);
           exit(1);
         }
         break;
@@ -475,10 +567,14 @@ void typeExp(EXP *exp, SymbolTable *st) {
       case ek_or:
         typeExp(exp->val.binary.lhs, st);
         typeExp(exp->val.binary.rhs, st);
-        if (typeBool(exp->val.binary.lhs->type) && typeBool(exp->val.binary.rhs->type)) {
+        if (resolvesToBool(exp->val.binary.lhs->type, st) && resolvesToBool(exp->val.binary.rhs->type, st)) {
           exp->type = baseBool;
         } else {
-          fprintf(stderr, "Error: (line %d) Logical operators and/or only accept two bools\n", exp->lineno);
+          char buffer1[1024];
+          char buffer2[1024];
+          getTypeString(buffer1, exp->val.binary.lhs->type);
+          getTypeString(buffer2, exp->val.binary.rhs->type);
+          fprintf(stderr, "Error: (line %d) Cannot compare %s with %s\n", exp->lineno, buffer1, buffer2);
           exit(1);
         }
         break;
@@ -491,10 +587,14 @@ void typeExp(EXP *exp, SymbolTable *st) {
       case ek_bitClear:
         typeExp(exp->val.binary.lhs, st);
         typeExp(exp->val.binary.rhs, st);
-        if (exp->val.binary.lhs->type == exp->val.binary.rhs->type && typeInteger(exp->val.binary.lhs->type)) {
+        if (typeCompare(exp->val.binary.lhs->type, exp->val.binary.rhs->type, st) && typeInteger(exp->val.binary.lhs->type)) {
           exp->type = exp->val.binary.lhs->type;
         } else {
-          fprintf(stderr, "Error: (line %d) Logical operators and/or only accept two bools\n", exp->lineno);
+          char buffer1[1024];
+          char buffer2[1024];
+          getTypeString(buffer1, exp->val.binary.lhs->type);
+          getTypeString(buffer2, exp->val.binary.rhs->type);
+          fprintf(stderr, "Error: (line %d) Cannot compare %s with %s\n", exp->lineno, buffer1, buffer2);
           exit(1);
         }
         break;
@@ -504,7 +604,9 @@ void typeExp(EXP *exp, SymbolTable *st) {
         if (typeNumeric(exp->val.unary.exp->type)) {
           exp->type = exp->val.unary.exp->type;
         } else {
-          fprintf(stderr, "Error: (line %d) Unary plus/minus only accepts numeric types\n", exp->lineno);
+          char buffer[1024];
+          getTypeString(buffer, exp->val.unary.exp->type);
+          fprintf(stderr, "Error: (line %d) Unary plus/minus only accepts numeric types, received %s\n", exp->lineno, buffer);
           exit(1);
         }
         break;
@@ -513,7 +615,9 @@ void typeExp(EXP *exp, SymbolTable *st) {
         if (typeBool(exp->val.unary.exp->type)) {
           exp->type = baseBool;
         } else {
-          fprintf(stderr, "Error: (line %d) Negation operator only accepts booleans\n", exp->lineno);
+          char buffer[1024];
+          getTypeString(buffer, exp->val.unary.exp->type);
+          fprintf(stderr, "Error: (line %d) Negation operator only accepts booleans, received %s\n", exp->lineno, buffer);
           exit(1);
         }
         break;
@@ -522,7 +626,9 @@ void typeExp(EXP *exp, SymbolTable *st) {
         if (typeInteger(exp->val.unary.exp->type)) {
           exp->type = exp->val.unary.exp->type;
         } else {
-          fprintf(stderr, "Error: (line %d) Bitwise negation operator only accepts integer types\n", exp->lineno);
+          char buffer[1024];
+          getTypeString(buffer, exp->val.unary.exp->type);
+          fprintf(stderr, "Error: (line %d) Bitwise negation operator only accepts integer types, received %s\n", exp->lineno, buffer);
           exit(1);
         }
         break;
@@ -541,13 +647,20 @@ void typeExp(EXP *exp, SymbolTable *st) {
           }
           typeExp(el->exp, st);
           // Resolve these types 
-          if (!resolveToSame(el->exp->type, s->val.typeDecl.type, st)) {
+          if(!resolvesToBase(s->val.typeDecl.type, st)){
+            fprintf(stderr, "Error: (line %d) type must resolve to a base\n", exp->lineno);
+            exit(1); 
+          }
+
+          if (!resolvesToSame(el->exp->type, s->val.typeDecl.type, st) && 
+              !(resolvesToNumeric(el->exp->type, st) && resolvesToNumeric(s->val.typeDecl.type, st)) &&
+              !(resolvesToString(s->val.typeDecl.type, st) && resolvesToInteger(el->exp->type, st))) {
             fprintf(stderr, "Error: (line %d) type cast cannot cast these types\n", exp->lineno);
             exit(1);
           }
           exp->type = s->val.typeDecl.type;
 
-        } else if (s->kind == dk_func) {
+        } else if (s->kind == dk_func) { // Function call (not type cast)
           EXP_LIST *passedParams = exp->val.funcCall.args;
           PARAM_LIST *pl = s->val.functionDecl.paramList;
 
@@ -629,6 +742,10 @@ void typeExp(EXP *exp, SymbolTable *st) {
       case ek_structField:
         typeExp(exp->val.structField.structExp, st);
         TYPE *t = exp->val.structField.structExp->type;
+        if(t->kind != tk_struct){
+          fprintf(stderr, "Error: (line %d) not a struct type\n", exp->lineno);
+          exit(1);
+        }
         FIELD_DECLS *d = t->val.structFields;
 
         while (d != NULL) {
@@ -652,6 +769,67 @@ void typeExp(EXP *exp, SymbolTable *st) {
         break;
     }
   }
+}
+
+int resolvesToInteger(TYPE *type, SymbolTable *st) {
+  return resolvesToSame(type, baseInt, st) || resolvesToSame(type, baseRune, st);
+}
+
+int resolvesToString(TYPE *type, SymbolTable *st) {
+  return resolvesToSame(type, baseString, st);
+}
+
+int resolvesToBool(TYPE *type, SymbolTable *st) {
+  return resolvesToSame(type, baseBool, st);
+}
+
+int resolvesToNumeric(TYPE *type, SymbolTable *st) {
+  return resolvesToSame(type, baseInt, st) || resolvesToSame(type, baseRune, st) || resolvesToSame(type, baseFloat, st);
+}
+
+int resolvesToOrdered(TYPE *type, SymbolTable *st) {
+  return resolvesToSame(type, baseInt, st) || resolvesToSame(type, baseRune, st) ||
+                      resolvesToSame(type, baseFloat, st) || resolvesToSame(type, baseString, st);
+}
+
+int resolvesToBase(TYPE *type, SymbolTable *st) {
+  return resolvesToBool(type, st) || resolvesToNumeric(type, st) || resolvesToString(type, st);
+}
+
+int resolvesToComparable(TYPE *type, SymbolTable *st) {
+  SYMBOL *s;
+  FIELD_DECLS *fd;
+  if (type != NULL) {
+    switch (type->kind) {
+      case tk_int:
+      case tk_float:
+      case tk_rune:
+      case tk_boolean:
+      case tk_string:
+        return 1;
+      case tk_struct:
+        fd = type->val.structFields;
+        while (fd != NULL){
+          if (!resolvesToComparable(fd->type, st)){
+            return 0;
+          }
+          fd = fd->next;
+        }
+        return 1;
+        break;
+      case tk_array:
+        return resolvesToComparable(type->val.array.elemType, st);
+      case tk_slice:
+        return 0;
+      case tk_ref:
+        s = getSymbol(st, type->val.name);
+        return resolvesToComparable(s->val.typeDecl.resolvesTo, st);
+        break;
+      case tk_res: //shouldn't happen
+        return 0;
+    }
+  }
+  return 0;
 }
 
 int typeInteger(TYPE *type) {
@@ -736,7 +914,10 @@ int typeComparable(TYPE *type) {
 }
 
 int typeCompare(TYPE *type1, TYPE *type2, SymbolTable *st) {
-  if (type1->kind != type2->kind) return 0;
+  if (type1 == NULL || type2 == NULL || type1->kind != type2->kind) return 0;
+  FIELD_DECLS *fd1;
+  FIELD_DECLS *fd2;
+  if(type1 == type2) return 1;
   switch (type1->kind) {
     case tk_res:
       fprintf(stderr, "Error: (line %d) shouldn't be reached\n", type1->lineno);
@@ -757,7 +938,20 @@ int typeCompare(TYPE *type1, TYPE *type2, SymbolTable *st) {
       }
       return typeCompare(type1->val.array.elemType, type2->val.array.elemType, st);
     case tk_struct:
-      return type1 == type2;
+      fd1 = type1->val.structFields;
+      fd2 = type2->val.structFields;
+
+      while(fd1 != NULL && fd2 != NULL){
+        if(strcmp(fd1->id, fd2->id) != 0) return 0;
+        if(!typeCompare(fd1->type, fd2->type, st)){
+          return 0;
+        }
+        fd1=fd1->next;
+        fd2=fd2->next;
+      } 
+
+      if(fd1 != NULL || fd2 != NULL) return 0;
+      return 1;
   }
 }
 
@@ -790,26 +984,29 @@ int typeList(TYPE *type) {
 }
 
 int resolvesToList(TYPE *type, SymbolTable *st) {
-  SYMBOL *s;
-  switch (type->kind) {
-    case tk_slice:
-    case tk_array:
-      return 1;
-    case tk_ref:
-      s = getSymbol(st, type->val.name);
-      if (s->val.typeDecl.resolvesToKind == tk_slice || s->val.typeDecl.resolvesToKind == tk_array) {
+  if(type != NULL){
+    SYMBOL *s;
+    switch (type->kind) {
+      case tk_slice:
+      case tk_array:
+        return 1;
+      case tk_ref:
+        s = getSymbol(st, type->val.name);
+        if (s->val.typeDecl.resolvesToKind == tk_slice || s->val.typeDecl.resolvesToKind == tk_array) {
+          return 0;
+        } else if (s->val.typeDecl.resolvesToKind == tk_ref) {
+          return resolvesToList(s->val.typeDecl.type, st);
+        }
+      default:
         return 0;
-      } else if (s->val.typeDecl.resolvesToKind == tk_ref) {
-        return resolvesToList(s->val.typeDecl.type, st);
-      }
-    default:
-      return 0;
+    }
   }
   return 0;
 }
 
 TYPE *typeOfList(TYPE *type, SymbolTable *st) {
   SYMBOL *s;
+  if(type == NULL) return NULL;
   switch (type->kind) {
     case tk_slice:
       return type->val.sliceType;
@@ -822,6 +1019,8 @@ TYPE *typeOfList(TYPE *type, SymbolTable *st) {
       } else if (s->val.typeDecl.resolvesToKind == tk_ref) {
         return typeOfList(s->val.typeDecl.type, st);
       }
+    case tk_res:
+      return fixType(st, type);
     default:
       return NULL;
   }
@@ -864,16 +1063,11 @@ int isLValue(EXP *exp) {
   }
 }
 
-int resolvesToBase(TYPE *type, SymbolTable *st) {
-  while (1) {
-    break;
-  }
-  return 0;
-}
 
 TYPE *typeResolve(TYPE *type, SymbolTable *st){
+  if(type == NULL) return NULL;
   SYMBOL *s;
-   switch (type->kind) {
+  switch (type->kind) {
     case tk_res:
       fprintf(stderr, "Error: (line %d) shouldn't be reached\n", type->lineno);
       exit(1);
@@ -891,7 +1085,7 @@ TYPE *typeResolve(TYPE *type, SymbolTable *st){
   } 
 }
 
-int resolveToSame(TYPE *type1, TYPE *type2, SymbolTable *st){
+int resolvesToSame(TYPE *type1, TYPE *type2, SymbolTable *st){
   type1 = typeResolve(type1, st);
   type2 = typeResolve(type2, st);
   return type1 == type2;
