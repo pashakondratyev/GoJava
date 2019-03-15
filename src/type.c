@@ -491,11 +491,17 @@ void typeExp(EXP *exp, SymbolTable *st) {
           if (resolvesToNumeric(exp->val.binary.lhs->type, st) || resolvesToString(exp->val.binary.lhs->type, st)) {
             exp->type = exp->val.binary.lhs->type;
           } else {
-            fprintf(stderr, "Error: (line %d) Operation only works with numeric or string types", exp->lineno);
+            char buffer[1024];
+            getTypeString(buffer, exp->val.binary.lhs->type);
+            fprintf(stderr, "Error: (line %d) Operation only works with numeric or string types, received %s\n", exp->lineno, buffer);
             exit(1);
           }
-        } else {
-          fprintf(stderr, "Error: (line %d) Both sides of algebraic operation must be numeric", exp->lineno);
+        } else { 
+          char buffer1[1024];
+          char buffer2[1024];
+          getTypeString(buffer1, exp->val.binary.lhs->type);
+          getTypeString(buffer2, exp->val.binary.rhs->type);
+          fprintf(stderr, "Error: (line %d) Both sides of algebraic operation must be the same, received %s and %s\n", exp->lineno, buffer1, buffer2);
           exit(1);
         }
         break;
@@ -504,15 +510,21 @@ void typeExp(EXP *exp, SymbolTable *st) {
       case ek_div:
         typeExp(exp->val.binary.lhs, st);
         typeExp(exp->val.binary.rhs, st);
-        if (exp->val.binary.rhs->type == exp->val.binary.lhs->type) {
-          if (typeNumeric(exp->val.binary.lhs->type)) {
+        if (typeCompare(exp->val.binary.lhs->type, exp->val.binary.rhs->type, st)) {
+          if (resolvesToNumeric(exp->val.binary.lhs->type, st)) {
             exp->type = exp->val.binary.lhs->type;
           } else {
-            fprintf(stderr, "Error: (line %d) Operation only works with numeric types", exp->lineno);
+            char buffer[1024];
+            getTypeString(buffer, exp->val.binary.lhs->type);
+            fprintf(stderr, "Error: (line %d) Cannot apply algebraic operation to two %ss\n", exp->lineno, buffer);
             exit(1);
           }
         } else {
-          fprintf(stderr, "Error: (line %d) Both sides of algebraic operation must be numeric", exp->lineno);
+          char buffer1[1024];
+          char buffer2[1024];
+          getTypeString(buffer1, exp->val.binary.lhs->type);
+          getTypeString(buffer2, exp->val.binary.rhs->type);
+          fprintf(stderr, "Error: (line %d) Cannot apply algebraic operation to %s and %s\n", exp->lineno, buffer1, buffer2);
           exit(1);
         }
         break;
@@ -699,8 +711,12 @@ void typeExp(EXP *exp, SymbolTable *st) {
         typeExp(exp->val.append.sliceExp, st);
         typeExp(exp->val.append.elem, st);
         if (!resolvesToTSlice(exp->val.append.sliceExp->type, exp->val.append.elem->type, st)) {
-          fprintf(stderr, "Error: (line %d) slice expression should resolve to a slice of the elemnt type\n",
-                  exp->lineno);
+          char buffer1[1024];
+          char buffer2[1024];
+          getTypeString(buffer1, exp->val.append.sliceExp->type);
+          getTypeString(buffer2, exp->val.append.elem->type);
+          fprintf(stderr, "Error: (line %d) slice expression should resolve to a slice of the element type, received %s slice and %s element\n",
+                  exp->lineno, buffer1, buffer2);
           exit(1);
         }
         exp->type = exp->val.append.sliceExp->type;
@@ -710,7 +726,9 @@ void typeExp(EXP *exp, SymbolTable *st) {
         if (typeList(exp->val.lenExp->type) || typeString(exp->val.lenExp->type)) {
           exp->type = baseInt;
         } else {
-          fprintf(stderr, "Error: (line %d) Length only applies to slice, array or string types\n", exp->lineno);
+          char buffer[1024];
+          getTypeString(buffer, exp->val.lenExp->type);
+          fprintf(stderr, "Error: (line %d) Length only applies to slice, array, or string types, received %s\n", exp->lineno, buffer);
           exit(1);
         }
         break;
@@ -719,21 +737,27 @@ void typeExp(EXP *exp, SymbolTable *st) {
         if (typeList(exp->val.capExp->type)) {
           exp->type = baseInt;
         } else {
-          fprintf(stderr, "Error: (line %d) Capacity only applies to slice or array types\n", exp->lineno);
+          char buffer[1024];
+          getTypeString(buffer, exp->val.capExp->type);
+          fprintf(stderr, "Error: (line %d) Capacity only applies to slice or array types, received %s\n", exp->lineno, buffer);
           exit(1);
         }
         break;
       case ek_indexExp:
         typeExp(exp->val.indexExp.indexExp, st);
-        if (exp->val.indexExp.indexExp->type->kind != tk_int) {
-          fprintf(stderr, "Error: (line %d) index must be well typed and resolve to type int\n", exp->lineno);
+        if (!resolvesToSame(exp->val.indexExp.indexExp->type, baseInt, st)) {
+          char buffer[1024];
+          getTypeString(buffer, exp->val.indexExp.indexExp->type);
+          fprintf(stderr, "Error: (line %d) index must be well typed and resolve to type int, received %s\n", exp->lineno, buffer);
           exit(1);
         }
         typeExp(exp->val.indexExp.objectExp, st);
         EXP *e = exp->val.indexExp.objectExp;
         TYPE *resolvesTo = typeOfList(e->type, st);
         if (resolvesTo == NULL) {
-          fprintf(stderr, "Error: (line %d) expression must resolve to an array or slice\n", e->lineno);
+          char buffer[1024];
+          getTypeString(buffer, resolvesTo);
+          fprintf(stderr, "Error: (line %d) expression must resolve to an array or slice, received %s\n", e->lineno, buffer);
           exit(1);
         } else {
           exp->type = resolvesTo;
@@ -743,7 +767,9 @@ void typeExp(EXP *exp, SymbolTable *st) {
         typeExp(exp->val.structField.structExp, st);
         TYPE *t = exp->val.structField.structExp->type;
         if(t->kind != tk_struct){
-          fprintf(stderr, "Error: (line %d) not a struct type\n", exp->lineno);
+          char buffer[1024];
+          getTypeString(buffer, t);
+          fprintf(stderr, "Error: (line %d) %s is not a struct type\n", exp->lineno, buffer);
           exit(1);
         }
         FIELD_DECLS *d = t->val.structFields;
@@ -756,7 +782,9 @@ void typeExp(EXP *exp, SymbolTable *st) {
           d = d->next;
         }
         // If the code left this while loop then  the struct does not  contain the field accessed
-        fprintf(stderr, "Error: (line %d) structfield does not contain field %s\n", exp->lineno,
+        char buffer[1024];
+        getTypeString(buffer, t);
+        fprintf(stderr, "Error: (line %d) %s does not contain field %s\n", exp->lineno,
                 exp->val.structField.fieldName);
         exit(1);
         break;
