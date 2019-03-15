@@ -131,3 +131,8 @@ func func1() {
 	var a int
 	(a) = 7
 }
+
+func func2() {
+	var bool bool = true
+	print(bool)
+}
