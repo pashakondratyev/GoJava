@@ -18,9 +18,7 @@ void weedProgram(PROG *prog) {
 void weedStatement(STMT *stmt) {
   STMT_LIST *cur;
   FOR_CLAUSE *fc;
-  if (stmt == NULL) {
-    return;
-  }
+  if (stmt == NULL) return;
   switch (stmt->kind) {
     case sk_for:
       fc = stmt->val.forStmt.forClause;
@@ -59,6 +57,7 @@ void weedStatement(STMT *stmt) {
 }
 
 void weedDeclaration(DECL *decl) {
+  if(decl == NULL) return;
   // Checks if declaration list
   if (decl->next != NULL) {
     weedDeclaration(decl->next);
@@ -81,6 +80,7 @@ void weedDeclaration(DECL *decl) {
 }
 
 void weedExpStmt(EXP *exp) {
+  if(exp == NULL) return;
   switch (exp->kind) {
     case ek_func:
       return;
@@ -144,6 +144,7 @@ int weedBlockReturns(STMT *stmt) {
 
 // Checks if switch statement has at most one default case
 void weedSwitchDefault(STMT *stmt) {
+  if(stmt == NULL) return;
   int num_defaults = 0;
   CASE_CLAUSE_LIST *curr_case_clause = stmt->val.switchStmt.caseClauses;
   STMT_LIST *curr_stmt;
@@ -164,6 +165,8 @@ void weedSwitchDefault(STMT *stmt) {
 
 // Checks if switch statement has no inappropriate continue statement
 void weedSwitchBreak(STMT *stmt, int allow_cont) {
+  if(stmt == NULL) return;
+
   CASE_CLAUSE_LIST *curr_case_clause = stmt->val.switchStmt.caseClauses;
   STMT_LIST *curr_stmt;
   while (curr_case_clause != NULL && curr_case_clause->next != NULL) {
@@ -206,6 +209,7 @@ void weedSwitchBreak(STMT *stmt, int allow_cont) {
 
 // Checks if there are no misplaced break or continue statements
 void weedBreakCont(STMT *stmt, int allow_cont, int allow_break) {
+  if(stmt == NULL) return;
   STMT_LIST *curr_stmt;
   CASE_CLAUSE_LIST *curr_case_clause = malloc(sizeof(CASE_CLAUSE_LIST));
   CaseKind k;

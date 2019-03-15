@@ -12,7 +12,7 @@ func yolo() int {
 func swag() int {
   for {
     for {
-      if True {
+      if true {
         break
       }
     }

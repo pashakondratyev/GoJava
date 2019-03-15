@@ -60,6 +60,7 @@ DECL *makeVarDecl(VAR_SPECS *varSpecs, int lineno) {
   d->lineno = lineno;
   d->kind = dk_var;
   d->val.varSpecs = varSpecs;
+  d->next = NULL;
   return d;
 }
 
@@ -445,6 +446,8 @@ CASE_CLAUSE *makeCaseClause(EXP_LIST *cases, STMT_LIST *clauses, int lineno) {
   cc->kind = ck_case;
   cc->val.caseClause.cases = cases;
   cc->val.caseClause.clauses = clauses;
+  cc->lineno = lineno;
+  cc->scope = NULL;
   return cc;
 }
 
@@ -452,6 +455,8 @@ CASE_CLAUSE *makeDefaultClause(STMT_LIST *clauses, int lineno) {
   CASE_CLAUSE *cc = malloc(sizeof(CASE_CLAUSE));
   cc->kind = ck_default;
   cc->val.defaultClauses = clauses;
+  cc->lineno = lineno;
+  cc->scope = NULL;
   return cc;
 }
 
@@ -613,8 +618,6 @@ EXP *makeArgumentExp(EXP *iden, EXP_LIST *args, TYPE *type, int lineno){
     return e;
   }
   else{
-    TYPE *t = malloc(sizeof(TYPE));
-    t->lineno = lineno;
     // Unrolls the type identifier 
     while(iden->kind != ek_id){
       if(iden == NULL || iden->kind != ek_paren){

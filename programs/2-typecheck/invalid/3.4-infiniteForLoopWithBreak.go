@@ -3,10 +3,11 @@ package test
 
 func bar() int {
   for {
-    if True {
+    if true {
       print('X')
     } else {
       break
     }
+    return 3
   }
 }
