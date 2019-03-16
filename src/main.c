@@ -47,7 +47,6 @@ int main(int argc, char *argv[]) {
     yyparse();
     weedProgram(root);
     symProgram(root, SymbolTableConstruct);
-    // TODO: Complete typecheck
     typeProgram(root, programSymbolTable);
     printf("OK\n");
   } else {

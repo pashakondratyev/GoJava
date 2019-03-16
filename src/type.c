@@ -122,13 +122,15 @@ void typeFuncDecl(FUNC_DECL *fd, SymbolTable *st) {
     }
 
     if(!typeStmt(fd->body, st, fd->returnType) && fd->returnType != NULL){
-      fprintf(stderr, "Error: (line %d) function %s does not have a terminating statement", fd->body->lineno, fd->name);
+      fprintf(stderr, "Error: (line %d) function %s does not have a terminating statement\n", fd->body->lineno, fd->name);
       exit(1);
     }
   }
 }
 
-// TODO: Implement
+/* Takes a statement, symbol table and return type and checks if the stmt type checks and returns
+ * Returns 0 if the statement does not return, -1 if it contains a break, and 1 if it returns 
+ */
 int typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
   int returns = 0;
   STMT_LIST *sl;
@@ -143,6 +145,10 @@ int typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
         sl = stmt->val.block.blockStatements;
         while (sl != NULL) {
 
+          // If a statement contained a break or a return we propogate that up to the calling block
+          // For infinite for loops, if there is no break we can effectively treat the for
+          // loop as a statement which typechecks correctly as it never returns
+          // However if there is a break statement then the block is not considered as a returning block
           int temp = typeStmt(sl->stmt, st, returnType);
           if (temp == -1){
             returns = -1;
@@ -152,7 +158,7 @@ int typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
           }
           sl = sl->next;
         }
-        return returns;
+        break;
       case sk_exp:
         typeExp(stmt->val.exp, st);
         break;
@@ -190,15 +196,16 @@ int typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
           char buffer2[1024];
           getTypeString(buffer1, stmt->val.assignOp.lhs->type);
           getTypeString(buffer2, stmt->val.assignOp.rhs->type);
-          fprintf(stderr, "Error: (line %d) Both sides of assignment mus be the same, got %s and %s\n", stmt->lineno, buffer1, buffer2);
+          fprintf(stderr, "Error: (line %d) Both sides of assignment mus be the same [received %s and %s]\n", stmt->lineno, buffer1, buffer2);
           exit(1);
         }
-        switch (stmt->val.assignOp.kind) {
+        AssignOpKind kind = stmt->val.assignOp.kind;
+        switch (kind) {
           case aok_plus:
             if (!resolvesToNumeric(stmt->val.assignOp.lhs->type, st) && !resolvesToString(stmt->val.assignOp.lhs->type, st)) {
               char buffer[1024];
               getTypeString(buffer, stmt->val.assignOp.lhs->type);
-              fprintf(stderr, "Error: (line %d) Plus assign operator only works with numeric or string types, received %s\n",
+              fprintf(stderr, "Error: (line %d) operator += only works with numeric or string types [received %s]\n",
                       stmt->lineno, buffer);
               exit(1);
             }
@@ -209,7 +216,7 @@ int typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
             if (!resolvesToNumeric(stmt->val.assignOp.lhs->type, st)) {
               char buffer[1024];
               getTypeString(buffer, stmt->val.assignOp.lhs->type);
-              fprintf(stderr, "Error: (line %d) Operation only works with numeric types, received %s\n", stmt->lineno, buffer);
+              fprintf(stderr, "Error: (line %d) Operation %s only works with numeric types [received %s]\n", stmt->lineno, getAssignOpString(kind), buffer);
               exit(1);
             }
             break;
@@ -223,7 +230,7 @@ int typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
             if (!typeInteger(stmt->val.assignOp.lhs->type)) {
               char buffer[1024];
               getTypeString(buffer, stmt->val.assignOp.lhs->type);
-              fprintf(stderr, "Error: (line %d) Operation only works with integer types, received %s\n", stmt->lineno, buffer);
+              fprintf(stderr, "Error: (line %d) Operation %s, only works with integer types [received %s]\n", stmt->lineno, getAssignOpString(kind), buffer);
               exit(1);
             }
             break;
@@ -525,7 +532,7 @@ void typeExp(EXP *exp, SymbolTable *st) {
           } else {
             char buffer[1024];
             getTypeString(buffer, exp->val.binary.lhs->type);
-            fprintf(stderr, "Error: (line %d) Operation only works with numeric or string types, received %s\n", exp->lineno, buffer);
+            fprintf(stderr, "Error: (line %d) Operator + only applies to numeric or string types [received %s]\n", exp->lineno, buffer);
             exit(1);
           }
         } else { 
@@ -533,7 +540,7 @@ void typeExp(EXP *exp, SymbolTable *st) {
           char buffer2[1024];
           getTypeString(buffer1, exp->val.binary.lhs->type);
           getTypeString(buffer2, exp->val.binary.rhs->type);
-          fprintf(stderr, "Error: (line %d) Both sides of algebraic operation must be the same, received %s and %s\n", exp->lineno, buffer1, buffer2);
+          fprintf(stderr, "Error: (line %d) Both sides of algebraic operation must be the same type [received %s and %s]\n", exp->lineno, buffer1, buffer2);
           exit(1);
         }
         break;
@@ -681,25 +688,35 @@ void typeExp(EXP *exp, SymbolTable *st) {
 
         // If Type decl
         if (s->kind == dk_type) {
-          // TODO: resolve types
           // This will only be a type decl if it's a compound type
-          // printf("meme\n");
           EXP_LIST *el = exp->val.funcCall.args;
           if (el->next != NULL) {
             fprintf(stderr, "Error: (line %d) type cast only expected 1 argument\n", exp->lineno);
             exit(1);
           }
           typeExp(el->exp, st);
-          // Resolve these types 
+
+          // Type casts only work on types which resolve to base types
           if(!resolvesToBase(s->val.typeDecl.type, st)){
-            fprintf(stderr, "Error: (line %d) type must resolve to a base\n", exp->lineno);
+            char buffer[1024];
+            getTypeString(buffer, s->val.typeDecl.type);
+            fprintf(stderr, "Error: (line %d) type %s must resolve to a base\n", exp->lineno, buffer);
             exit(1); 
           }
 
+          // The three conditions for typecasts are that they must 
+          // 1. Resolve to the same type
+          // 2. Both resolve to a numeric
+          // 3. If it is being cast to a string it must resolve to an integer and 
           if (!resolvesToSame(el->exp->type, s->val.typeDecl.type, st) && 
               !(resolvesToNumeric(el->exp->type, st) && resolvesToNumeric(s->val.typeDecl.type, st)) &&
               !(resolvesToString(s->val.typeDecl.type, st) && resolvesToInteger(el->exp->type, st))) {
-            fprintf(stderr, "Error: (line %d) type cast cannot cast these types\n", exp->lineno);
+            
+            char buffer1[1024];
+            char buffer2[1024];
+            getTypeString(buffer1, el->exp->type);
+            getTypeString(buffer2, s->val.typeDecl.type);
+            fprintf(stderr, "Error: (line %d) conversion between incompatible types [%s <- %s]\n", exp->lineno, buffer2, buffer1);
             exit(1);
           }
           exp->type = s->val.typeDecl.type;
@@ -708,22 +725,39 @@ void typeExp(EXP *exp, SymbolTable *st) {
           EXP_LIST *passedParams = exp->val.funcCall.args;
           PARAM_LIST *pl = s->val.functionDecl.paramList;
 
+          int expectedArgumentCount = 0;
+          {
+            PARAM_LIST *temp = pl;
+            while(temp != NULL){
+              expectedArgumentCount++;
+              temp = temp->next;
+            }
+          }
+
           if (strcmp(s->name, "init") == 0) {
             fprintf(stderr, "Error: (line %d) init may not be called\n", exp->lineno);
             exit(1);
           }
 
           EXP_LIST *curr = passedParams;
+          int received = 0;
           while (curr != NULL) {
-            typeExp(curr->exp, st);
+            received++;
 
             if (pl == NULL) {
-              fprintf(stderr, "Error: (line %d) mismatch of arguments \n", exp->lineno);
+              fprintf(stderr, "Error: (line %d) function %s called with incorrect number of parameters [expected %d, received %d]\n", exp->lineno, s->name, expectedArgumentCount, received);
               exit(1);
             }
 
+
+            typeExp(curr->exp, st);
+
             if (!typeCompare(curr->exp->type, pl->type, st)) {
-              fprintf(stderr, "Error: (line %d) type mismatch for function call \n", exp->lineno);
+              char buffer1[1024];
+              char buffer2[1024];
+              getTypeString(buffer1, curr->exp->type);
+              getTypeString(buffer2, pl->type);
+              fprintf(stderr, "Error: (line %d) %s is not assignment compatible with %s in function call \n", exp->lineno, buffer1, buffer2);
               exit(1);
             }
 
@@ -733,8 +767,8 @@ void typeExp(EXP *exp, SymbolTable *st) {
 
           // If there are leftover arguments that weren't called
           if (pl != NULL) {
-            fprintf(stderr, "Error: (line %d) mismatch of arguments \n", exp->lineno);
-            exit(1);
+              fprintf(stderr, "Error: (line %d) function %s called with incorrect number of parameters [expected %d, received %d]\n", exp->lineno, s->name, expectedArgumentCount, received);
+              exit(1);
           }
           exp->type = s->val.functionDecl.returnType;
         }
@@ -760,7 +794,7 @@ void typeExp(EXP *exp, SymbolTable *st) {
         } else {
           char buffer[1024];
           getTypeString(buffer, exp->val.lenExp->type);
-          fprintf(stderr, "Error: (line %d) Length only applies to slice, array, or string types, received %s\n", exp->lineno, buffer);
+          fprintf(stderr, "Error: (line %d) Length builtin expects slice, array, or string types as argument [received %s]\n", exp->lineno, buffer);
           exit(1);
         }
         break;
@@ -771,7 +805,7 @@ void typeExp(EXP *exp, SymbolTable *st) {
         } else {
           char buffer[1024];
           getTypeString(buffer, exp->val.capExp->type);
-          fprintf(stderr, "Error: (line %d) Capacity only applies to slice or array types, received %s\n", exp->lineno, buffer);
+          fprintf(stderr, "Error: (line %d) Capacity builtin expects slice or array types [received %s]\n", exp->lineno, buffer);
           exit(1);
         }
         break;
@@ -780,7 +814,7 @@ void typeExp(EXP *exp, SymbolTable *st) {
         if (!resolvesToSame(exp->val.indexExp.indexExp->type, baseInt, st)) {
           char buffer[1024];
           getTypeString(buffer, exp->val.indexExp.indexExp->type);
-          fprintf(stderr, "Error: (line %d) index must be well typed and resolve to type int, received %s\n", exp->lineno, buffer);
+          fprintf(stderr, "Error: (line %d) index must be well typed and resolve to type int [received %s]\n", exp->lineno, buffer);
           exit(1);
         }
         typeExp(exp->val.indexExp.objectExp, st);
@@ -789,7 +823,7 @@ void typeExp(EXP *exp, SymbolTable *st) {
         if (resolvesTo == NULL) {
           char buffer[1024];
           getTypeString(buffer, resolvesTo);
-          fprintf(stderr, "Error: (line %d) expression must resolve to an array or slice, received %s\n", e->lineno, buffer);
+          fprintf(stderr, "Error: (line %d) expression must resolve to an array or slice [received %s]\n", e->lineno, buffer);
           exit(1);
         } else {
           exp->type = resolvesTo;
@@ -1149,4 +1183,31 @@ int resolvesToSame(TYPE *type1, TYPE *type2, SymbolTable *st){
   type1 = typeResolve(type1, st);
   type2 = typeResolve(type2, st);
   return type1 == type2;
+}
+
+char *getAssignOpString(AssignOpKind kind){
+  switch(kind){
+    case aok_plus:
+      return "+=";
+    case aok_minus:
+      return "-=";
+    case aok_times:
+      return "*=";
+    case aok_div:
+      return "/=";
+    case aok_mod:
+      return "\%=";
+    case aok_bitAnd:
+      return "&=";
+    case aok_bitOr:
+      return "|=";
+    case aok_bitXor:
+      return "^=";
+    case aok_bitClear:
+      return "&^=";
+    case aok_bitLeftShift:
+      return "<<=";
+    case aok_bitRightShift:
+      return ">>=";
+  }
 }

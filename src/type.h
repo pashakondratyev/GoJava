@@ -40,4 +40,6 @@ int resolvesToNumeric(TYPE *type, SymbolTable *st);
 int resolvesToOrdered(TYPE *type, SymbolTable *st);
 int resolvesToComparable(TYPE *type, SymbolTable *st);
 
+char *getAssignOpString(AssignOpKind kind);
+
 #endif
