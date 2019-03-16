@@ -771,6 +771,9 @@ void typeExp(EXP *exp, SymbolTable *st) {
               exit(1);
           }
           exp->type = s->val.functionDecl.returnType;
+        } else{
+          fprintf(stderr, "Error: (line %d) %s is not a function type\n", exp->lineno, s->name);
+          exit(1);
         }
         break;
       case ek_append:

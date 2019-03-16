@@ -166,7 +166,7 @@ void putTypeDecl(SymbolTable *st, TYPE_SPECS *ts, int lineno) {
       if (lineno == 0) {
         printf("%s [type] = %s", ts->name, ts->name);
       } else {
-        printf("%s [type] = %s ->", ts->name, ts->name);
+        printf("%s [type] = %s -> ", ts->name, ts->name);
         printType(ts->type);
       }
       printf("\n");
