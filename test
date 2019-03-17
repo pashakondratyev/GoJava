@@ -1,9 +1,0 @@
-package test
-
-func test(){
-  type a int
-  type b int
-  var lmao a
-  var lmao2 b
-  lmao = lmao2;
-}
