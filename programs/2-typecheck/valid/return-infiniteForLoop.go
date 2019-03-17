@@ -18,3 +18,8 @@ func swag() int {
     }
   }
 }
+
+func swag2() {
+  for {
+  }
+}

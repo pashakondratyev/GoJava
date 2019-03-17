@@ -315,6 +315,9 @@ int typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
           } else{
             returns = returns && temp;
           }
+        } else if (returns == -1) {
+          // if the if statement has a break, we want that information to propogate up
+          returns = -1;
         } else {
           returns = 0;
         }
@@ -835,12 +838,15 @@ void typeExp(EXP *exp, SymbolTable *st) {
       case ek_structField:
         typeExp(exp->val.structField.structExp, st);
         TYPE *t = exp->val.structField.structExp->type;
-        if(t->kind != tk_struct){
+        if(!resolvesToStruct(t, st)){
           char buffer[1024];
           getTypeString(buffer, t);
           fprintf(stderr, "Error: (line %d) %s is not a struct type\n", exp->lineno, buffer);
           exit(1);
         }
+
+        SYMBOL *s = getSymbol(st, t->val.name);
+        t = s->val.typeDecl.resolvesTo;
         FIELD_DECLS *d = t->val.structFields;
 
         while (d != NULL) {
@@ -854,7 +860,7 @@ void typeExp(EXP *exp, SymbolTable *st) {
         char buffer[1024];
         getTypeString(buffer, t);
         fprintf(stderr, "Error: (line %d) %s does not contain field %s\n", exp->lineno,
-                exp->val.structField.fieldName, buffer);
+                buffer, exp->val.structField.fieldName);
         exit(1);
         break;
       case ek_paren:
@@ -891,6 +897,17 @@ int resolvesToOrdered(TYPE *type, SymbolTable *st) {
 
 int resolvesToBase(TYPE *type, SymbolTable *st) {
   return resolvesToBool(type, st) || resolvesToNumeric(type, st) || resolvesToString(type, st);
+}
+
+int resolvesToStruct(TYPE *type, SymbolTable *st){
+  if(type->kind == tk_struct) return 1;
+  if(type->kind != tk_ref) return 0;
+  SYMBOL *s = getSymbol(st, type->val.name);
+  if(s->kind != dk_type){
+    fprintf(stderr, "Error: (line %d) declared value %s is not a type\n", type->lineno, type->val.name);
+    exit(1);
+  }
+  return s->val.typeDecl.resolvesTo->kind == tk_struct;
 }
 
 int resolvesToComparable(TYPE *type, SymbolTable *st) {

@@ -79,10 +79,10 @@ SYMBOL *putSymbol(SymbolTable *t, DecKind kind, char *identifier, TYPE *type, PA
       s->val.type = NULL;
       break;
     case dk_type:
-      if(lineno != 0 && typeIsBase(type)){
-        // TODO: this might need more rigorous testing
+      if(lineno != 0){
+        // TODO: this might need more rigorous testing (it did)
         type = makeRefType(identifier, lineno);
-      }
+      } 
       s->val.typeDecl.type = fixType(t, type);
       SYMBOL *resolvesTo;
       switch (type->kind) {
@@ -690,7 +690,6 @@ void printParamList(PARAM_LIST *pl) {
 
 TYPE *fixStructType(SymbolTable *st, TYPE *type) {
   FIELD_DECLS *fd = type->val.structFields;
-  SYMBOL *s;
   while (fd != NULL) {
     fd->type = fixType(st, fd->type);
     fd = fd->next;
@@ -723,7 +722,6 @@ TYPE *fixType(SymbolTable *st, TYPE *type) {
   switch (type->kind) {
     case tk_res:
       return fixResType(st, type);
-      break;
     case tk_array:
       return fixArrayType(st, type);
     case tk_struct:
