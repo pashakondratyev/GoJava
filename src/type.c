@@ -484,7 +484,7 @@ void typeExp(EXP *exp, SymbolTable *st) {
         }
         s = getSymbol(st, exp->val.id);
         if (s == NULL) {
-          fprintf(stderr, "Error: (line %d) use of undeclared identifier \"%s\"", exp->lineno, exp->val.id);
+          fprintf(stderr, "Error: (line %d) use of undeclared identifier \"%s\"\n", exp->lineno, exp->val.id);
           exit(1);
         }
         switch (s->kind) {
