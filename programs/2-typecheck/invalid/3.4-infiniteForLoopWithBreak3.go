@@ -4,8 +4,7 @@ package test
 func test() int {
 	for {
 		if true {
-		}
-		else {
+		} else {
 			break
 		}
 	}
