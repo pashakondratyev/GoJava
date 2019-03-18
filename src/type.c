@@ -454,7 +454,8 @@ int typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
         returns = typeStmt(stmt->val.forStmt.body, st, returnType);
 
         // If there is a break we cannot say this for loop returns;
-        if(returns == 0 && stmt->val.forStmt.forClause == NULL && stmt->val.forStmt.whileExp == NULL){
+        if(returns == 0 && ((stmt->val.forStmt.forClause == NULL && stmt->val.forStmt.whileExp == NULL)
+            || (stmt->val.forStmt.forClause != NULL && stmt->val.forStmt.forClause->cond == NULL))){ 
           returns  = 1;
         } else if(returns == -1){
           returns = 0;

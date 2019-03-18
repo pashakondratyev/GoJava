@@ -19,7 +19,14 @@ func swag() int {
   }
 }
 
-func swag2() {
+func swag2() int {
+  var a = 3;
+  for ;; a += 3 {
+
+  }
+}
+
+func swag3() {
   for {
   }
 }
