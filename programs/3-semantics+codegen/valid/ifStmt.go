@@ -10,7 +10,9 @@ package test
 
 
 func main() {
-	if x:=5; x+20<32 {
+
+	// if statements used to check for correct branch evaluation
+	if x:=5; x<32 {
 		println("hi")
 	} else if x:=2; x<5 {
 		println("hello")
@@ -18,7 +20,7 @@ func main() {
 		println("hey")
 	}
 
-	if x:=5; x+20>32 {
+	if x:=5; x>32 {
 		println("hi")
 	} else if x:=2; x<5 {
 		println("hello")
@@ -26,7 +28,7 @@ func main() {
 		println("hey")
 	}
 
-	if x:=5; x+20<32 {
+	if x:=5; x>32 {
 		println("hi")
 	} else if x:=2; x>5 {
 		println("hello")
