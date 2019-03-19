@@ -2,6 +2,9 @@
 //^hi
 //^hey
 //^yup
+//^<=2
+//^=2
+//^>=2
 
 package test
 
@@ -30,10 +33,14 @@ func main() {
 	} else {
 		println("hey")
 	}
-	yo();
+
+	foo();
+	bar();
+
 }
 
-func yo() {
+// if statement with shadowed x variable in all scopes
+func foo() {
 	var x=12;
 	if x,i:="hi",1; i<15 {
 		var x = 15
@@ -41,5 +48,19 @@ func yo() {
 	} else {
 		var x = 'r'
 		println("nope")
+	}
+}
+
+// basic if statements without init statement
+func bar() {
+	var i = 2
+	if i<=2 {
+		println("<=2")
+	}
+
+	if i!=2 {
+		println("not 2")
+	} else {
+		println("is 2")
 	}
 }
