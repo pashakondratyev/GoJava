@@ -5,7 +5,6 @@
 #include "symbol.h"
 #include "type.h"
 
-SymbolTable *st;
 
 void typeProgram(PROG *prog, SymbolTable *st) {
   if (prog != NULL) typeDeclarations(prog->root_decl, st);
