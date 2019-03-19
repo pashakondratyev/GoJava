@@ -1,10 +1,9 @@
-//^hello
 //^hi
+//^hello
 //^hey
-//^yup
+//^yup 15
 //^<=2
-//^=2
-//^>=2
+//^is 2
 
 package test
 
