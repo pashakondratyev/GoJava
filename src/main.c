@@ -6,6 +6,7 @@
 #include "pretty.h"
 #include "weed.h"
 #include "type.h"
+#include "code.h"
 
 void yyparse();
 int yylex();
@@ -49,6 +50,13 @@ int main(int argc, char *argv[]) {
     symProgram(root, SymbolTableConstruct);
     typeProgram(root, programSymbolTable);
     printf("OK\n");
+  } else if (strcmp(argv[1], "codegen") == 0) {
+    yyparse();
+    weedProgram(root);
+    symProgram(root, SymbolTableConstruct);
+    typeProgram(root, programSymbolTable);
+    codeProgram(root, programSymbolTable);
+    printf("\nNeed to complete\n");
   } else {
     fprintf(stderr, "Error: invalid argument for compiler mode, valid options are (scan | tokens | parse | pretty | symbol | typecheck)\n");
     return 1;
