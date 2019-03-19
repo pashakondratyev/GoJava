@@ -8,6 +8,31 @@
 
 package test
 
+// if statement with shadowed x variable in all scopes
+func foo() {
+	var x=12;
+	if x,i:="hi",1; i<15 {
+		var x = 15
+		println("yup", x)
+	} else {
+		var x = 'r'
+		println("nope")
+	}
+}
+
+// basic if statements without init statement
+func bar() {
+	var i = 2
+	if i<=2 {
+		println("<=2")
+	}
+
+	if i!=2 {
+		println("not 2")
+	} else {
+		println("is 2")
+	}
+}
 
 func main() {
 
@@ -41,28 +66,3 @@ func main() {
 
 }
 
-// if statement with shadowed x variable in all scopes
-func foo() {
-	var x=12;
-	if x,i:="hi",1; i<15 {
-		var x = 15
-		println("yup", x)
-	} else {
-		var x = 'r'
-		println("nope")
-	}
-}
-
-// basic if statements without init statement
-func bar() {
-	var i = 2
-	if i<=2 {
-		println("<=2")
-	}
-
-	if i!=2 {
-		println("not 2")
-	} else {
-		println("is 2")
-	}
-}
