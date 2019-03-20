@@ -39,7 +39,7 @@ void codeComplete() {
 
 void codePackage(PACKAGE *package) {
 	if (package != NULL) {
-		fprintf(outputFile, "package %s\n\n", package->name);
+		fprintf(outputFile, "package %s;\n\n", package->name);
 
 	} else {
 		printf("LOGIC ERROR: package is null in codegen.\n");
