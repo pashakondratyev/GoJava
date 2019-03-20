@@ -15,12 +15,10 @@ void writeTab(int tabCount) {
 
 void codeProgram(PROG *prog, SymbolTable *st, char *filename) {
 	outputFile = fopen(filename, "w+");
-  	if (prog != NULL) {
-  		codePackage(prog->package);
-  		codeSetup();
-  		codeDeclarations(prog->root_decl, st, 1);
-  		codeComplete();
-  	}
+  	codePackage(prog->package);
+  	codeSetup();
+  	codeDeclarations(prog->root_decl, st, 1);
+  	codeComplete();
   	fclose(outputFile);
 }
 
@@ -38,12 +36,7 @@ void codeComplete() {
 
 
 void codePackage(PACKAGE *package) {
-	if (package != NULL) {
-		fprintf(outputFile, "package %s;\n\n", package->name);
-
-	} else {
-		printf("LOGIC ERROR: package is null in codegen.\n");
-	}
+	fprintf(outputFile, "package %s;\n\n", package->name);
 }
 
 void codeDeclarations(DECL *dcl, SymbolTable *st, int tabCount) {
