@@ -15,16 +15,6 @@ void writeTab(int tabCount) {
   }
 }
 
-// void codeProgram(PROG *prog, SymbolTable *st, char *filename) {
-// 	outputFile = fopen(filename, "w+");
-//   	codePackage(prog->package);
-//   	codeSetup();
-//   	codeDeclarations(prog->root_decl, st, 1);
-//   	codeComplete();
-//   	fclose(outputFile);
-// }
-
-
 int indexLastForwardSlash(char *str){
 	int index = -1;
   	for(int i = 0; i <= strlen(str); i++) {
@@ -84,6 +74,7 @@ void codeSetup(char *className) {
 // complete class definition
 void codeComplete() {
 	// TODO: complete
+	fprintf(outputFile, "\tpublic static void main(String[] args) {}\n");
 	fprintf(outputFile, "}\n");
 }
 
