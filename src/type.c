@@ -222,7 +222,7 @@ int typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
           case aok_bitLeftShift:
           case aok_bitRightShift:
           case aok_bitClear:
-            if (!typeInteger(stmt->val.assignOp.lhs->type)) {
+            if (!resolvesToInteger(stmt->val.assignOp.lhs->type, st)) {
               char buffer[1024];
               getTypeString(buffer, stmt->val.assignOp.lhs->type);
               fprintf(stderr, "Error: (line %d) Operation %s, only works with integer types [received %s]\n", stmt->lineno, getAssignOpString(kind), buffer);
@@ -251,7 +251,7 @@ int typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
         el = stmt->val.printExps;
         while (el != NULL) {
           typeExp(el->exp, st);
-          if (!typeIsBase(el->exp->type)) {
+          if (!resolvesToBase(el->exp->type, st)) {
             fprintf(stderr, "Error: (line %d) print statment expected base type\n", stmt->lineno);
             exit(1);
           }
@@ -296,7 +296,7 @@ int typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
           typeStmt(stmt->val.ifStmt.simpleStmt, st, returnType);
         }
         typeExp(stmt->val.ifStmt.cond, st);
-        if (!typeBool(stmt->val.ifStmt.cond->type)) {
+        if (!resolvesToBool(stmt->val.ifStmt.cond->type, st)) {
           char buffer[1024];
           getTypeString(buffer, stmt->val.ifStmt.cond->type);
           fprintf(stderr, "Error: (line %d) Condition evaluates to %s instead of boolean\n", stmt->lineno, buffer);
@@ -617,7 +617,8 @@ void typeExp(EXP *exp, SymbolTable *st) {
         typeExp(exp->val.binary.lhs, st);
         typeExp(exp->val.binary.rhs, st);
         if (resolvesToBool(exp->val.binary.lhs->type, st) && resolvesToBool(exp->val.binary.rhs->type, st)) {
-          exp->type = baseBool;
+          // For logical && and || operations the type evaluates to left hand side
+          exp->type = exp->val.binary.lhs->type;
         } else {
           char buffer1[1024];
           char buffer2[1024];
@@ -636,7 +637,7 @@ void typeExp(EXP *exp, SymbolTable *st) {
       case ek_bitClear:
         typeExp(exp->val.binary.lhs, st);
         typeExp(exp->val.binary.rhs, st);
-        if (typeCompare(exp->val.binary.lhs->type, exp->val.binary.rhs->type, st) && typeInteger(exp->val.binary.lhs->type)) {
+        if (typeCompare(exp->val.binary.lhs->type, exp->val.binary.rhs->type, st) && resolvesToInteger(exp->val.binary.lhs->type, st)) {
           exp->type = exp->val.binary.lhs->type;
         } else {
           char buffer1[1024];
@@ -650,7 +651,7 @@ void typeExp(EXP *exp, SymbolTable *st) {
       case ek_uplus:
       case ek_uminus:
         typeExp(exp->val.unary.exp, st);
-        if (typeNumeric(exp->val.unary.exp->type)) {
+        if (resolvesToNumeric(exp->val.unary.exp->type, st)) {
           exp->type = exp->val.unary.exp->type;
         } else {
           char buffer[1024];
@@ -661,7 +662,7 @@ void typeExp(EXP *exp, SymbolTable *st) {
         break;
       case ek_bang:
         typeExp(exp->val.unary.exp, st);
-        if (typeBool(exp->val.unary.exp->type)) {
+        if (resolvesToBool(exp->val.unary.exp->type, st)) {
           exp->type = baseBool;
         } else {
           char buffer[1024];
@@ -672,7 +673,7 @@ void typeExp(EXP *exp, SymbolTable *st) {
         break;
       case ek_ubitXor:
         typeExp(exp->val.unary.exp, st);
-        if (typeInteger(exp->val.unary.exp->type)) {
+        if (resolvesToInteger(exp->val.unary.exp->type, st)) {
           exp->type = exp->val.unary.exp->type;
         } else {
           char buffer[1024];
