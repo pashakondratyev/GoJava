@@ -7,12 +7,18 @@
 
 FILE *outputFile;
 
+void writeTab(int tabCount) {
+  for (int i = 0; i < tabCount; i++) {
+    fprintf(outputFile, "\t");
+  }
+}
+
 void codeProgram(PROG *prog, SymbolTable *st, char *filename) {
 	outputFile = fopen(filename, "w+");
   	if (prog != NULL) {
   		codePackage(prog->package);
   		codeSetup();
-  		codeDeclarations(prog->root_decl, st, 0);
+  		codeDeclarations(prog->root_decl, st, 1);
   		codeComplete();
   	}
   	fclose(outputFile);
@@ -21,11 +27,13 @@ void codeProgram(PROG *prog, SymbolTable *st, char *filename) {
 // setup classes and other defaults
 void codeSetup() {
 	// TODO: complete
+	fprintf(outputFile, "public class GoLite {\n");
 }
 
-// complete class 
+// complete class definition
 void codeComplete() {
-	// TODO: implement
+	// TODO: complete
+	fprintf(outputFile, "}\n");
 }
 
 

@@ -4,6 +4,8 @@
 #include "tree.h"
 #include "symbol.h"
 
+void writeTab(int tabCount);
+
 void codeProgram(PROG *prog, SymbolTable *st, char *filename);
 void codeSetup();
 void codeComplete();
