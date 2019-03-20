@@ -57,11 +57,10 @@ int main(int argc, char *argv[]) {
     symProgram(root, SymbolTableConstruct);
     typeProgram(root, programSymbolTable);
 
-    char *outputFileName = malloc((strlen(argv[2])+6)*sizeof(char));
-    outputFileName = argv[2];
-    outputFileName[strlen(argv[2])] = '\0';
-    sprintf(outputFileName, "%s.java", outputFileName);
-    codeProgram(root, programSymbolTable, outputFileName);
+    char *inputFileName = malloc((strlen(argv[2])+6)*sizeof(char));
+    inputFileName = argv[2];
+    inputFileName[strlen(argv[2])] = '\0';
+    codeProgram(root, programSymbolTable, inputFileName);
 
     printf("\nNeed to complete\n");
   } else {
