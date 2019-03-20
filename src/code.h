@@ -5,7 +5,15 @@
 #include "symbol.h"
 
 void codeProgram(PROG *prog, SymbolTable *st);
+void codeSetup();
+void codeComplete();
 void codePackage(PACKAGE *package);
-void codeDeclarations(DECL *dcl, SymbolTable *st);
+void codeDeclarations(DECL *dcl, SymbolTable *st, int tabCount);
+
+
+void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, int tabCount);
+void codeShortDecl(SHORT_SPECS *ss, SymbolTable *st, int tabCount);
+void codeTypeDecl(TYPE_SPECS *ts, SymbolTable *st, int tabCount);
+void codeFuncDecl(FUNC_DECL *fd, SymbolTable *st, int tabCount);
 
 #endif
