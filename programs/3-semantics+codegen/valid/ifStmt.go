@@ -5,7 +5,7 @@
 //^<=2
 //^is 2
 
-package test
+package main
 
 // if statement with shadowed x variable in all scopes
 func foo() {
