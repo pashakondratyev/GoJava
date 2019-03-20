@@ -30,7 +30,6 @@ void typeDeclarations(DECL *dcl, SymbolTable *st) {
   }
 }
 
-// TODO: Implement
 void typeVarDecl(VAR_SPECS *vs, SymbolTable *st) {
   if (vs != NULL) {
     // If rhs is not null
@@ -72,7 +71,6 @@ void typeVarDecl(VAR_SPECS *vs, SymbolTable *st) {
   }
 }
 
-// TODO: Implement
 void typeShortDecl(SHORT_SPECS *ss, SymbolTable *st) {
   if (ss != NULL) {
     typeExp(ss->rhs, st);
@@ -104,7 +102,6 @@ void typeShortDecl(SHORT_SPECS *ss, SymbolTable *st) {
   }
 }
 
-// TODO: Implement
 void typeTypeDecl(TYPE_SPECS *ts, SymbolTable *st) {
   if (ts != NULL) {
     ts->type = fixType(st, ts->type);
@@ -112,7 +109,6 @@ void typeTypeDecl(TYPE_SPECS *ts, SymbolTable *st) {
   }
 }
 
-// TODO: Implement
 void typeFuncDecl(FUNC_DECL *fd, SymbolTable *st) {
   if (fd != NULL) {
     // TODO: Typecheck return statements
@@ -470,7 +466,6 @@ int typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
   return returns;
 }
 
-// TODO: Implement
 void typeExp(EXP *exp, SymbolTable *st) {
   TYPE *type;
   SYMBOL *s;
