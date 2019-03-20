@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "symbol.h"
 #include "tree.h"
@@ -55,7 +56,13 @@ int main(int argc, char *argv[]) {
     weedProgram(root);
     symProgram(root, SymbolTableConstruct);
     typeProgram(root, programSymbolTable);
-    codeProgram(root, programSymbolTable);
+
+    char *outputFileName = malloc((strlen(argv[2])+6)*sizeof(char));
+    outputFileName = argv[2];
+    outputFileName[strlen(argv[2])] = '\0';
+    sprintf(outputFileName, "%s.java", outputFileName);
+    codeProgram(root, programSymbolTable, outputFileName);
+
     printf("\nNeed to complete\n");
   } else {
     fprintf(stderr, "Error: invalid argument for compiler mode, valid options are (scan | tokens | parse | pretty | symbol | typecheck)\n");

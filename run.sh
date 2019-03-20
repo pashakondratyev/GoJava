@@ -27,5 +27,6 @@ fi
 # Invoke the compiler with the provided arguments: mode ($1) and file ($2)
 #
 # You MUST replace the following command with the command for invoking your compiler
+filename="${2%.*}"
 
-./src/goc "$1" < "$2"
+./src/goc "$1" "$filename" < "$2"

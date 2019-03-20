@@ -4,7 +4,7 @@
 #include "tree.h"
 #include "symbol.h"
 
-void codeProgram(PROG *prog, SymbolTable *st);
+void codeProgram(PROG *prog, SymbolTable *st, char *filename);
 void codeSetup();
 void codeComplete();
 void codePackage(PACKAGE *package);

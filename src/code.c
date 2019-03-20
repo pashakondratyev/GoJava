@@ -2,22 +2,36 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "pretty.h"
 #include "symbol.h"
 #include "code.h"
 
-void codeProgram(PROG *prog, SymbolTable *st) {
-  if (prog != NULL) {
-  	codePackage(prog->package);
-  	// setup classes and other defaults
-  	codeDeclarations(prog->root_decl, st, 0);
-  	// complete class 
-  }
+FILE *outputFile;
+
+void codeProgram(PROG *prog, SymbolTable *st, char *filename) {
+	outputFile = fopen(filename, "w+");
+  	if (prog != NULL) {
+  		codePackage(prog->package);
+  		codeSetup();
+  		codeDeclarations(prog->root_decl, st, 0);
+  		codeComplete();
+  	}
+  	fclose(outputFile);
 }
+
+// setup classes and other defaults
+void codeSetup() {
+	// TODO: complete
+}
+
+// complete class 
+void codeComplete() {
+	// TODO: implement
+}
+
 
 void codePackage(PACKAGE *package) {
 	if (package != NULL) {
-		printf("package %s\n\n", package->name);
+		fprintf(outputFile, "package %s\n\n", package->name);
 
 	} else {
 		printf("LOGIC ERROR: package is null in codegen.\n");
