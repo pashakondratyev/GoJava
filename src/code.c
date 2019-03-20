@@ -55,7 +55,6 @@ void codeProgram(PROG *prog, SymbolTable *st, char *inputFileName) {
 		sprintf(filePath, "%s/%s/%s",pathBeforeFile, packageName, fileName);
 
 	}
-	printf("%s\n", filePath);
 
 	outputFile = fopen(filePath, "w");
 	if (outputFile == NULL) {
