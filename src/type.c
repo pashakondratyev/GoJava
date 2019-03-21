@@ -104,6 +104,10 @@ void typeShortDecl(SHORT_SPECS *ss, SymbolTable *st) {
 void typeTypeDecl(TYPE_SPECS *ts, SymbolTable *st) {
   if (ts != NULL) {
     ts->type = fixType(st, ts->type);
+    if(!isValidRecursiveType(ts->name, ts->type)){
+      fprintf(stderr, "Error: (line %d) invalid recursive type\n", ts->type->lineno);
+      exit(1);
+    }
     typeTypeDecl(ts->next, st);
   }
 }
@@ -156,6 +160,10 @@ ReturnStatus typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
         break;
       case sk_exp:
         typeExp(stmt->val.exp, st);
+        if(stmt->val.exp->kind != ek_func){
+          fprintf(stderr, "Error: (line %d) expression statement expected function call\n", stmt->lineno);
+          exit(1);
+        }
         break;
       case sk_assign:
         al = stmt->val.assign;
@@ -747,9 +755,10 @@ void typeExp(EXP *exp, SymbolTable *st) {
         // If Type decl
         if (s->kind == dk_type) {
           // This will only be a type decl if it's a compound type
+
           EXP_LIST *el = exp->val.funcCall.args;
-          if (el->next != NULL) {
-            fprintf(stderr, "Error: (line %d) type cast only expected 1 argument\n", exp->lineno);
+          if (el == NULL || el->next != NULL) {
+            fprintf(stderr, "Error: (line %d) type cast expected exactly 1 argument\n", exp->lineno);
             exit(1);
           }
           typeExp(el->exp, st);
@@ -777,6 +786,7 @@ void typeExp(EXP *exp, SymbolTable *st) {
                     buffer1);
             exit(1);
           }
+          exp->kind = ek_conv;
           exp->type = s->val.typeDecl.type;
 
         } else if (s->kind == dk_func) {  // Function call (not type cast)
@@ -906,6 +916,14 @@ void typeExp(EXP *exp, SymbolTable *st) {
       case ek_structField:
         typeExp(exp->val.structField.structExp, st);
         TYPE *t = exp->val.structField.structExp->type;
+
+        if (t == NULL) {
+          char buffer[1024];
+          getTypeString(buffer, t);
+          fprintf(stderr, "Error: (line %d) %s is not a struct type\n", exp->lineno, buffer);
+          exit(1);
+        }
+
         t = fixType(st, t);
         if (t == NULL || !resolvesToStruct(t, st)) {
           char buffer[1024];
@@ -1243,18 +1261,18 @@ int isLValue(EXP *exp, SymbolTable *st) {
     case ek_indexExp:
       isAddressable = isAddressableArray(exp->val.structField.structExp, st);
       isL = isLValue(exp->val.indexExp.objectExp, st);
-      if(!isAddressable && ! isL){
+      if (!isAddressable && !isL) {
         fprintf(stderr, "Error: (line %d) array field is not addressable\n", exp->lineno);
-        exit(1); 
+        exit(1);
       }
       return 1;
     case ek_structField:
-      if(isAddressableStruct(exp->val.structField.structExp, st) == NULL){
+      if (isAddressableStruct(exp->val.structField.structExp, st) == NULL) {
         fprintf(stderr, "Error: (line %d) struct field is not addressable\n", exp->lineno);
-        exit(1); 
+        exit(1);
       }
       return 1;
-      //return isLValue(exp->val.structField.structExp, st);
+      // return isLValue(exp->val.structField.structExp, st);
     case ek_paren:
       return isLValue(exp->val.parenExp, st);
     case ek_func:
@@ -1281,36 +1299,36 @@ TYPE *isAddressableStruct(EXP *exp, SymbolTable *st) {
         fprintf(stderr, "Error: (line %d) blank identifier is not addressable\n", exp->lineno);
         exit(1);
       }
-      if(exp->type->kind == tk_struct) {
+      if (exp->type->kind == tk_struct) {
         return exp->type;
-      } else if(exp->type->kind == tk_ref){
+      } else if (exp->type->kind == tk_ref) {
         return getSymbol(st, exp->type->val.name)->val.typeDecl.resolvesTo;
-      } else{
+      } else {
         return NULL;
       }
     case ek_structField:
-      t = isAddressableStruct(exp->val.structField.structExp, st); 
-      if(t == NULL){
+      t = isAddressableStruct(exp->val.structField.structExp, st);
+      if (t == NULL) {
         fprintf(stderr, "Error2: (line %d) struct field is not addressable\n", exp->lineno);
-        exit(1); 
+        exit(1);
       }
 
       // Get type of struct field
       FIELD_DECLS *fd = t->val.structFields;
-      while(fd != NULL){
-        if(strcmp(fd->id, exp->val.structField.fieldName) == 0){
+      while (fd != NULL) {
+        if (strcmp(fd->id, exp->val.structField.fieldName) == 0) {
           t = fd->type;
           break;
         }
         fd = fd->next;
       }
 
-      if(t->kind == tk_ref){
-        t = getSymbol(st, t->val.name)->val.typeDecl.resolvesTo; 
-      } else if(t->kind == tk_struct){
+      if (t->kind == tk_ref) {
+        t = getSymbol(st, t->val.name)->val.typeDecl.resolvesTo;
+      } else if (t->kind == tk_struct) {
         return t;
-      } else{
-        return NULL; 
+      } else {
+        return NULL;
       }
     case ek_paren:
       return isAddressableStruct(exp->val.parenExp, st);
@@ -1328,9 +1346,9 @@ int isAddressableArray(EXP *exp, SymbolTable *st) {
         exit(1);
       }
       s = getSymbol(st, exp->val.id);
-      if(s == NULL) return 0;
-      if(s->kind != dk_type) return 0;
-      if(s->val.typeDecl.resolvesToKind != tk_array) return 0;
+      if (s == NULL) return 0;
+      if (s->kind != dk_type) return 0;
+      if (s->val.typeDecl.resolvesToKind != tk_array) return 0;
       return 1;
     case ek_paren:
       return isAddressableArray(exp->val.parenExp, st);
@@ -1390,5 +1408,32 @@ char *getAssignOpString(AssignOpKind kind) {
       return "<<=";
     case aok_bitRightShift:
       return ">>=";
+  }
+}
+
+int isValidRecursiveType(char *name, TYPE *s){
+  FIELD_DECLS *fd;
+  switch(s->kind){
+    case tk_ref:
+      if(strcmp(name, s->val.name) == 0){
+        return 0;
+      } else{
+        return 1;
+      }
+      return (strcmp(name, s->val.name));
+    case tk_array:
+      return isValidRecursiveType(name, s->val.array.elemType);
+    case tk_slice:
+      return 1;
+    case tk_struct:
+      fd = s->val.structFields;
+      while(fd != NULL){
+        if(!isValidRecursiveType(name, fd->type)){
+          return 0;
+        }
+        fd = fd->next;
+      }
+    default:
+      return 1;
   }
 }

@@ -247,7 +247,8 @@ void putShortDecl(SymbolTable *st, SHORT_SPECS *ss, int lineno) {
     }
     symTypesExpressions(ss->rhs, st);
 
-    if (getSymbolCurrentScope(st, ss->lhs->val.id) == NULL) {
+    SYMBOL *s = getSymbolCurrentScope(st, ss->lhs->val.id);
+    if (s == NULL) {
       SYMBOL *s = putSymbol(st, dk_short, ss->lhs->val.id, lineno);
       s->val.type = NULL;
       newDecl = 1;
@@ -256,6 +257,18 @@ void putShortDecl(SymbolTable *st, SHORT_SPECS *ss, int lineno) {
         prettyPrintExp(ss->lhs);
         printf(" [variable] = <infer>\n");
       }
+    } else {
+      if(s->kind != dk_short && s->kind != dk_var){
+        fprintf(stderr, "Error: (line %d) short declaration cannot redeclare a function or type declaration in the same scope\n",
+            lineno);
+        exit(1); 
+      }
+
+    }
+    if(duplicateShortDeclarationsExist(ss->lhs->val.id, ss->next)){
+      fprintf(stderr, "Error: (line %d) short declaration cannot contain duplicate identifiers\n",
+            lineno);
+      exit(1); 
     }
     ss = ss->next;
   }
@@ -733,11 +746,21 @@ int duplicateElementExists(char *elementName, FIELD_DECLS *remaining) {
   return 0;
 }
 
+int duplicateShortDeclarationsExist(char *elementName, SHORT_SPECS *remaining){
+  while (remaining != NULL){
+    if(strcmp(elementName, remaining->lhs->val.id) == 0){
+      return 1;
+    }
+    remaining = remaining->next;
+  }
+  return 0;
+}
+
 TYPE *fixStructType(SymbolTable *st, TYPE *type) {
   FIELD_DECLS *fd = type->val.structFields;
   while (fd != NULL) {
     fd->type = fixType(st, fd->type);
-    if (duplicateElementExists(fd->id, fd->next)) {
+    if (strcmp(fd->id, "_") != 0 && duplicateElementExists(fd->id, fd->next)) {
       fprintf(stderr, "Error: (line %d) identifier %s already used in struct definition", fd->lineno, fd->id);
       exit(1);
     }
@@ -750,6 +773,10 @@ TYPE *fixResType(SymbolTable *st, TYPE *type) {
   SYMBOL *s = getSymbol(st, type->val.name);
   if (s == NULL) {
     fprintf(stderr, "Error: (line %d) type %s has not been declared\n", type->lineno, type->val.name);
+    exit(1);
+  }
+  if(s->kind != dk_type){
+    fprintf(stderr, "Error: (line %d) %s is not a type\n", type->lineno, type->val.name);
     exit(1);
   }
   return s->val.typeDecl.type;

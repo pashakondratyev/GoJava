@@ -56,6 +56,9 @@ void putVarDecl(SymbolTable *st, VAR_SPECS *vs, int lineno);
 STMT *paramListToStmt(PARAM_LIST *pl, int lineno);
 STMT *combineStmt(STMT *s1, STMT *s2, int lineno);
 
+int duplicateShortDeclarationsExist(char *elementName, SHORT_SPECS *remaining);
+int duplicateElementExists(char *elementName, FIELD_DECLS *remaining);
+
 void printType(TYPE *type);
 char *getTypeString(char *BUFFER, TYPE *type);
 TYPE *fixType(SymbolTable *st, TYPE *type);
