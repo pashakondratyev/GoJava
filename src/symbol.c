@@ -79,10 +79,10 @@ SYMBOL *putSymbol(SymbolTable *t, DecKind kind, char *identifier, TYPE *type, PA
       s->val.type = NULL;
       break;
     case dk_type:
-      if(lineno != 0){
+      if (lineno != 0) {
         // TODO: this might need more rigorous testing (it did)
         type = makeRefType(identifier, lineno);
-      } 
+      }
       s->val.typeDecl.type = fixType(t, type);
       SYMBOL *resolvesTo;
       switch (type->kind) {
@@ -136,7 +136,7 @@ SYMBOL *putSymbol(SymbolTable *t, DecKind kind, char *identifier, TYPE *type, PA
       }
       break;
     case dk_var:
-      if(type != NULL){
+      if (type != NULL) {
         s->val.type = fixType(t, type);
       } else {
         s->val.type = NULL;
@@ -157,6 +157,13 @@ void putTypeDecl(SymbolTable *st, TYPE_SPECS *ts, int lineno) {
       continue;
     }
 
+    SYMBOL *s = ts->type->kind != tk_res ? NULL : getSymbol(st, ts->type->val.name);
+    if (s != NULL) {
+      if (s->kind != dk_type) {
+        fprintf(stderr, "Error: (line %d) attempting to declare type which references a non-type\n", lineno);
+        exit(1);
+      }
+    }
     ts->type = fixType(st, ts->type);
 
     putSymbol(st, dk_type, ts->name, ts->type, NULL, lineno);
@@ -182,7 +189,7 @@ void putFuncDecl(SymbolTable *st, FUNC_DECL *fd, int lineno) {
       fprintf(stderr, "Error: (line %d) init function cannot have return type of param list\n", lineno);
       exit(1);
     }
-  } else if (strcmp(fd->name, "main") == 0){
+  } else if (strcmp(fd->name, "main") == 0) {
     if (fd->params != NULL || fd->returnType != NULL) {
       fprintf(stderr, "Error: (line %d) main function cannot have return type of param list\n", lineno);
       exit(1);
@@ -362,6 +369,11 @@ SYMBOL *getSymbolCurrentScope(SymbolTable *t, char *name) {
 }
 
 void symProgram(PROG *root, SymbolTableMode m) {
+  if(strcmp(root->package->name, "_") == 0){
+    fprintf(stderr, "Error: (line %d) cannot use blank identifier for package name\n", root->lineno);
+    exit(1);
+  }
+  
   mode = m;
   programSymbolTable = initSymbolTable();
   openScope();
@@ -486,9 +498,9 @@ void symTypesExpressions(EXP *exp, SymbolTable *st) {
       symTypesExpressions(exp->val.unary.exp, st);
       break;
     case ek_func:
-      if(strcmp(exp->val.funcCall.funcId, "_") == 0){
+      if (strcmp(exp->val.funcCall.funcId, "_") == 0) {
         fprintf(stderr, "Error: (line %d) function name may not contain the blank identifier\n", exp->lineno);
-        exit(1); 
+        exit(1);
       }
       if (getSymbol(st, exp->val.funcCall.funcId) == NULL) {
         fprintf(stderr, "Error: (line %d) %s is not declared\n", exp->lineno, exp->val.funcCall.funcId);
@@ -515,9 +527,9 @@ void symTypesExpressions(EXP *exp, SymbolTable *st) {
       symTypesExpressions(exp->val.indexExp.objectExp, st);
       break;
     case ek_structField:
-      if (strcmp(exp->val.structField.fieldName, "_") == 0){
+      if (strcmp(exp->val.structField.fieldName, "_") == 0) {
         fprintf(stderr, "Error: (line %d) selector field may not contain blank identifier\n", exp->lineno);
-        exit(1); 
+        exit(1);
       }
       symTypesExpressions(exp->val.structField.structExp, st);
       break;
@@ -644,7 +656,7 @@ void printType(TYPE *type) {
 
 char *getTypeString(char *BUFFER, TYPE *type) {
   FIELD_DECLS *d;
-  if(type == NULL){
+  if (type == NULL) {
     sprintf(BUFFER, " ");
     return BUFFER;
   }
@@ -688,10 +700,24 @@ void printParamList(PARAM_LIST *pl) {
   printf(")");
 }
 
+int duplicateElementExists(char *elementName, FIELD_DECLS *remaining) {
+  while (remaining != NULL) {
+    if (strcmp(elementName, remaining->id) == 0) {
+      return 1;
+    }
+    remaining = remaining->next;
+  }
+  return 0;
+}
+
 TYPE *fixStructType(SymbolTable *st, TYPE *type) {
   FIELD_DECLS *fd = type->val.structFields;
   while (fd != NULL) {
     fd->type = fixType(st, fd->type);
+    if (duplicateElementExists(fd->id, fd->next)) {
+      fprintf(stderr, "Error: (line %d) identifier %s already used in struct definition", fd->lineno, fd->id);
+      exit(1);
+    }
     fd = fd->next;
   }
   return type;
@@ -699,12 +725,11 @@ TYPE *fixStructType(SymbolTable *st, TYPE *type) {
 
 TYPE *fixResType(SymbolTable *st, TYPE *type) {
   SYMBOL *s = getSymbol(st, type->val.name);
-  if(s == NULL){
-    fprintf(stderr, "Error: (line %d) type %s has not been declared\n",
-            type->lineno, type->val.name);
+  if (s == NULL) {
+    fprintf(stderr, "Error: (line %d) type %s has not been declared\n", type->lineno, type->val.name);
     exit(1);
   }
-  //res should resolve to type directly
+  // res should resolve to type directly
   return s->val.typeDecl.type;
 }
 

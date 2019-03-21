@@ -5,7 +5,6 @@
 #include "symbol.h"
 #include "type.h"
 
-
 void typeProgram(PROG *prog, SymbolTable *st) {
   if (prog != NULL) typeDeclarations(prog->root_decl, st);
 }
@@ -35,7 +34,7 @@ void typeVarDecl(VAR_SPECS *vs, SymbolTable *st) {
     // If rhs is not null
     if (vs->exp != NULL) {
       typeExp(vs->exp, st);
-      if(vs->exp->type == NULL){
+      if (vs->exp->type == NULL) {
         fprintf(stderr, "Error: (line %d) void cannot be used as a value in a declaration\n", vs->exp->lineno);
         exit(1);
       }
@@ -47,7 +46,7 @@ void typeVarDecl(VAR_SPECS *vs, SymbolTable *st) {
         SYMBOL *s = getSymbol(st, vs->id);
         s->val.type = vs->exp->type;
         vs->type = vs->exp->type;
-      } 
+      }
 
       if (strcmp(vs->id, "_") != 0) {
         // SYMBOL *s = getSymbol(st, vs->type->val.name);
@@ -82,9 +81,9 @@ void typeShortDecl(SHORT_SPECS *ss, SymbolTable *st) {
         s->val.type = ss->rhs->type;
       }
 
-      if (ss->rhs->type == NULL){
+      if (ss->rhs->type == NULL) {
         fprintf(stderr, "Error: (line %d) void cannot be used as a value in a short declaration\n", ss->rhs->lineno);
-        exit(1); 
+        exit(1);
       }
 
       if (s->val.type != NULL && s->val.type != ss->rhs->type) {
@@ -112,22 +111,24 @@ void typeTypeDecl(TYPE_SPECS *ts, SymbolTable *st) {
 void typeFuncDecl(FUNC_DECL *fd, SymbolTable *st) {
   if (fd != NULL) {
     // TODO: Typecheck return statements
-    if(fd->returnType != NULL){
+    if (fd->returnType != NULL) {
       fd->returnType = fixType(st, fd->returnType);
     }
 
-    if(!typeStmt(fd->body, st, fd->returnType) && fd->returnType != NULL){
-      fprintf(stderr, "Error: (line %d) function %s does not have a terminating statement\n", fd->body->lineno, fd->name);
+    int returns = typeStmt(fd->body, st, fd->returnType);
+    if ((returns == -1 || returns == 0) && fd->returnType != NULL) {
+      fprintf(stderr, "Error: (line %d) function %s does not have a terminating statement\n", fd->body->lineno,
+              fd->name);
       exit(1);
     }
   }
 }
 
 /* Takes a statement, symbol table and return type and checks if the stmt type checks and returns
- * Returns 0 if the statement does not return, -1 if it contains a break, and 1 if it returns 
+ * Returns 0 if the statement does not return, -1 if it contains a break, and 1 if it returns
  */
-int typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
-  int returns = 0;
+  ReturnStatus typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
+    ReturnStatus returns = NoReturn;
   STMT_LIST *sl;
   ASSIGN *al;
   EXP_LIST *el;
@@ -139,18 +140,17 @@ int typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
         st = stmt->val.block.scope != NULL ? stmt->val.block.scope : st;
         sl = stmt->val.block.blockStatements;
         while (sl != NULL) {
-
           // If a statement contained a break or a return we propogate that up to the calling block
           // For infinite for loops, if there is no break we can effectively treat the for
           // loop as a statement which typechecks correctly as it never returns
           // However if there is a break statement then the block is not considered as a returning block
-          int temp = typeStmt(sl->stmt, st, returnType);
-          if (temp == -1){
-            returns = -1;
-          }
-          if(temp != 0 && returns != -1){
+            ReturnStatus temp = typeStmt(sl->stmt, st, returnType);
+          if (temp == Breaks) {
+            returns = Breaks;
+          } else if (returns != Breaks){
             returns = temp;
           }
+         
           sl = sl->next;
         }
         break;
@@ -191,13 +191,15 @@ int typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
           char buffer2[1024];
           getTypeString(buffer1, stmt->val.assignOp.lhs->type);
           getTypeString(buffer2, stmt->val.assignOp.rhs->type);
-          fprintf(stderr, "Error: (line %d) Both sides of assignment mus be the same [received %s and %s]\n", stmt->lineno, buffer1, buffer2);
+          fprintf(stderr, "Error: (line %d) Both sides of assignment mus be the same [received %s and %s]\n",
+                  stmt->lineno, buffer1, buffer2);
           exit(1);
         }
         AssignOpKind kind = stmt->val.assignOp.kind;
         switch (kind) {
           case aok_plus:
-            if (!resolvesToNumeric(stmt->val.assignOp.lhs->type, st) && !resolvesToString(stmt->val.assignOp.lhs->type, st)) {
+            if (!resolvesToNumeric(stmt->val.assignOp.lhs->type, st) &&
+                !resolvesToString(stmt->val.assignOp.lhs->type, st)) {
               char buffer[1024];
               getTypeString(buffer, stmt->val.assignOp.lhs->type);
               fprintf(stderr, "Error: (line %d) operator += only works with numeric or string types [received %s]\n",
@@ -211,7 +213,8 @@ int typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
             if (!resolvesToNumeric(stmt->val.assignOp.lhs->type, st)) {
               char buffer[1024];
               getTypeString(buffer, stmt->val.assignOp.lhs->type);
-              fprintf(stderr, "Error: (line %d) Operation %s only works with numeric types [received %s]\n", stmt->lineno, getAssignOpString(kind), buffer);
+              fprintf(stderr, "Error: (line %d) Operation %s only works with numeric types [received %s]\n",
+                      stmt->lineno, getAssignOpString(kind), buffer);
               exit(1);
             }
             break;
@@ -225,7 +228,8 @@ int typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
             if (!resolvesToInteger(stmt->val.assignOp.lhs->type, st)) {
               char buffer[1024];
               getTypeString(buffer, stmt->val.assignOp.lhs->type);
-              fprintf(stderr, "Error: (line %d) Operation %s, only works with integer types [received %s]\n", stmt->lineno, getAssignOpString(kind), buffer);
+              fprintf(stderr, "Error: (line %d) Operation %s, only works with integer types [received %s]\n",
+                      stmt->lineno, getAssignOpString(kind), buffer);
               exit(1);
             }
             break;
@@ -241,9 +245,9 @@ int typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
       case sk_incr:
       case sk_decr:
         typeExp(stmt->val.exp, st);
-        if(!resolvesToNumeric(stmt->val.exp->type, st)){
-            fprintf(stderr, "Error: (line %d) cannot increment non numeric type\n", stmt->lineno);
-            exit(1);
+        if (!resolvesToNumeric(stmt->val.exp->type, st)) {
+          fprintf(stderr, "Error: (line %d) cannot increment non numeric type\n", stmt->lineno);
+          exit(1);
         }
         break;
       case sk_print:
@@ -259,36 +263,35 @@ int typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
         }
         break;
       case sk_return:
-        if(returnType == NULL && stmt->val.exp == NULL){
-          return 1;
+        if (returnType == NULL && stmt->val.exp == NULL) {
+          return Returns;
         }
 
-        if(returnType != NULL && stmt->val.exp == NULL){
-            fprintf(stderr, "Error: (line %d) invalid return [function has void return type]\n", stmt->lineno);
-            exit(1); 
+        if (returnType != NULL && stmt->val.exp == NULL) {
+          fprintf(stderr, "Error: (line %d) invalid return [function has void return type]\n", stmt->lineno);
+          exit(1);
         }
 
-
-        if(returnType == NULL && stmt->val.exp != NULL){
-            fprintf(stderr, "Error: (line %d) invalid return [function has non-void return type]\n", 
-              stmt->lineno);
-            exit(1); 
+        if (returnType == NULL && stmt->val.exp != NULL) {
+          fprintf(stderr, "Error: (line %d) invalid return [function has non-void return type]\n", stmt->lineno);
+          exit(1);
         }
 
-        if(stmt->val.exp != NULL){
+        if (stmt->val.exp != NULL) {
           typeExp(stmt->val.exp, st);
         }
 
-        if(!typeCompare(returnType, stmt->val.exp->type, st)){
-            char buffer1[1024];
-            char buffer2[1024];
-            getTypeString(buffer1, returnType);
-            getTypeString(buffer2, stmt->val.exp->type);
-            fprintf(stderr, "Error: (line %d) %s is not assignment compatible with %s in return statement\n", stmt->lineno, buffer1, buffer2);
-            exit(1); 
+        if (!typeCompare(returnType, stmt->val.exp->type, st)) {
+          char buffer1[1024];
+          char buffer2[1024];
+          getTypeString(buffer1, returnType);
+          getTypeString(buffer2, stmt->val.exp->type);
+          fprintf(stderr, "Error: (line %d) %s is not assignment compatible with %s in return statement\n",
+                  stmt->lineno, buffer1, buffer2);
+          exit(1);
         }
 
-        returns = 1;
+        returns = Returns;
         break;
       case sk_if:
         st = stmt->val.ifStmt.scope;
@@ -304,17 +307,19 @@ int typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
         }
         returns = typeStmt(stmt->val.ifStmt.body, st, returnType);
         if (stmt->val.ifStmt.elseStmt != NULL) {
-          int temp = typeStmt(stmt->val.ifStmt.elseStmt, st, returnType);
-          if(temp == -1){
-            returns = -1;
-          } else{
-            returns = returns && temp;
+            ReturnStatus temp = typeStmt(stmt->val.ifStmt.elseStmt, st, returnType);
+          if (temp == Breaks) {
+            returns = Breaks;
+          } else if (temp == Returns && returns == Returns){
+            returns = Returns;
+          } else {
+            returns = NoReturn;
           }
-        } else if (returns == -1) {
+        } else if (returns == Breaks) {
           // if the if statement has a break, we want that information to propogate up
-          returns = -1;
+          returns = Breaks;
         } else {
-          returns = 0;
+          returns = NoReturn;
         }
         break;
       case sk_else:
@@ -331,7 +336,7 @@ int typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
           returns = ccl == NULL ? 0 : 1;
           // if no expression then all case expressions must be booleans
           while (ccl != NULL) {
-            int clauseReturns = 0;
+            ReturnStatus clauseReturns = NoReturn;
             switch (ccl->clause->kind) {
               case ck_case:
                 el = ccl->clause->val.caseClause.cases;
@@ -348,8 +353,11 @@ int typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
                 }
                 sl = ccl->clause->val.caseClause.clauses;
                 while (sl != NULL) {
-                  int temp = typeStmt(sl->stmt, st, returnType);
-                  if(temp == -1 || temp != 0){
+                  ReturnStatus temp = typeStmt(sl->stmt, st, returnType);
+
+                  if(temp == Breaks){
+                    clauseReturns = Breaks;
+                  } else if(clauseReturns != Breaks){
                     clauseReturns = temp;
                   }
                   sl = sl->next;
@@ -358,28 +366,42 @@ int typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
               case ck_default:
                 sl = ccl->clause->val.defaultClauses;
                 while (sl != NULL) {
-                  int temp = typeStmt(sl->stmt, st, returnType);
-                  if(temp == -1 || temp != 0){
+                  ReturnStatus temp = typeStmt(sl->stmt, st, returnType);
+                  if(temp == Breaks){
+                    clauseReturns = Breaks;
+                  } else if(clauseReturns != Breaks){
                     clauseReturns = temp;
                   }
                   sl = sl->next;
                 }
                 break;
             }
-            returns = returns && clauseReturns;
+            // If the clause has a break
+            if(clauseReturns == Breaks){
+              returns = Breaks;
+            } else if (returns != Breaks && clauseReturns == Returns){
+              returns = Returns;
+            } else if (returns != Breaks && clauseReturns == NoReturn){
+              returns = NoReturn;
+            }
             ccl = ccl->next;
           }
         } else {
           // if expression is not empty then all case expressions must have the same type as it
           typeExp(stmt->val.switchStmt.exp, st);
-          returns = ccl == NULL ? 0 : 1;
+          if (stmt->val.switchStmt.exp->type == NULL) {
+            fprintf(stderr, "Error: (line %d) Switch expression must have a type\n", stmt->lineno);
+            exit(1);
+          }
+          returns = ccl == NULL ? NoReturn : Returns;
           while (ccl != NULL) {
-            int clauseReturns = 0;
+            ReturnStatus clauseReturns = NoReturn;
             switch (ccl->clause->kind) {
               case ck_case:
                 el = ccl->clause->val.caseClause.cases;
                 while (el != NULL) {
                   typeExp(el->exp, st);
+
                   if (!typeCompare(stmt->val.switchStmt.exp->type, el->exp->type, st)) {
                     char buffer1[1024];
                     char buffer2[1024];
@@ -388,15 +410,17 @@ int typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
                     fprintf(stderr,
                             "Error: (line %d) Switch expression and case expression must have matching types, got %s "
                             "and %s instead\n",
-                            stmt->lineno, buffer1, buffer2);
+                            el->exp->lineno, buffer1, buffer2);
                     exit(1);
                   }
                   el = el->next;
                 }
                 sl = ccl->clause->val.caseClause.clauses;
                 while (sl != NULL) {
-                  int temp = typeStmt(sl->stmt, st, returnType);
-                  if(temp == -1 || temp != 0){
+                  ReturnStatus temp = typeStmt(sl->stmt, st, returnType);
+                  if(temp == Breaks){
+                    clauseReturns = Breaks;
+                  } else if(clauseReturns != Breaks){
                     clauseReturns = temp;
                   }
                   sl = sl->next;
@@ -405,15 +429,23 @@ int typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
               case ck_default:
                 sl = ccl->clause->val.defaultClauses;
                 while (sl != NULL) {
-                  int temp = typeStmt(sl->stmt, st, returnType);
-                  if(temp == -1 || temp != 0){
+                  ReturnStatus temp = typeStmt(sl->stmt, st, returnType);
+                  if(temp == Breaks){
+                    clauseReturns = Breaks;
+                  } else if(clauseReturns != Breaks){
                     clauseReturns = temp;
                   }
                   sl = sl->next;
                 }
                 break;
             }
-            returns = returns && clauseReturns;
+            if(clauseReturns == Breaks){
+              returns = Breaks;
+            } else if (returns != Breaks && clauseReturns == Returns){
+              returns = Returns;
+            } else if (returns != Breaks && clauseReturns == NoReturn){
+              returns = NoReturn;
+            }
             ccl = ccl->next;
           }
         }
@@ -427,7 +459,7 @@ int typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
           }
           if (fc->cond != NULL) {
             typeExp(fc->cond, st);
-            if (!resolvesToBool(fc->cond->type,st)) {
+            if (!resolvesToBool(fc->cond->type, st)) {
               char buffer[1024];
               getTypeString(buffer, fc->cond->type);
               fprintf(stderr, "Error: (line %d) Condition evaluates to %s instead of boolean\n", stmt->lineno, buffer);
@@ -439,7 +471,7 @@ int typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
           }
         } else if (stmt->val.forStmt.whileExp != NULL) {
           typeExp(stmt->val.forStmt.whileExp, st);
-          if(!resolvesToBool(stmt->val.forStmt.whileExp->type, st)){
+          if (!resolvesToBool(stmt->val.forStmt.whileExp->type, st)) {
             char buffer[1024];
             getTypeString(buffer, stmt->val.forStmt.whileExp->type);
             fprintf(stderr, "Error: (line %d) Condition evaluates to %s instead of boolean\n", stmt->lineno, buffer);
@@ -449,15 +481,15 @@ int typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
         returns = typeStmt(stmt->val.forStmt.body, st, returnType);
 
         // If there is a break we cannot say this for loop returns;
-        if(returns == 0 && ((stmt->val.forStmt.forClause == NULL && stmt->val.forStmt.whileExp == NULL)
-            || (stmt->val.forStmt.forClause != NULL && stmt->val.forStmt.forClause->cond == NULL))){ 
-          returns  = 1;
-        } else if(returns == -1){
-          returns = 0;
-        } 
+        if (returns == NoReturn && ((stmt->val.forStmt.forClause == NULL && stmt->val.forStmt.whileExp == NULL) ||
+                             (stmt->val.forStmt.forClause != NULL && stmt->val.forStmt.forClause->cond == NULL))) {
+          returns = Returns;
+        } else if (returns == Breaks) {
+          returns = NoReturn;
+        }
         break;
       case sk_break:
-        return -1;
+        return Breaks;
       case sk_continue:
       case sk_fallthrough:
       case sk_empty:
@@ -530,15 +562,18 @@ void typeExp(EXP *exp, SymbolTable *st) {
           } else {
             char buffer[1024];
             getTypeString(buffer, exp->val.binary.lhs->type);
-            fprintf(stderr, "Error: (line %d) Operator + only applies to numeric or string types [received %s]\n", exp->lineno, buffer);
+            fprintf(stderr, "Error: (line %d) Operator + only applies to numeric or string types [received %s]\n",
+                    exp->lineno, buffer);
             exit(1);
           }
-        } else { 
+        } else {
           char buffer1[1024];
           char buffer2[1024];
           getTypeString(buffer1, exp->val.binary.lhs->type);
           getTypeString(buffer2, exp->val.binary.rhs->type);
-          fprintf(stderr, "Error: (line %d) Both sides of algebraic operation must be the same type [received %s and %s]\n", exp->lineno, buffer1, buffer2);
+          fprintf(stderr,
+                  "Error: (line %d) Both sides of algebraic operation must be the same type [received %s and %s]\n",
+                  exp->lineno, buffer1, buffer2);
           exit(1);
         }
         break;
@@ -561,7 +596,8 @@ void typeExp(EXP *exp, SymbolTable *st) {
           char buffer2[1024];
           getTypeString(buffer1, exp->val.binary.lhs->type);
           getTypeString(buffer2, exp->val.binary.rhs->type);
-          fprintf(stderr, "Error: (line %d) Cannot apply algebraic operation to %s and %s\n", exp->lineno, buffer1, buffer2);
+          fprintf(stderr, "Error: (line %d) Cannot apply algebraic operation to %s and %s\n", exp->lineno, buffer1,
+                  buffer2);
           exit(1);
         }
         break;
@@ -637,7 +673,8 @@ void typeExp(EXP *exp, SymbolTable *st) {
       case ek_bitClear:
         typeExp(exp->val.binary.lhs, st);
         typeExp(exp->val.binary.rhs, st);
-        if (typeCompare(exp->val.binary.lhs->type, exp->val.binary.rhs->type, st) && resolvesToInteger(exp->val.binary.lhs->type, st)) {
+        if (typeCompare(exp->val.binary.lhs->type, exp->val.binary.rhs->type, st) &&
+            resolvesToInteger(exp->val.binary.lhs->type, st)) {
           exp->type = exp->val.binary.lhs->type;
         } else {
           char buffer1[1024];
@@ -656,7 +693,8 @@ void typeExp(EXP *exp, SymbolTable *st) {
         } else {
           char buffer[1024];
           getTypeString(buffer, exp->val.unary.exp->type);
-          fprintf(stderr, "Error: (line %d) Unary plus/minus only accepts numeric types, received %s\n", exp->lineno, buffer);
+          fprintf(stderr, "Error: (line %d) Unary plus/minus only accepts numeric types, received %s\n", exp->lineno,
+                  buffer);
           exit(1);
         }
         break;
@@ -667,7 +705,8 @@ void typeExp(EXP *exp, SymbolTable *st) {
         } else {
           char buffer[1024];
           getTypeString(buffer, exp->val.unary.exp->type);
-          fprintf(stderr, "Error: (line %d) Negation operator only accepts booleans, received %s\n", exp->lineno, buffer);
+          fprintf(stderr, "Error: (line %d) Negation operator only accepts booleans, received %s\n", exp->lineno,
+                  buffer);
           exit(1);
         }
         break;
@@ -678,7 +717,8 @@ void typeExp(EXP *exp, SymbolTable *st) {
         } else {
           char buffer[1024];
           getTypeString(buffer, exp->val.unary.exp->type);
-          fprintf(stderr, "Error: (line %d) Bitwise negation operator only accepts integer types, received %s\n", exp->lineno, buffer);
+          fprintf(stderr, "Error: (line %d) Bitwise negation operator only accepts integer types, received %s\n",
+                  exp->lineno, buffer);
           exit(1);
         }
         break;
@@ -696,38 +736,38 @@ void typeExp(EXP *exp, SymbolTable *st) {
           typeExp(el->exp, st);
 
           // Type casts only work on types which resolve to base types
-          if(!resolvesToBase(s->val.typeDecl.type, st)){
+          if (!resolvesToBase(s->val.typeDecl.type, st)) {
             char buffer[1024];
             getTypeString(buffer, s->val.typeDecl.type);
             fprintf(stderr, "Error: (line %d) type %s must resolve to a base\n", exp->lineno, buffer);
-            exit(1); 
+            exit(1);
           }
 
-          // The three conditions for typecasts are that they must 
+          // The three conditions for typecasts are that they must
           // 1. Resolve to the same type
           // 2. Both resolve to a numeric
-          // 3. If it is being cast to a string it must resolve to an integer and 
-          if (!resolvesToSame(el->exp->type, s->val.typeDecl.type, st) && 
+          // 3. If it is being cast to a string it must resolve to an integer and
+          if (!resolvesToSame(el->exp->type, s->val.typeDecl.type, st) &&
               !(resolvesToNumeric(el->exp->type, st) && resolvesToNumeric(s->val.typeDecl.type, st)) &&
               !(resolvesToString(s->val.typeDecl.type, st) && resolvesToInteger(el->exp->type, st))) {
-            
             char buffer1[1024];
             char buffer2[1024];
             getTypeString(buffer1, el->exp->type);
             getTypeString(buffer2, s->val.typeDecl.type);
-            fprintf(stderr, "Error: (line %d) conversion between incompatible types [%s <- %s]\n", exp->lineno, buffer2, buffer1);
+            fprintf(stderr, "Error: (line %d) conversion between incompatible types [%s <- %s]\n", exp->lineno, buffer2,
+                    buffer1);
             exit(1);
           }
           exp->type = s->val.typeDecl.type;
 
-        } else if (s->kind == dk_func) { // Function call (not type cast)
+        } else if (s->kind == dk_func) {  // Function call (not type cast)
           EXP_LIST *passedParams = exp->val.funcCall.args;
           PARAM_LIST *pl = s->val.functionDecl.paramList;
 
           int expectedArgumentCount = 0;
           {
             PARAM_LIST *temp = pl;
-            while(temp != NULL){
+            while (temp != NULL) {
               expectedArgumentCount++;
               temp = temp->next;
             }
@@ -744,10 +784,12 @@ void typeExp(EXP *exp, SymbolTable *st) {
             received++;
 
             if (pl == NULL) {
-              fprintf(stderr, "Error: (line %d) function %s called with incorrect number of parameters [expected %d, received %d]\n", exp->lineno, s->name, expectedArgumentCount, received);
+              fprintf(stderr,
+                      "Error: (line %d) function %s called with incorrect number of parameters [expected %d, received "
+                      "%d]\n",
+                      exp->lineno, s->name, expectedArgumentCount, received);
               exit(1);
             }
-
 
             typeExp(curr->exp, st);
 
@@ -756,7 +798,8 @@ void typeExp(EXP *exp, SymbolTable *st) {
               char buffer2[1024];
               getTypeString(buffer1, curr->exp->type);
               getTypeString(buffer2, pl->type);
-              fprintf(stderr, "Error: (line %d) %s is not assignment compatible with %s in function call \n", exp->lineno, buffer1, buffer2);
+              fprintf(stderr, "Error: (line %d) %s is not assignment compatible with %s in function call \n",
+                      exp->lineno, buffer1, buffer2);
               exit(1);
             }
 
@@ -766,11 +809,14 @@ void typeExp(EXP *exp, SymbolTable *st) {
 
           // If there are leftover arguments that weren't called
           if (pl != NULL) {
-              fprintf(stderr, "Error: (line %d) function %s called with incorrect number of parameters [expected %d, received %d]\n", exp->lineno, s->name, expectedArgumentCount, received);
-              exit(1);
+            fprintf(
+                stderr,
+                "Error: (line %d) function %s called with incorrect number of parameters [expected %d, received %d]\n",
+                exp->lineno, s->name, expectedArgumentCount, received);
+            exit(1);
           }
           exp->type = s->val.functionDecl.returnType;
-        } else{
+        } else {
           fprintf(stderr, "Error: (line %d) %s is not a function type\n", exp->lineno, s->name);
           exit(1);
         }
@@ -783,7 +829,9 @@ void typeExp(EXP *exp, SymbolTable *st) {
           char buffer2[1024];
           getTypeString(buffer1, exp->val.append.sliceExp->type);
           getTypeString(buffer2, exp->val.append.elem->type);
-          fprintf(stderr, "Error: (line %d) slice expression should resolve to a slice of the element type, received %s slice and %s element\n",
+          fprintf(stderr,
+                  "Error: (line %d) slice expression should resolve to a slice of the element type, received %s slice "
+                  "and %s element\n",
                   exp->lineno, buffer1, buffer2);
           exit(1);
         }
@@ -796,7 +844,9 @@ void typeExp(EXP *exp, SymbolTable *st) {
         } else {
           char buffer[1024];
           getTypeString(buffer, exp->val.lenExp->type);
-          fprintf(stderr, "Error: (line %d) Length builtin expects slice, array, or string types as argument [received %s]\n", exp->lineno, buffer);
+          fprintf(stderr,
+                  "Error: (line %d) Length builtin expects slice, array, or string types as argument [received %s]\n",
+                  exp->lineno, buffer);
           exit(1);
         }
         break;
@@ -807,7 +857,8 @@ void typeExp(EXP *exp, SymbolTable *st) {
         } else {
           char buffer[1024];
           getTypeString(buffer, exp->val.capExp->type);
-          fprintf(stderr, "Error: (line %d) Capacity builtin expects slice or array types [received %s]\n", exp->lineno, buffer);
+          fprintf(stderr, "Error: (line %d) Capacity builtin expects slice or array types [received %s]\n", exp->lineno,
+                  buffer);
           exit(1);
         }
         break;
@@ -816,7 +867,8 @@ void typeExp(EXP *exp, SymbolTable *st) {
         if (!resolvesToSame(exp->val.indexExp.indexExp->type, baseInt, st)) {
           char buffer[1024];
           getTypeString(buffer, exp->val.indexExp.indexExp->type);
-          fprintf(stderr, "Error: (line %d) index must be well typed and resolve to type int [received %s]\n", exp->lineno, buffer);
+          fprintf(stderr, "Error: (line %d) index must be well typed and resolve to type int [received %s]\n",
+                  exp->lineno, buffer);
           exit(1);
         }
         typeExp(exp->val.indexExp.objectExp, st);
@@ -825,7 +877,8 @@ void typeExp(EXP *exp, SymbolTable *st) {
         if (resolvesTo == NULL) {
           char buffer[1024];
           getTypeString(buffer, resolvesTo);
-          fprintf(stderr, "Error: (line %d) expression must resolve to an array or slice [received %s]\n", e->lineno, buffer);
+          fprintf(stderr, "Error: (line %d) expression must resolve to an array or slice [received %s]\n", e->lineno,
+                  buffer);
           exit(1);
         } else {
           exp->type = resolvesTo;
@@ -834,7 +887,7 @@ void typeExp(EXP *exp, SymbolTable *st) {
       case ek_structField:
         typeExp(exp->val.structField.structExp, st);
         TYPE *t = exp->val.structField.structExp->type;
-        if(!resolvesToStruct(t, st)){
+        if (t == NULL || !resolvesToStruct(t, st)) {
           char buffer[1024];
           getTypeString(buffer, t);
           fprintf(stderr, "Error: (line %d) %s is not a struct type\n", exp->lineno, buffer);
@@ -855,8 +908,8 @@ void typeExp(EXP *exp, SymbolTable *st) {
         // If the code left this while loop then  the struct does not  contain the field accessed
         char buffer[1024];
         getTypeString(buffer, t);
-        fprintf(stderr, "Error: (line %d) %s does not contain field %s\n", exp->lineno,
-                buffer, exp->val.structField.fieldName);
+        fprintf(stderr, "Error: (line %d) %s does not contain field %s\n", exp->lineno, buffer,
+                exp->val.structField.fieldName);
         exit(1);
         break;
       case ek_paren:
@@ -874,13 +927,9 @@ int resolvesToInteger(TYPE *type, SymbolTable *st) {
   return resolvesToSame(type, baseInt, st) || resolvesToSame(type, baseRune, st);
 }
 
-int resolvesToString(TYPE *type, SymbolTable *st) {
-  return resolvesToSame(type, baseString, st);
-}
+int resolvesToString(TYPE *type, SymbolTable *st) { return resolvesToSame(type, baseString, st); }
 
-int resolvesToBool(TYPE *type, SymbolTable *st) {
-  return resolvesToSame(type, baseBool, st);
-}
+int resolvesToBool(TYPE *type, SymbolTable *st) { return resolvesToSame(type, baseBool, st); }
 
 int resolvesToNumeric(TYPE *type, SymbolTable *st) {
   return resolvesToSame(type, baseInt, st) || resolvesToSame(type, baseRune, st) || resolvesToSame(type, baseFloat, st);
@@ -888,18 +937,18 @@ int resolvesToNumeric(TYPE *type, SymbolTable *st) {
 
 int resolvesToOrdered(TYPE *type, SymbolTable *st) {
   return resolvesToSame(type, baseInt, st) || resolvesToSame(type, baseRune, st) ||
-                      resolvesToSame(type, baseFloat, st) || resolvesToSame(type, baseString, st);
+         resolvesToSame(type, baseFloat, st) || resolvesToSame(type, baseString, st);
 }
 
 int resolvesToBase(TYPE *type, SymbolTable *st) {
   return resolvesToBool(type, st) || resolvesToNumeric(type, st) || resolvesToString(type, st);
 }
 
-int resolvesToStruct(TYPE *type, SymbolTable *st){
-  if(type->kind == tk_struct) return 1;
-  if(type->kind != tk_ref) return 0;
+int resolvesToStruct(TYPE *type, SymbolTable *st) {
+  if (type->kind == tk_struct) return 1;
+  if (type->kind != tk_ref) return 0;
   SYMBOL *s = getSymbol(st, type->val.name);
-  if(s->kind != dk_type){
+  if (s->kind != dk_type) {
     fprintf(stderr, "Error: (line %d) declared value %s is not a type\n", type->lineno, type->val.name);
     exit(1);
   }
@@ -919,8 +968,8 @@ int resolvesToComparable(TYPE *type, SymbolTable *st) {
         return 1;
       case tk_struct:
         fd = type->val.structFields;
-        while (fd != NULL){
-          if (!resolvesToComparable(fd->type, st)){
+        while (fd != NULL) {
+          if (!resolvesToComparable(fd->type, st)) {
             return 0;
           }
           fd = fd->next;
@@ -935,7 +984,7 @@ int resolvesToComparable(TYPE *type, SymbolTable *st) {
         s = getSymbol(st, type->val.name);
         return resolvesToComparable(s->val.typeDecl.resolvesTo, st);
         break;
-      case tk_res: //shouldn't happen
+      case tk_res:  // shouldn't happen
         return 0;
     }
   }
@@ -1027,7 +1076,7 @@ int typeCompare(TYPE *type1, TYPE *type2, SymbolTable *st) {
   if (type1 == NULL || type2 == NULL || type1->kind != type2->kind) return 0;
   FIELD_DECLS *fd1;
   FIELD_DECLS *fd2;
-  if(type1 == type2) return 1;
+  if (type1 == type2) return 1;
   switch (type1->kind) {
     case tk_res:
       fprintf(stderr, "Error: (line %d) shouldn't be reached\n", type1->lineno);
@@ -1051,16 +1100,16 @@ int typeCompare(TYPE *type1, TYPE *type2, SymbolTable *st) {
       fd1 = type1->val.structFields;
       fd2 = type2->val.structFields;
 
-      while(fd1 != NULL && fd2 != NULL){
-        if(strcmp(fd1->id, fd2->id) != 0) return 0;
-        if(!typeCompare(fd1->type, fd2->type, st)){
+      while (fd1 != NULL && fd2 != NULL) {
+        if (strcmp(fd1->id, fd2->id) != 0) return 0;
+        if (!typeCompare(fd1->type, fd2->type, st)) {
           return 0;
         }
-        fd1=fd1->next;
-        fd2=fd2->next;
-      } 
+        fd1 = fd1->next;
+        fd2 = fd2->next;
+      }
 
-      if(fd1 != NULL || fd2 != NULL) return 0;
+      if (fd1 != NULL || fd2 != NULL) return 0;
       return 1;
   }
 }
@@ -1094,7 +1143,7 @@ int typeList(TYPE *type) {
 }
 
 int resolvesToList(TYPE *type, SymbolTable *st) {
-  if(type != NULL){
+  if (type != NULL) {
     SYMBOL *s;
     switch (type->kind) {
       case tk_slice:
@@ -1116,7 +1165,7 @@ int resolvesToList(TYPE *type, SymbolTable *st) {
 
 TYPE *typeOfList(TYPE *type, SymbolTable *st) {
   SYMBOL *s;
-  if(type == NULL) return NULL;
+  if (type == NULL) return NULL;
   switch (type->kind) {
     case tk_slice:
       return type->val.sliceType;
@@ -1139,6 +1188,7 @@ TYPE *typeOfList(TYPE *type, SymbolTable *st) {
 
 /* Returns wheter s resolves to a slice of type t */
 int resolvesToTSlice(TYPE *s, TYPE *t, SymbolTable *st) {
+  if (s == NULL || t == NULL) return 0;
   SYMBOL *sym;
   switch (s->kind) {
     case tk_slice:
@@ -1173,9 +1223,8 @@ int isLValue(EXP *exp) {
   }
 }
 
-
-TYPE *typeResolve(TYPE *type, SymbolTable *st){
-  if(type == NULL) return NULL;
+TYPE *typeResolve(TYPE *type, SymbolTable *st) {
+  if (type == NULL) return NULL;
   SYMBOL *s;
   switch (type->kind) {
     case tk_res:
@@ -1192,17 +1241,17 @@ TYPE *typeResolve(TYPE *type, SymbolTable *st){
       return typeResolve(s->val.typeDecl.resolvesTo, st);
     default:
       return NULL;
-  } 
+  }
 }
 
-int resolvesToSame(TYPE *type1, TYPE *type2, SymbolTable *st){
+int resolvesToSame(TYPE *type1, TYPE *type2, SymbolTable *st) {
   type1 = typeResolve(type1, st);
   type2 = typeResolve(type2, st);
   return type1 == type2;
 }
 
-char *getAssignOpString(AssignOpKind kind){
-  switch(kind){
+char *getAssignOpString(AssignOpKind kind) {
+  switch (kind) {
     case aok_plus:
       return "+=";
     case aok_minus:

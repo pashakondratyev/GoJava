@@ -4,6 +4,12 @@
 #include "tree.h"
 #include "symbol.h"
 
+typedef enum {
+  NoReturn,
+  Returns,
+  Breaks
+} ReturnStatus; 
+
 void typeProgram(PROG *prog, SymbolTable *st);
 void typeDeclarations(DECL *dcl, SymbolTable *st);
 
@@ -12,7 +18,7 @@ void typeShortDecl(SHORT_SPECS *ss, SymbolTable *st);
 void typeTypeDecl(TYPE_SPECS *ts, SymbolTable *st);
 void typeFuncDecl(FUNC_DECL *fd, SymbolTable *st);
 
-int typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType);
+ReturnStatus typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType);
 void typeExp(EXP *exp, SymbolTable *st);
 
 int typeCompare(TYPE *type1, TYPE *type2, SymbolTable *st);
