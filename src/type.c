@@ -115,8 +115,8 @@ void typeFuncDecl(FUNC_DECL *fd, SymbolTable *st) {
       fd->returnType = fixType(st, fd->returnType);
     }
 
-    int returns = typeStmt(fd->body, st, fd->returnType);
-    if ((returns == -1 || returns == 0) && fd->returnType != NULL) {
+    ReturnStatus returns = typeStmt(fd->body, st, fd->returnType);
+    if ((returns == Breaks || returns == NoReturn) && fd->returnType != NULL) {
       fprintf(stderr, "Error: (line %d) function %s does not have a terminating statement\n", fd->body->lineno,
               fd->name);
       exit(1);
@@ -332,8 +332,9 @@ void typeFuncDecl(FUNC_DECL *fd, SymbolTable *st) {
         }
         // typeExp(stmt->val.switchStmt.exp, st);
         ccl = stmt->val.switchStmt.caseClauses;
+        int containsDefault = 0;
         if (stmt->val.switchStmt.exp == NULL) {
-          returns = ccl == NULL ? 0 : 1;
+          returns = ccl == NULL ?  NoReturn : Returns;
           // if no expression then all case expressions must be booleans
           while (ccl != NULL) {
             ReturnStatus clauseReturns = NoReturn;
@@ -358,12 +359,14 @@ void typeFuncDecl(FUNC_DECL *fd, SymbolTable *st) {
                   if(temp == Breaks){
                     clauseReturns = Breaks;
                   } else if(clauseReturns != Breaks){
+                    // If there is no break, it checks the last statement
                     clauseReturns = temp;
                   }
                   sl = sl->next;
                 }
                 break;
               case ck_default:
+                containsDefault = 1;
                 sl = ccl->clause->val.defaultClauses;
                 while (sl != NULL) {
                   ReturnStatus temp = typeStmt(sl->stmt, st, returnType);
@@ -379,13 +382,13 @@ void typeFuncDecl(FUNC_DECL *fd, SymbolTable *st) {
             // If the clause has a break
             if(clauseReturns == Breaks){
               returns = Breaks;
-            } else if (returns != Breaks && clauseReturns == Returns){
-              returns = Returns;
-            } else if (returns != Breaks && clauseReturns == NoReturn){
-              returns = NoReturn;
+            } else if (returns != Breaks){
+              returns = clauseReturns == returns ? clauseReturns : NoReturn;
             }
+
             ccl = ccl->next;
           }
+
         } else {
           // if expression is not empty then all case expressions must have the same type as it
           typeExp(stmt->val.switchStmt.exp, st);
@@ -427,6 +430,7 @@ void typeFuncDecl(FUNC_DECL *fd, SymbolTable *st) {
                 }
                 break;
               case ck_default:
+                containsDefault = 1;
                 sl = ccl->clause->val.defaultClauses;
                 while (sl != NULL) {
                   ReturnStatus temp = typeStmt(sl->stmt, st, returnType);
@@ -441,13 +445,14 @@ void typeFuncDecl(FUNC_DECL *fd, SymbolTable *st) {
             }
             if(clauseReturns == Breaks){
               returns = Breaks;
-            } else if (returns != Breaks && clauseReturns == Returns){
-              returns = Returns;
-            } else if (returns != Breaks && clauseReturns == NoReturn){
-              returns = NoReturn;
+            } else if (returns != Breaks){
+              returns = clauseReturns == returns ? clauseReturns : NoReturn;
             }
             ccl = ccl->next;
           }
+        }
+        if(!containsDefault){
+          returns = NoReturn;
         }
         break;
       case sk_for:
@@ -484,7 +489,7 @@ void typeFuncDecl(FUNC_DECL *fd, SymbolTable *st) {
         if (returns == NoReturn && ((stmt->val.forStmt.forClause == NULL && stmt->val.forStmt.whileExp == NULL) ||
                              (stmt->val.forStmt.forClause != NULL && stmt->val.forStmt.forClause->cond == NULL))) {
           returns = Returns;
-        } else if (returns == Breaks) {
+        } else { 
           returns = NoReturn;
         }
         break;
