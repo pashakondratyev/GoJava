@@ -130,14 +130,14 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
 	        fprintf(outputFile, "%i", exp->val.intval);
 	        break;
 	      case ek_string:
-	        fprintf(outputFile, "%s", exp->val.stringval);
+	        fprintf(outputFile, "\"%s\"", exp->val.stringval);
 	        break;
 	      case ek_boolean:
 	      	// TODO: check if want to use GoLite specific boolean values
 	        fprintf(outputFile, "%s", exp->val.booleanval ? "true" : "false");
 	        break;
 	      case ek_rune:
-	        fprintf(outputFile, "%c", exp->val.runeval);
+	        fprintf(outputFile, "'%c'", exp->val.runeval);
 	        break;
       	case ek_plus:
       		// TODO: if char cast to char at the end
