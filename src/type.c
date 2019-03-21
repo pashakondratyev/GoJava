@@ -1196,7 +1196,7 @@ TYPE *typeOfList(TYPE *type, SymbolTable *st) {
     case tk_ref:
       s = getSymbol(st, type->val.name);
       if (s->val.typeDecl.resolvesToKind == tk_slice || s->val.typeDecl.resolvesToKind == tk_array) {
-        return 0;
+        return typeOfList(s->val.typeDecl.resolvesTo, st);
       } else if (s->val.typeDecl.resolvesToKind == tk_ref) {
         return typeOfList(s->val.typeDecl.type, st);
       }
