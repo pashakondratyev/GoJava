@@ -386,10 +386,12 @@ STMT *makeAssignStmt(EXP_LIST *lhsList, EXP_LIST *rhsList, int lineno) {
 
     if (lastAssign != NULL) {
       lastAssign->next = a;
+      lastAssign = lastAssign->next;
     }
 
     if (firstAssign == NULL) {
       firstAssign = a;
+      lastAssign = a;
     }
 
     curLhs = curLhs->next;

@@ -51,5 +51,5 @@ char *getAssignOpString(AssignOpKind kind);
 
 TYPE *isAddressableStruct(EXP *exp, SymbolTable *st);
 int isAddressableArray(EXP *exp, SymbolTable *st);
-
+int isValidRecursiveType(char *name, TYPE *s);
 #endif

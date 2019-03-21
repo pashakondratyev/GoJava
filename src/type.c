@@ -104,6 +104,10 @@ void typeShortDecl(SHORT_SPECS *ss, SymbolTable *st) {
 void typeTypeDecl(TYPE_SPECS *ts, SymbolTable *st) {
   if (ts != NULL) {
     ts->type = fixType(st, ts->type);
+    if(!isValidRecursiveType(ts->name, ts->type)){
+      fprintf(stderr, "Error: (line %d) invalid recursive type\n", ts->type->lineno);
+      exit(1);
+    }
     typeTypeDecl(ts->next, st);
   }
 }
@@ -753,8 +757,8 @@ void typeExp(EXP *exp, SymbolTable *st) {
           // This will only be a type decl if it's a compound type
 
           EXP_LIST *el = exp->val.funcCall.args;
-          if (el->next != NULL) {
-            fprintf(stderr, "Error: (line %d) type cast only expected 1 argument\n", exp->lineno);
+          if (el == NULL || el->next != NULL) {
+            fprintf(stderr, "Error: (line %d) type cast expected exactly 1 argument\n", exp->lineno);
             exit(1);
           }
           typeExp(el->exp, st);
@@ -1404,5 +1408,32 @@ char *getAssignOpString(AssignOpKind kind) {
       return "<<=";
     case aok_bitRightShift:
       return ">>=";
+  }
+}
+
+int isValidRecursiveType(char *name, TYPE *s){
+  FIELD_DECLS *fd;
+  switch(s->kind){
+    case tk_ref:
+      if(strcmp(name, s->val.name) == 0){
+        return 0;
+      } else{
+        return 1;
+      }
+      return (strcmp(name, s->val.name));
+    case tk_array:
+      return isValidRecursiveType(name, s->val.array.elemType);
+    case tk_slice:
+      return 1;
+    case tk_struct:
+      fd = s->val.structFields;
+      while(fd != NULL){
+        if(!isValidRecursiveType(name, fd->type)){
+          return 0;
+        }
+        fd = fd->next;
+      }
+    default:
+      return 1;
   }
 }
