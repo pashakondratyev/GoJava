@@ -205,6 +205,7 @@ void putFuncDecl(SymbolTable *st, FUNC_DECL *fd, int lineno) {
       fprintf(stderr, "Error: (line %d) main function cannot have return type of param list\n", lineno);
       exit(1);
     }
+    putSymbol(st, dk_func, "main", NULL, NULL, lineno);
   } else if (strcmp(fd->name, "_") == 0) {
     // Do nothing
   } else {

@@ -49,4 +49,7 @@ int resolvesToComparable(TYPE *type, SymbolTable *st);
 int resolvesToStruct(TYPE *type, SymbolTable *st);
 char *getAssignOpString(AssignOpKind kind);
 
+TYPE *isAddressableStruct(EXP *exp, SymbolTable *st);
+int isAddressableArray(EXP *exp, SymbolTable *st);
+
 #endif

@@ -161,6 +161,7 @@ ReturnStatus typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
         al = stmt->val.assign;
         while (al != NULL) {
           typeExp(al->rhs, st);
+          typeExp(al->lhs, st);
           // If we have a blank identifier we only need to type check the rhs;
           if (!isLValue(al->lhs, st)) {
             fprintf(stderr, "Error: (line %d) expected only an assignable field\n", stmt->lineno);
@@ -168,7 +169,6 @@ ReturnStatus typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
           }
 
           if (strcmp(al->lhs->val.id, "_") == 0) break;
-          typeExp(al->lhs, st);
           // TODO : compare types when they are compound @Kabilan
           if (!typeCompare(al->lhs->type, al->rhs->type, st)) {
             char buffer1[1024];
@@ -245,7 +245,7 @@ ReturnStatus typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
       case sk_incr:
       case sk_decr:
         typeExp(stmt->val.exp, st);
-        if(!isLValue(stmt->val.exp, st)){
+        if (!isLValue(stmt->val.exp, st)) {
           fprintf(stderr, "Error: (line %d) increment/decrement expected lvalue\n", stmt->lineno);
           exit(1);
         }
@@ -402,7 +402,8 @@ ReturnStatus typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
           } else if (!resolvesToComparable(stmt->val.switchStmt.exp->type, st)) {
             char buffer[1024];
             getTypeString(buffer, stmt->val.switchStmt.exp->type);
-            fprintf(stderr, "Error: (line %d) Expression type must be comparable [received %s]\n", stmt->lineno, buffer);
+            fprintf(stderr, "Error: (line %d) Expression type must be comparable [received %s]\n", stmt->lineno,
+                    buffer);
             exit(1);
           }
           returns = ccl == NULL ? NoReturn : Returns;
@@ -913,7 +914,7 @@ void typeExp(EXP *exp, SymbolTable *st) {
           exit(1);
         }
 
-        if(t->kind == tk_ref){
+        if (t->kind == tk_ref) {
           SYMBOL *s = getSymbol(st, t->val.name);
           t = s->val.typeDecl.resolvesTo;
         }
@@ -1232,26 +1233,107 @@ int resolvesToTSlice(TYPE *s, TYPE *t, SymbolTable *st) {
 }
 
 int isLValue(EXP *exp, SymbolTable *st) {
+  if (exp == NULL) return 0;
   SYMBOL *s;
+  int isAddressable = 0;
+  int isL = 0;
   switch (exp->kind) {
     case ek_id:
       return 1;
     case ek_indexExp:
-      return isLValue(exp->val.indexExp.objectExp, st);
+      isAddressable = isAddressableArray(exp->val.structField.structExp, st);
+      isL = isLValue(exp->val.indexExp.objectExp, st);
+      if(!isAddressable && ! isL){
+        fprintf(stderr, "Error: (line %d) array field is not addressable\n", exp->lineno);
+        exit(1); 
+      }
+      return 1;
     case ek_structField:
-      return isLValue(exp->val.structField.structExp, st);
+      if(isAddressableStruct(exp->val.structField.structExp, st) == NULL){
+        fprintf(stderr, "Error: (line %d) struct field is not addressable\n", exp->lineno);
+        exit(1); 
+      }
+      return 1;
+      //return isLValue(exp->val.structField.structExp, st);
     case ek_paren:
       return isLValue(exp->val.parenExp, st);
     case ek_func:
       s = getSymbol(st, exp->val.funcCall.funcId);
       TYPE *returnType = s->val.functionDecl.returnType;
-      switch(returnType->kind){
+      switch (returnType->kind) {
         case tk_slice:
           return 1;
         case tk_struct:
         default:
           return 0;
       }
+    default:
+      return 0;
+  }
+}
+
+TYPE *isAddressableStruct(EXP *exp, SymbolTable *st) {
+  SYMBOL *s;
+  TYPE *t;
+  switch (exp->kind) {
+    case ek_id:
+      if (strcmp(exp->val.id, "_") == 0) {
+        fprintf(stderr, "Error: (line %d) blank identifier is not addressable\n", exp->lineno);
+        exit(1);
+      }
+      if(exp->type->kind == tk_struct) {
+        return exp->type;
+      } else if(exp->type->kind == tk_ref){
+        return getSymbol(st, exp->type->val.name)->val.typeDecl.resolvesTo;
+      } else{
+        return NULL;
+      }
+    case ek_structField:
+      t = isAddressableStruct(exp->val.structField.structExp, st); 
+      if(t == NULL){
+        fprintf(stderr, "Error2: (line %d) struct field is not addressable\n", exp->lineno);
+        exit(1); 
+      }
+
+      // Get type of struct field
+      FIELD_DECLS *fd = t->val.structFields;
+      while(fd != NULL){
+        if(strcmp(fd->id, exp->val.structField.fieldName) == 0){
+          t = fd->type;
+          break;
+        }
+        fd = fd->next;
+      }
+
+      if(t->kind == tk_ref){
+        t = getSymbol(st, t->val.name)->val.typeDecl.resolvesTo; 
+      } else if(t->kind == tk_struct){
+        return t;
+      } else{
+        return NULL; 
+      }
+    case ek_paren:
+      return isAddressableStruct(exp->val.parenExp, st);
+    default:
+      return NULL;
+  }
+}
+
+int isAddressableArray(EXP *exp, SymbolTable *st) {
+  SYMBOL *s;
+  switch (exp->kind) {
+    case ek_id:
+      if (strcmp(exp->val.id, "_") == 0) {
+        fprintf(stderr, "Error: (line %d) blank identifier is not addressable\n", exp->lineno);
+        exit(1);
+      }
+      s = getSymbol(st, exp->val.id);
+      if(s == NULL) return 0;
+      if(s->kind != dk_type) return 0;
+      if(s->val.typeDecl.resolvesToKind != tk_array) return 0;
+      return 1;
+    case ek_paren:
+      return isAddressableArray(exp->val.parenExp, st);
     default:
       return 0;
   }
