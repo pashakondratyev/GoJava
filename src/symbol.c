@@ -50,7 +50,7 @@ void closeScope() {
 }
 
 // TODO: Type has lineno consider refactoring
-SYMBOL *putSymbol(SymbolTable *t, DecKind kind, char *identifier, TYPE *type, PARAM_LIST *pl, int lineno) {
+SYMBOL *putSymbol(SymbolTable *t, DecKind kind, char *identifier, int lineno) {
   int i = Hash(identifier);
   for (SYMBOL *s = t->table[i]; s; s = s->next) {
     if (strcmp(s->name, identifier) == 0) {
@@ -61,93 +61,8 @@ SYMBOL *putSymbol(SymbolTable *t, DecKind kind, char *identifier, TYPE *type, PA
 
   SYMBOL *s = (SYMBOL *)malloc(sizeof(SYMBOL));
   PARAM_LIST *plOld;
-  TYPE *ref = type;
-  s->name = strdup(identifier);
-  switch (kind) {
-    case dk_func:
-      plOld = pl;
-      while (plOld != NULL) {
-        plOld->type = fixType(t, plOld->type);
-        plOld = plOld->next;
-      }
-      s->val.functionDecl.paramList = pl;
-      if (type != NULL) {
-        s->val.functionDecl.returnType = fixType(t, type);
-      }
-      break;
-    case dk_short:
-      s->val.type = NULL;
-      break;
-    case dk_type:
-      if (lineno != 0) {
-        // TODO: this might need more rigorous testing (it did)
-        type = makeRefType(identifier, lineno);
-      }
-      s->val.typeDecl.type = fixType(t, type);
-      SYMBOL *resolvesTo;
-      switch (type->kind) {
-        case tk_res:
-          // tk_res correponds to a type which does not hold the same place in memory
-          // as the actual type of the name, this resolves those issues by making sure
-          // that types are properly linked together.
-          // I'm not sure it's possible to reach this
-          resolvesTo = getSymbol(t, type->val.name);
-          if (resolvesTo->kind != dk_type) {
-            fprintf(stderr, "Error: (line %d) attempting to declare type which references a non-type\n", lineno);
-            exit(1);
-          }
-          s->val.typeDecl.type = fixType(t, type);
-          s->val.typeDecl.resolvesTo = resolvesTo->val.typeDecl.resolvesTo;
-          s->val.typeDecl.resolvesToKind = resolvesTo->val.typeDecl.resolvesToKind;
-          break;
-        case tk_ref:
-          if (ref == NULL) {
-            fprintf(stderr, "Error: (line %d) attempting to declare type which references a non-type\n", lineno);
-            exit(1);
-          }
 
-          if(ref->kind == tk_ref){
-            SYMBOL *s = getSymbol(t, ref->val.name);
-            ref = s->val.typeDecl.resolvesTo;
-          }
-          // TODO: check if we only need this
-          s->val.typeDecl.resolvesTo = ref;
-          s->val.typeDecl.resolvesToKind = ref->kind;
-          break;
-        case tk_int:
-          s->val.typeDecl.resolvesTo = baseInt;
-          s->val.typeDecl.resolvesToKind = tk_int;
-          break;
-        case tk_float:
-          s->val.typeDecl.resolvesTo = baseFloat;
-          s->val.typeDecl.resolvesToKind = tk_float;
-          break;
-        case tk_boolean:
-          s->val.typeDecl.resolvesTo = baseBool;
-          s->val.typeDecl.resolvesToKind = tk_boolean;
-          break;
-        case tk_rune:
-          s->val.typeDecl.resolvesTo = baseRune;
-          s->val.typeDecl.resolvesToKind = tk_rune;
-          break;
-        case tk_string:
-          s->val.typeDecl.resolvesTo = baseString;
-          s->val.typeDecl.resolvesToKind = tk_string;
-          break;
-        default:
-          s->val.typeDecl.resolvesTo = ref;
-          s->val.typeDecl.resolvesToKind = ref->kind;
-          break;
-      }
-      break;
-    case dk_var:
-      if (type != NULL) {
-        s->val.type = fixType(t, type);
-      } else {
-        s->val.type = NULL;
-      }
-      break;
-  }
+  s->name = strdup(identifier);
   s->kind = kind;
   s->next = t->table[i];
   t->table[i] = s;
@@ -175,9 +90,73 @@ void putTypeDecl(SymbolTable *st, TYPE_SPECS *ts, int lineno) {
         exit(1);
       }
     }
-    ts->type = fixType(st, ts->type);
 
-    putSymbol(st, dk_type, ts->name, ts->type, NULL, lineno);
+    s = putSymbol(st, dk_type, ts->name, lineno);
+    TYPE *type = ts->type;
+    if (lineno != 0) {
+      type = makeRefType(ts->name, lineno);
+      s->val.typeDecl.type = type;
+    } else{
+      s->val.typeDecl.type = ts->type;
+    }
+    ts->type = fixType(st, ts->type);
+    TYPE *ref = ts->type;
+    SYMBOL *resolvesTo;
+    switch (type->kind) {
+      case tk_res:
+        // tk_res correponds to a type which does not hold the same place in memory
+        // as the actual type of the name, this resolves those issues by making sure
+        // that types are properly linked together.
+        // I'm not sure it's possible to reach this
+        resolvesTo = getSymbol(st, type->val.name);
+        if (resolvesTo->kind != dk_type) {
+          fprintf(stderr, "Error: (line %d) attempting to declare type which references a non-type [critical]\n", lineno);
+          exit(1);
+        }
+        printf("BIG ERROR\n");
+        s->val.typeDecl.type = fixType(st, type);
+        s->val.typeDecl.resolvesTo = resolvesTo->val.typeDecl.resolvesTo;
+        s->val.typeDecl.resolvesToKind = resolvesTo->val.typeDecl.resolvesToKind;
+        break;
+      case tk_ref:
+        if (ref == NULL) {
+          fprintf(stderr, "Error: (line %d) attempting to declare type which references a non-type\n", lineno);
+          exit(1);
+        }
+
+        if (ref->kind == tk_ref) {
+          SYMBOL *s = getSymbol(st, ref->val.name);
+          ref = s->val.typeDecl.resolvesTo;
+        }
+        // TODO: check if we only need this
+        s->val.typeDecl.resolvesTo = ref;
+        s->val.typeDecl.resolvesToKind = ref->kind;
+        break;
+      case tk_int:
+        s->val.typeDecl.resolvesTo = baseInt;
+        s->val.typeDecl.resolvesToKind = tk_int;
+        break;
+      case tk_float:
+        s->val.typeDecl.resolvesTo = baseFloat;
+        s->val.typeDecl.resolvesToKind = tk_float;
+        break;
+      case tk_boolean:
+        s->val.typeDecl.resolvesTo = baseBool;
+        s->val.typeDecl.resolvesToKind = tk_boolean;
+        break;
+      case tk_rune:
+        s->val.typeDecl.resolvesTo = baseRune;
+        s->val.typeDecl.resolvesToKind = tk_rune;
+        break;
+      case tk_string:
+        s->val.typeDecl.resolvesTo = baseString;
+        s->val.typeDecl.resolvesToKind = tk_string;
+        break;
+      default:
+        s->val.typeDecl.resolvesTo = ref;
+        s->val.typeDecl.resolvesToKind = ref->kind;
+        break;
+    }
     // Line 0 is the types loaded into the symbol table initially
     if (mode == SymbolTablePrint) {
       printTab(tabCount);
@@ -195,6 +174,7 @@ void putTypeDecl(SymbolTable *st, TYPE_SPECS *ts, int lineno) {
 
 // Functions are top level decl TODO: will want to store fd->params
 void putFuncDecl(SymbolTable *st, FUNC_DECL *fd, int lineno) {
+  SYMBOL *s = NULL;
   if (strcmp(fd->name, "init") == 0) {
     if (fd->params != NULL || fd->returnType != NULL) {
       fprintf(stderr, "Error: (line %d) init function cannot have return type of param list\n", lineno);
@@ -205,14 +185,26 @@ void putFuncDecl(SymbolTable *st, FUNC_DECL *fd, int lineno) {
       fprintf(stderr, "Error: (line %d) main function cannot have return type of param list\n", lineno);
       exit(1);
     }
-    putSymbol(st, dk_func, "main", NULL, NULL, lineno);
+    s = putSymbol(st, dk_func, "main", lineno);
   } else if (strcmp(fd->name, "_") == 0) {
     // Do nothing
   } else {
     if (fd->returnType != NULL && fd->returnType->kind == tk_ref) {
       fd->returnType = getSymbol(st, fd->returnType->val.name)->val.typeDecl.type;
     }
-    putSymbol(st, dk_func, fd->name, fd->returnType, fd->params, lineno);
+    s = putSymbol(st, dk_func, fd->name, lineno);
+  }
+
+  if (s != NULL) {
+    PARAM_LIST *plOld = fd->params;
+    while (plOld != NULL) {
+      plOld->type = fixType(st, plOld->type);
+      plOld = plOld->next;
+    }
+    s->val.functionDecl.paramList = fd->params;
+    if (fd->returnType != NULL) {
+      s->val.functionDecl.returnType = fixType(st, fd->returnType);
+    }
   }
 
   if (mode == SymbolTablePrint) {
@@ -256,8 +248,8 @@ void putShortDecl(SymbolTable *st, SHORT_SPECS *ss, int lineno) {
     symTypesExpressions(ss->rhs, st);
 
     if (getSymbolCurrentScope(st, ss->lhs->val.id) == NULL) {
-      putSymbol(st, dk_short, ss->lhs->val.id, NULL, NULL, lineno);
-
+      SYMBOL *s = putSymbol(st, dk_short, ss->lhs->val.id, lineno);
+      s->val.type = NULL;
       newDecl = 1;
       if (mode == SymbolTablePrint) {
         printTab(tabCount);
@@ -295,7 +287,8 @@ void putVarDecl(SymbolTable *st, VAR_SPECS *vs, int lineno) {
       vs->type = fixType(st, vs->type);
     }
 
-    putSymbol(st, dk_var, vs->id, vs->type, NULL, lineno);
+    SYMBOL *s = putSymbol(st, dk_var, vs->id, lineno);
+    s->val.type = vs->type;
     if (mode == SymbolTablePrint) {
       printTab(tabCount);
       printf("%s [variable] = ", vs->id);
@@ -393,11 +386,11 @@ SYMBOL *getSymbolCurrentScope(SymbolTable *t, char *name) {
 }
 
 void symProgram(PROG *root, SymbolTableMode m) {
-  if(strcmp(root->package->name, "_") == 0){
+  if (strcmp(root->package->name, "_") == 0) {
     fprintf(stderr, "Error: (line %d) cannot use blank identifier for package name\n", root->lineno);
     exit(1);
   }
-  
+
   mode = m;
   programSymbolTable = initSymbolTable();
   openScope();
@@ -605,13 +598,15 @@ void symTypesDefaults(SymbolTable *st) {
   ts = makeTypeSpec((char *)"bool", t);
   putTypeDecl(st, ts, 0);
   // true
-  putSymbol(st, dk_var, (char *)"true", t, NULL, 0);
+  SYMBOL *s = putSymbol(st, dk_var, (char *)"true", 0);
+  s->val.type = t;
   if (mode == SymbolTablePrint) {
     printTab(tabCount);
     printf("true [constant] = bool\n");
   }
   // false
-  putSymbol(st, dk_var, (char *)"false", t, NULL, 0);
+  s = putSymbol(st, dk_var, (char *)"false", 0);
+  s->val.type = t;
   if (mode == SymbolTablePrint) {
     printTab(tabCount);
     printf("false [constant] = bool\n");
@@ -660,14 +655,17 @@ void printType(TYPE *type) {
       printType(type->val.array.elemType);
       break;
     case tk_slice:
-      printf("[]%s", type->val.sliceType->val.name);
+      printf("[]");
+      printType(type->val.sliceType);
       break;
     case tk_struct:
       printf("struct {");
       d = type->val.structFields;
       while (d != NULL) {
         printf(" %s ", d->id);
-        printType(d->type);
+        if(d->type != NULL){
+          printType(d->type);
+        }
         printf(";");
         d = d->next;
       }
@@ -692,7 +690,8 @@ char *getTypeString(char *BUFFER, TYPE *type) {
       getTypeString(BUFFER, type->val.array.elemType);
       break;
     case tk_slice:
-      sprintf(BUFFER, "[]%s", type->val.sliceType->val.name);
+      sprintf(BUFFER, "[]");
+      getTypeString(BUFFER, type->val.sliceType);
       break;
     case tk_struct:
       sprintf(BUFFER, "struct {");
@@ -753,7 +752,6 @@ TYPE *fixResType(SymbolTable *st, TYPE *type) {
     fprintf(stderr, "Error: (line %d) type %s has not been declared\n", type->lineno, type->val.name);
     exit(1);
   }
-  // res should resolve to type directly
   return s->val.typeDecl.type;
 }
 

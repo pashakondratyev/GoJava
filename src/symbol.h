@@ -44,7 +44,7 @@ void symTypesDefaults(SymbolTable *st);
 
 void createScope(STMT *stmt, SymbolTable *st);
 
-SYMBOL *putSymbol(SymbolTable *t, DecKind kind, char *identifier, TYPE *type, PARAM_LIST *pl, int lineno);
+SYMBOL *putSymbol(SymbolTable *t, DecKind kind, char *identifier, int lineno);
 SYMBOL *getSymbol(SymbolTable *t, char *name);
 SYMBOL *getSymbolCurrentScope(SymbolTable *t, char *name);
 
