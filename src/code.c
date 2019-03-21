@@ -25,36 +25,20 @@ int indexLastForwardSlash(char *str){
  }
 
 void codeProgram(PROG *prog, SymbolTable *st, char *inputFileName) {
-	// create file in proper package directory, with proper file name
+	// create file name and open it
 	char *outputFileName = malloc((strlen(inputFileName)+6) *sizeof(char));
 	strncpy(outputFileName, inputFileName, strlen(inputFileName));
 	sprintf(outputFileName, "%s.java", inputFileName);
-	char *packageName = prog->package->name;
-	char *filePath = malloc((strlen(outputFileName)+strlen(packageName)+3)*sizeof(char));
-	int index = indexLastForwardSlash(outputFileName);
-	if (index == -1) {
-		mkdir(packageName, 0777);
-		sprintf(filePath, "%s/%s", packageName, outputFileName);
-	} else {
-		char *pathBeforeFile = malloc(strlen(outputFileName)*sizeof(char));
-		strncpy(pathBeforeFile, outputFileName, index);
-		char *fileName = &outputFileName[index+1];
-		char *directory = malloc((strlen(outputFileName)+strlen(packageName)+1)*sizeof(char));
-		sprintf(directory, "%s/%s", pathBeforeFile, packageName);
-		mkdir(directory, 0777);
-		sprintf(filePath, "%s/%s/%s",pathBeforeFile, packageName, fileName);
-
-	}
-
-	outputFile = fopen(filePath, "w");
+	outputFile = fopen(outputFileName, "w");
 	if (outputFile == NULL) {
- 		fprintf(stderr, "Can't open output file %s!\n", filePath);
+ 		fprintf(stderr, "Can't open output file %s!\n", outputFileName);
   		exit(1);
 	}
 
-  	codePackage(prog->package);
+	// ignore package declaration
 
-  	index = indexLastForwardSlash(inputFileName);
+	// set class name as the file name excluding the path
+  	int index = indexLastForwardSlash(inputFileName);
   	codeSetup(&inputFileName[index+1]);
 
   	codeDeclarations(prog->root_decl, st, 1);
@@ -76,11 +60,6 @@ void codeComplete() {
 	// TODO: complete
 	fprintf(outputFile, "\tpublic static void main(String[] args) {}\n");
 	fprintf(outputFile, "}\n");
-}
-
-
-void codePackage(PACKAGE *package) {
-	fprintf(outputFile, "package %s;\n\n", package->name);
 }
 
 void codeDeclarations(DECL *dcl, SymbolTable *st, int tabCount) {
