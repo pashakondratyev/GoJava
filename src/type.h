@@ -34,7 +34,7 @@ int typeList(TYPE *type);
 int resolves(TYPE *source, TYPE *target);
 
 int resolvesToList(TYPE *type, SymbolTable *st);
-int isLValue(EXP *exp);
+int isLValue(EXP *exp, SymbolTable *st);
 TYPE *typeOfList(TYPE *type, SymbolTable *st);
 int resolvesToTSlice(TYPE *s, TYPE *t, SymbolTable *st);
 int resolvesToSame(TYPE *s, TYPE *t, SymbolTable *st);

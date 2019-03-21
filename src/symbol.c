@@ -105,6 +105,11 @@ SYMBOL *putSymbol(SymbolTable *t, DecKind kind, char *identifier, TYPE *type, PA
             fprintf(stderr, "Error: (line %d) attempting to declare type which references a non-type\n", lineno);
             exit(1);
           }
+
+          if(ref->kind == tk_ref){
+            SYMBOL *s = getSymbol(t, ref->val.name);
+            ref = s->val.typeDecl.resolvesTo;
+          }
           // TODO: check if we only need this
           s->val.typeDecl.resolvesTo = ref;
           s->val.typeDecl.resolvesToKind = ref->kind;
@@ -155,6 +160,12 @@ void putTypeDecl(SymbolTable *st, TYPE_SPECS *ts, int lineno) {
     if (strcmp(ts->name, "_") == 0) {
       ts = ts->next;
       continue;
+    } else if (strcmp(ts->name, "init") == 0) {
+      fprintf(stderr, "Error: (line %d) cannot use init as a variable name\n", lineno);
+      exit(1);
+    } else if (strcmp(ts->name, "main") == 0) {
+      fprintf(stderr, "Error: (line %d) cannot use main as a variable name\n", lineno);
+      exit(1);
     }
 
     SYMBOL *s = ts->type->kind != tk_res ? NULL : getSymbol(st, ts->type->val.name);
@@ -234,6 +245,12 @@ void putShortDecl(SymbolTable *st, SHORT_SPECS *ss, int lineno) {
     if (strcmp(ss->lhs->val.id, "_") == 0) {
       ss = ss->next;
       continue;
+    } else if (strcmp(ss->lhs->val.id, "init") == 0) {
+      fprintf(stderr, "Error: (line %d) cannot use init as a variable name\n", lineno);
+      exit(1);
+    } else if (strcmp(ss->lhs->val.id, "main") == 0) {
+      fprintf(stderr, "Error: (line %d) cannot use main as a variable name\n", lineno);
+      exit(1);
     }
     symTypesExpressions(ss->rhs, st);
 
@@ -262,6 +279,12 @@ void putVarDecl(SymbolTable *st, VAR_SPECS *vs, int lineno) {
     if (strcmp(vs->id, "_") == 0) {
       vs = vs->next;
       continue;
+    } else if (strcmp(vs->id, "init") == 0) {
+      fprintf(stderr, "Error: (line %d) cannot use init as a variable name\n", lineno);
+      exit(1);
+    } else if (strcmp(vs->id, "main") == 0) {
+      fprintf(stderr, "Error: (line %d) cannot use main as a variable name\n", lineno);
+      exit(1);
     }
     if (vs->exp != NULL) {
       symTypesExpressions(vs->exp, st);

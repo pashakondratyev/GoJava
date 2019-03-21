@@ -127,8 +127,8 @@ void typeFuncDecl(FUNC_DECL *fd, SymbolTable *st) {
 /* Takes a statement, symbol table and return type and checks if the stmt type checks and returns
  * Returns 0 if the statement does not return, -1 if it contains a break, and 1 if it returns
  */
-  ReturnStatus typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
-    ReturnStatus returns = NoReturn;
+ReturnStatus typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
+  ReturnStatus returns = NoReturn;
   STMT_LIST *sl;
   ASSIGN *al;
   EXP_LIST *el;
@@ -144,13 +144,13 @@ void typeFuncDecl(FUNC_DECL *fd, SymbolTable *st) {
           // For infinite for loops, if there is no break we can effectively treat the for
           // loop as a statement which typechecks correctly as it never returns
           // However if there is a break statement then the block is not considered as a returning block
-            ReturnStatus temp = typeStmt(sl->stmt, st, returnType);
+          ReturnStatus temp = typeStmt(sl->stmt, st, returnType);
           if (temp == Breaks) {
             returns = Breaks;
-          } else if (returns != Breaks){
+          } else if (returns != Breaks) {
             returns = temp;
           }
-         
+
           sl = sl->next;
         }
         break;
@@ -162,7 +162,7 @@ void typeFuncDecl(FUNC_DECL *fd, SymbolTable *st) {
         while (al != NULL) {
           typeExp(al->rhs, st);
           // If we have a blank identifier we only need to type check the rhs;
-          if (!isLValue(al->lhs)) {
+          if (!isLValue(al->lhs, st)) {
             fprintf(stderr, "Error: (line %d) expected only an assignable field\n", stmt->lineno);
             exit(1);
           }
@@ -245,6 +245,10 @@ void typeFuncDecl(FUNC_DECL *fd, SymbolTable *st) {
       case sk_incr:
       case sk_decr:
         typeExp(stmt->val.exp, st);
+        if(!isLValue(stmt->val.exp, st)){
+          fprintf(stderr, "Error: (line %d) increment/decrement expected lvalue\n", stmt->lineno);
+          exit(1);
+        }
         if (!resolvesToNumeric(stmt->val.exp->type, st)) {
           fprintf(stderr, "Error: (line %d) cannot increment non numeric type\n", stmt->lineno);
           exit(1);
@@ -307,10 +311,10 @@ void typeFuncDecl(FUNC_DECL *fd, SymbolTable *st) {
         }
         returns = typeStmt(stmt->val.ifStmt.body, st, returnType);
         if (stmt->val.ifStmt.elseStmt != NULL) {
-            ReturnStatus temp = typeStmt(stmt->val.ifStmt.elseStmt, st, returnType);
+          ReturnStatus temp = typeStmt(stmt->val.ifStmt.elseStmt, st, returnType);
           if (temp == Breaks) {
             returns = Breaks;
-          } else if (temp == Returns && returns == Returns){
+          } else if (temp == Returns && returns == Returns) {
             returns = Returns;
           } else {
             returns = NoReturn;
@@ -334,7 +338,7 @@ void typeFuncDecl(FUNC_DECL *fd, SymbolTable *st) {
         ccl = stmt->val.switchStmt.caseClauses;
         int containsDefault = 0;
         if (stmt->val.switchStmt.exp == NULL) {
-          returns = ccl == NULL ?  NoReturn : Returns;
+          returns = ccl == NULL ? NoReturn : Returns;
           // if no expression then all case expressions must be booleans
           while (ccl != NULL) {
             ReturnStatus clauseReturns = NoReturn;
@@ -356,9 +360,9 @@ void typeFuncDecl(FUNC_DECL *fd, SymbolTable *st) {
                 while (sl != NULL) {
                   ReturnStatus temp = typeStmt(sl->stmt, st, returnType);
 
-                  if(temp == Breaks){
+                  if (temp == Breaks) {
                     clauseReturns = Breaks;
-                  } else if(clauseReturns != Breaks){
+                  } else if (clauseReturns != Breaks) {
                     // If there is no break, it checks the last statement
                     clauseReturns = temp;
                   }
@@ -370,9 +374,9 @@ void typeFuncDecl(FUNC_DECL *fd, SymbolTable *st) {
                 sl = ccl->clause->val.defaultClauses;
                 while (sl != NULL) {
                   ReturnStatus temp = typeStmt(sl->stmt, st, returnType);
-                  if(temp == Breaks){
+                  if (temp == Breaks) {
                     clauseReturns = Breaks;
-                  } else if(clauseReturns != Breaks){
+                  } else if (clauseReturns != Breaks) {
                     clauseReturns = temp;
                   }
                   sl = sl->next;
@@ -380,9 +384,9 @@ void typeFuncDecl(FUNC_DECL *fd, SymbolTable *st) {
                 break;
             }
             // If the clause has a break
-            if(clauseReturns == Breaks){
+            if (clauseReturns == Breaks) {
               returns = Breaks;
-            } else if (returns != Breaks){
+            } else if (returns != Breaks) {
               returns = clauseReturns == returns ? clauseReturns : NoReturn;
             }
 
@@ -394,6 +398,11 @@ void typeFuncDecl(FUNC_DECL *fd, SymbolTable *st) {
           typeExp(stmt->val.switchStmt.exp, st);
           if (stmt->val.switchStmt.exp->type == NULL) {
             fprintf(stderr, "Error: (line %d) Switch expression must have a type\n", stmt->lineno);
+            exit(1);
+          } else if (!resolvesToComparable(stmt->val.switchStmt.exp->type, st)) {
+            char buffer[1024];
+            getTypeString(buffer, stmt->val.switchStmt.exp->type);
+            fprintf(stderr, "Error: (line %d) Expression type must be comparable [received %s]\n", stmt->lineno, buffer);
             exit(1);
           }
           returns = ccl == NULL ? NoReturn : Returns;
@@ -421,9 +430,9 @@ void typeFuncDecl(FUNC_DECL *fd, SymbolTable *st) {
                 sl = ccl->clause->val.caseClause.clauses;
                 while (sl != NULL) {
                   ReturnStatus temp = typeStmt(sl->stmt, st, returnType);
-                  if(temp == Breaks){
+                  if (temp == Breaks) {
                     clauseReturns = Breaks;
-                  } else if(clauseReturns != Breaks){
+                  } else if (clauseReturns != Breaks) {
                     clauseReturns = temp;
                   }
                   sl = sl->next;
@@ -434,24 +443,24 @@ void typeFuncDecl(FUNC_DECL *fd, SymbolTable *st) {
                 sl = ccl->clause->val.defaultClauses;
                 while (sl != NULL) {
                   ReturnStatus temp = typeStmt(sl->stmt, st, returnType);
-                  if(temp == Breaks){
+                  if (temp == Breaks) {
                     clauseReturns = Breaks;
-                  } else if(clauseReturns != Breaks){
+                  } else if (clauseReturns != Breaks) {
                     clauseReturns = temp;
                   }
                   sl = sl->next;
                 }
                 break;
             }
-            if(clauseReturns == Breaks){
+            if (clauseReturns == Breaks) {
               returns = Breaks;
-            } else if (returns != Breaks){
+            } else if (returns != Breaks) {
               returns = clauseReturns == returns ? clauseReturns : NoReturn;
             }
             ccl = ccl->next;
           }
         }
-        if(!containsDefault){
+        if (!containsDefault) {
           returns = NoReturn;
         }
         break;
@@ -486,10 +495,11 @@ void typeFuncDecl(FUNC_DECL *fd, SymbolTable *st) {
         returns = typeStmt(stmt->val.forStmt.body, st, returnType);
 
         // If there is a break we cannot say this for loop returns;
-        if (returns == NoReturn && ((stmt->val.forStmt.forClause == NULL && stmt->val.forStmt.whileExp == NULL) ||
-                             (stmt->val.forStmt.forClause != NULL && stmt->val.forStmt.forClause->cond == NULL))) {
+        if (returns == NoReturn &&
+            ((stmt->val.forStmt.forClause == NULL && stmt->val.forStmt.whileExp == NULL) ||
+             (stmt->val.forStmt.forClause != NULL && stmt->val.forStmt.forClause->cond == NULL))) {
           returns = Returns;
-        } else { 
+        } else {
           returns = NoReturn;
         }
         break;
@@ -532,12 +542,14 @@ void typeExp(EXP *exp, SymbolTable *st) {
             }
             break;
           case dk_type:
-            if (s->val.typeDecl.type != NULL) {
+            fprintf(stderr, "Error: (line %d) improper usage of type\n", exp->lineno);
+            exit(1);
+            /* if (s->val.typeDecl.type != NULL) {
               exp->type = s->val.typeDecl.type;
             } else {
               exp->type = NULL;
             }
-            break;
+            break; */
           case dk_var:
             exp->type = s->val.type;
             break;
@@ -657,7 +669,8 @@ void typeExp(EXP *exp, SymbolTable *st) {
       case ek_or:
         typeExp(exp->val.binary.lhs, st);
         typeExp(exp->val.binary.rhs, st);
-        if (resolvesToBool(exp->val.binary.lhs->type, st) && resolvesToBool(exp->val.binary.rhs->type, st)) {
+        if (resolvesToBool(exp->val.binary.lhs->type, st) &&
+            typeCompare(exp->val.binary.lhs->type, exp->val.binary.rhs->type, st)) {
           // For logical && and || operations the type evaluates to left hand side
           exp->type = exp->val.binary.lhs->type;
         } else {
@@ -892,6 +905,7 @@ void typeExp(EXP *exp, SymbolTable *st) {
       case ek_structField:
         typeExp(exp->val.structField.structExp, st);
         TYPE *t = exp->val.structField.structExp->type;
+        t = fixType(st, t);
         if (t == NULL || !resolvesToStruct(t, st)) {
           char buffer[1024];
           getTypeString(buffer, t);
@@ -899,8 +913,10 @@ void typeExp(EXP *exp, SymbolTable *st) {
           exit(1);
         }
 
-        SYMBOL *s = getSymbol(st, t->val.name);
-        t = s->val.typeDecl.resolvesTo;
+        if(t->kind == tk_ref){
+          SYMBOL *s = getSymbol(st, t->val.name);
+          t = s->val.typeDecl.resolvesTo;
+        }
         FIELD_DECLS *d = t->val.structFields;
 
         while (d != NULL) {
@@ -1215,14 +1231,27 @@ int resolvesToTSlice(TYPE *s, TYPE *t, SymbolTable *st) {
   return 0;
 }
 
-int isLValue(EXP *exp) {
+int isLValue(EXP *exp, SymbolTable *st) {
+  SYMBOL *s;
   switch (exp->kind) {
     case ek_id:
-    case ek_indexExp:
-    case ek_structField:
       return 1;
+    case ek_indexExp:
+      return isLValue(exp->val.indexExp.objectExp, st);
+    case ek_structField:
+      return isLValue(exp->val.structField.structExp, st);
     case ek_paren:
-      return isLValue(exp->val.parenExp);
+      return isLValue(exp->val.parenExp, st);
+    case ek_func:
+      s = getSymbol(st, exp->val.funcCall.funcId);
+      TYPE *returnType = s->val.functionDecl.returnType;
+      switch(returnType->kind){
+        case tk_slice:
+          return 1;
+        case tk_struct:
+        default:
+          return 0;
+      }
     default:
       return 0;
   }
