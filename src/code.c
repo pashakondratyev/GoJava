@@ -149,7 +149,7 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
 	        fprintf(outputFile, "'%c'", exp->val.runeval);
 	        break;
       	case ek_plus:
-      		// TODO: if char cast to char at the end
+      		// TODO: if char cast to char at the end. May not be needed in Java
 	      	fprintf(outputFile, "(");
 	        codeExp(exp->val.binary.lhs, st, tabCount);
 	        fprintf(outputFile, " + ");
@@ -286,13 +286,13 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
 	      	break;
 
 	      case ek_uplus:
-	      	// TODO: must cast char back to a char
+	      	// TODO: if char cast to char at the end. May not be needed in Java
 	      	fprintf(outputFile, "(+");
 	        codeExp(exp->val.unary.exp, st, tabCount);
 	        fprintf(outputFile, ")");
 	        break;
 	      case ek_uminus:
-	      	// TODO: must cast char back to a char
+	      	// TODO: if char cast to char at the end. May not be needed in Java
 	      	fprintf(outputFile, "(-");
 	        codeExp(exp->val.unary.exp, st, tabCount);
 	        fprintf(outputFile, ")");
