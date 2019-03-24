@@ -1,4 +1,4 @@
-public class ifStmt {
+public class blankId {
 	public boolean __golite__true = true;
 	public boolean __golite__false = false;
 	public static void main(String[] args) {

@@ -5,6 +5,7 @@
 //^<=2
 //^is 2
 
+// If statements
 package main
 
 // if statement with shadowed x variable in all scopes
@@ -54,7 +55,7 @@ func main() {
 
 	if x:=5; x>32 {
 		println("hi")
-	} else if x:=2; x>5 {
+	} else if x:=2; x>=5 {
 		println("hello")
 	} else {
 		println("hey")
