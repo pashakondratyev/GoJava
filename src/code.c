@@ -8,6 +8,7 @@
 #include "code.h"
 
 FILE *outputFile;
+int numInitFunc = 0;
 
 void writeTab(int tabCount) {
   for (int i = 0; i < tabCount; i++) {
@@ -63,12 +64,20 @@ void codeSetup(char *className) {
 	// TODO: complete
 	// class name must match file name
 	fprintf(outputFile, "public class %s {\n", className);
+	// define Go boolean variables
+	fprintf(outputFile, "\tpublic boolean __golite__true = true;\n");
+	fprintf(outputFile, "\tpublic boolean __golite__false = false;\n");
 }
 
 // complete class definition
 void codeComplete() {
 	// TODO: complete
-	fprintf(outputFile, "\tpublic static void main(String[] args) {}\n");
+	fprintf(outputFile, "\tpublic static void main(String[] args) {\n");
+	for (int i=0; i<numInitFunc; i++) {
+		fprintf(outputFile, "\t\t__golite__init_%d();\n", numInitFunc);
+	}
+	fprintf(outputFile, "\t\t__golite__main();\n" );
+	fprintf(outputFile, "\t}\n");
 	fprintf(outputFile, "}\n");
 }
 
@@ -134,7 +143,7 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
 	        break;
 	      case ek_boolean:
 	      	// TODO: check if want to use GoLite specific boolean values
-	        fprintf(outputFile, "%s", exp->val.booleanval ? "true" : "false");
+	        fprintf(outputFile, "%s", exp->val.booleanval ? "__golite__true" : "__golite__false");
 	        break;
 	      case ek_rune:
 	        fprintf(outputFile, "'%c'", exp->val.runeval);
