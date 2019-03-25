@@ -1,4 +1,4 @@
-public class Slice<T>{
+class Slice<T>{
     public int cap;
     public int len;
     
