@@ -292,17 +292,20 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
 	        fprintf(outputFile, ")");
 	        break;
 	      case ek_bitClear:
-	      	//TODO: implement bit clearing in Java
+	      	fprintf(outputFile, "(");
+	        codeExp(exp->val.binary.lhs, st, tabCount);
+	        fprintf(outputFile, " & (~ ");
+	        codeExp(exp->val.binary.rhs, st, tabCount);
+	        fprintf(outputFile, "))");
 	      	break;
-
 	      case ek_uplus:
-	      	// TODO: if char cast to char at the end. May not be needed in Java
+	      	// TODO: if char cast to char at the end
 	      	fprintf(outputFile, "(+");
 	        codeExp(exp->val.unary.exp, st, tabCount);
 	        fprintf(outputFile, ")");
 	        break;
 	      case ek_uminus:
-	      	// TODO: if char cast to char at the end. May not be needed in Java
+	      	// TODO: if char cast to char at the end
 	      	fprintf(outputFile, "(-");
 	        codeExp(exp->val.unary.exp, st, tabCount);
 	        fprintf(outputFile, ")");
@@ -313,7 +316,9 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
 	        fprintf(outputFile, ")");
 	        break;	
       	case ek_ubitXor:
-        	//TODO: implement unary bit xor in Java
+        	fprintf(outputFile, "(~");
+	        codeExp(exp->val.unary.exp, st, tabCount);
+	        fprintf(outputFile, ")");
       		break;
       	case ek_func:
         	// TODO: complete
@@ -334,7 +339,9 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         	// TODO: complete
        		break;
       	case ek_paren:
-	        // TODO: complete
+	        fprintf(outputFile, "(");
+	        codeExp(exp->val.parenExp, st, tabCount);
+	        fprintf(outputFile, ")");
        		break;
       	case ek_conv:
         	// TODO: complete
