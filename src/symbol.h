@@ -21,6 +21,7 @@ typedef struct SYMBOL {
       TypeKind resolvesToKind;
     } typeDecl;
   } val;
+  int constant; //Can we overwrite this?
 } SYMBOL;
 
 typedef struct SymbolTable {

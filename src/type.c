@@ -1257,6 +1257,8 @@ int isLValue(EXP *exp, SymbolTable *st) {
   int isL = 0;
   switch (exp->kind) {
     case ek_id:
+      s = getSymbol(st, exp->val.id);
+      if(s != NULL && s->constant == 1) return 0;
       return 1;
     case ek_indexExp:
       isAddressable = isAddressableArray(exp->val.structField.structExp, st);

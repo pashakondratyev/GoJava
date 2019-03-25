@@ -113,7 +113,17 @@ void codeTypeDecl(TYPE_SPECS *ts, SymbolTable *st, int tabCount) {
 	// TODO: implement
 }
 
+char *getJavaTypeString(char *buffer, TYPE *type){
+	return buffer;
+}
+
 void codeFuncDecl(FUNC_DECL *fd, SymbolTable *st, int tabCount) {
+	char buffer[1024];
+	//If this is not a reference we need to handle this specially
+	char *returnTypeString = fd->returnType == NULL ? "void" : getTypeString(buffer, fd->returnType);
+	fprintf(outputFile, "public %s %s (", returnTypeString, fd->name);
+	//print args
+	fprintf(outputFile, ") {\n");
 	// TODO: implement
 }
 

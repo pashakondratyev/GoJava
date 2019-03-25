@@ -65,6 +65,7 @@ SYMBOL *putSymbol(SymbolTable *t, DecKind kind, char *identifier, int lineno) {
   s->name = strdup(identifier);
   s->kind = kind;
   s->next = t->table[i];
+  s->constant = 0;
   t->table[i] = s;
   return s;
 }
@@ -613,6 +614,7 @@ void symTypesDefaults(SymbolTable *st) {
   // true
   SYMBOL *s = putSymbol(st, dk_var, (char *)"true", 0);
   s->val.type = t;
+  s->constant = 1;
   if (mode == SymbolTablePrint) {
     printTab(tabCount);
     printf("true [constant] = bool\n");
@@ -620,6 +622,7 @@ void symTypesDefaults(SymbolTable *st) {
   // false
   s = putSymbol(st, dk_var, (char *)"false", 0);
   s->val.type = t;
+  s->constant = 1;
   if (mode == SymbolTablePrint) {
     printTab(tabCount);
     printf("false [constant] = bool\n");

@@ -2,6 +2,10 @@
 # Created by https://www.gitignore.io/api/c,vim,flex
 # Edit at https://www.gitignore.io/?templates=c,vim,flex
 
+### Java ###
+*.class
+*.java
+
 ### C ###
 # Prerequisites
 *.d
@@ -107,4 +111,5 @@ parser.output
 
 test-solution.sh
 programs-solution/
+.vscode/
 # End of https://www.gitignore.io/api/c,vim,flex
