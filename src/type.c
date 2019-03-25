@@ -34,16 +34,7 @@ void typeVarDecl(VAR_SPECS *vs, SymbolTable *st) {
     // If rhs is not null
     if (vs->exp != NULL) {
 
-      if (strcmp(vs->id, "_") != 0) {
-        // We need to resolve the type
-        SYMBOL *s = getSymbol(st, vs->id);
-        char *temp = s->name;
-        s->name = "_";
-        typeExp(vs->exp, st);
-        s->name = temp;
-      } else {
-        typeExp(vs->exp, st);
-      }
+      typeExp(vs->exp, st);
 
       if (vs->exp->type == NULL) {
         fprintf(stderr, "Error: (line %d) void cannot be used as a value in a declaration\n", vs->exp->lineno);
@@ -556,6 +547,9 @@ void typeExp(EXP *exp, SymbolTable *st) {
         if (s == NULL) {
           fprintf(stderr, "Error: (line %d) use of undeclared identifier \"%s\"\n", exp->lineno, exp->val.id);
           exit(1);
+        }
+        if(s->val.type == NULL){
+          s = getSymbol(st->parent, exp->val.id);
         }
         switch (s->kind) {
           case dk_func:

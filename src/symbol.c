@@ -61,7 +61,6 @@ SYMBOL *putSymbol(SymbolTable *t, DecKind kind, char *identifier, int lineno) {
 
   SYMBOL *s = (SYMBOL *)malloc(sizeof(SYMBOL));
   PARAM_LIST *plOld;
-
   s->name = strdup(identifier);
   s->kind = kind;
   s->next = t->table[i];
@@ -644,6 +643,7 @@ STMT *paramListToStmt(PARAM_LIST *pl, int lineno) {
     }
     last->id = pl->id;
     last->type = pl->type;
+    last->declared = 0;
     pl = pl->next;
   }
   DECL *d = makeVarDecl(vs, lineno);

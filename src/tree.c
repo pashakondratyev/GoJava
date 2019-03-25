@@ -95,6 +95,7 @@ VAR_SPECS *makeVarSpecs(ID_LIST *idList, EXP_LIST *expList, TYPE *type, int line
   while (curId != NULL) {
     VAR_SPECS *vs = malloc(sizeof(VAR_SPECS));
     vs->id = strdup(curId->id);
+    vs->declared = 0;
     vs->type = type;
     vs->exp = curExp == NULL ? NULL : curExp->exp;
     vs->next = NULL;

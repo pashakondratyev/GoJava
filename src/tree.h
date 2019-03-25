@@ -157,6 +157,7 @@ struct VAR_SPECS {
   char *id;
   TYPE *type;
   EXP *exp;
+  int declared;
   VAR_SPECS *next;
 };
 
