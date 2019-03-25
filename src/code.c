@@ -5,6 +5,7 @@
 #include <sys/types.h>
 
 #include "symbol.h"
+#include "type.h"
 #include "code.h"
 
 FILE *outputFile;
@@ -299,16 +300,34 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
 	        fprintf(outputFile, "))");
 	      	break;
 	      case ek_uplus:
-	      	// TODO: if char cast to char at the end
-	      	fprintf(outputFile, "(+");
-	        codeExp(exp->val.unary.exp, st, tabCount);
-	        fprintf(outputFile, ")");
+	      	TYPE *type = exp->val.unary.exp.type;
+	      	while (type->kind = tk_ref) {
+	      		type = resolveType(type, st);
+	      	}
+	      	if (type->kind == tk_rune) {	// rune
+	      		fprintf(outputFile, "((char)(+");
+	        	codeExp(exp->val.unary.exp, st, tabCount);
+	        	fprintf(outputFile, "))");
+	      	} else {	// int, float64
+	      		fprintf(outputFile, "(+");
+	        	codeExp(exp->val.unary.exp, st, tabCount);
+	        	fprintf(outputFile, ")");
+	        }
 	        break;
 	      case ek_uminus:
-	      	// TODO: if char cast to char at the end
-	      	fprintf(outputFile, "(-");
-	        codeExp(exp->val.unary.exp, st, tabCount);
-	        fprintf(outputFile, ")");
+	      	TYPE *type = exp->val.unary.exp.type;
+	      	while (type->kind = tk_ref) {
+	      		type = resolveType(type, st);
+	      	}
+	      	if (type->kind == tk_rune) {	// rune
+	      		fprintf(outputFile, "((char)(-");
+	        	codeExp(exp->val.unary.exp, st, tabCount);
+	        	fprintf(outputFile, "))");
+	      	} else {	// int, float64
+	      		fprintf(outputFile, "(-");
+	        	codeExp(exp->val.unary.exp, st, tabCount);
+	        	fprintf(outputFile, ")");
+	        }
 	        break;
      	 	case ek_bang:
         	fprintf(outputFile, "(!");
