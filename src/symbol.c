@@ -247,7 +247,6 @@ void putShortDecl(SymbolTable *st, SHORT_SPECS *ss, int lineno) {
       exit(1);
     }
     symTypesExpressions(ss->rhs, st);
-
     SYMBOL *s = getSymbolCurrentScope(st, ss->lhs->val.id);
     if (s == NULL) {
       SYMBOL *s = putSymbol(st, dk_short, ss->lhs->val.id, lineno);
@@ -259,6 +258,8 @@ void putShortDecl(SymbolTable *st, SHORT_SPECS *ss, int lineno) {
         printf(" [variable] = <infer>\n");
       }
     } else {
+      // The short decl has already been declared in the current scope
+      ss->declared = 1;
       if(s->kind != dk_short && s->kind != dk_var){
         fprintf(stderr, "Error: (line %d) short declaration cannot redeclare a function or type declaration in the same scope\n",
             lineno);

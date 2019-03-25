@@ -34,7 +34,6 @@ void yyerror(const char *s) {
 
 %token <intval> tINTVAL
 %token <floatval> tFLOATVAL
-%token <boolval> tBOOLVAL
 %token <runeval> tRUNEVAL
 %token <stringval> tSTRINGVAL
 %token <identifier> tIDENTIFIER
@@ -198,7 +197,6 @@ PrimaryExpression: tIDENTIFIER  { $$ = makeIdentifierExp($1, @1.first_line); }
     | tFLOATVAL { $$ = makeFloatValExp($1, @1.first_line); }
     | tSTRINGVAL    { $$ = makeStringValExp($1, @1.first_line); }
     | tRUNEVAL  { $$ = makeRuneValExp($1, @1.first_line); }
-    | tBOOLVAL  { $$ = makeBooleanValExp($1, @1.first_line); }
     | tLPAREN Expression tRPAREN    { $$ = makeParenExp($2, @1.first_line); }
     | PrimaryExpression tPERIOD tIDENTIFIER     { $$ = makeStructFieldAccess($1, $3, @1.first_line); }
     | PrimaryExpression tLSBRACE Expression tRSBRACE    { $$ = makeIndexExp($1, $3, @1.first_line); }  

@@ -17,7 +17,6 @@ bool semicolonRequired(){
   switch(lastToken){
     case tINTVAL:
     case tFLOATVAL:
-    case tBOOLVAL:
     case tRUNEVAL:
     case tSTRINGVAL:
     case tIDENTIFIER:

@@ -156,6 +156,7 @@ DECL *makeShortVarDecl(EXP_LIST *lhsList, EXP_LIST *rhsList, int lineno) {
     SHORT_SPECS *ss = malloc(sizeof(SHORT_SPECS));
     ss->lhs = curLhs->exp;
     ss->rhs = curRhs->exp;
+    ss->declared = 0;
     ss->next = NULL;
     // If tail not empty, shifts tail over
     if (lastSpec != NULL) {
