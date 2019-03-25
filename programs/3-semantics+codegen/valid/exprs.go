@@ -42,7 +42,7 @@ func main () {
 
 	println(a + b)
 	println(a < b)
-	
+
 
 	var c = 5;
 	var d = 9;
