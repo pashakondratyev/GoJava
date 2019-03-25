@@ -163,6 +163,7 @@ struct VAR_SPECS {
 struct SHORT_SPECS {
   EXP *lhs;
   EXP *rhs;
+  int declared;
   SHORT_SPECS *next;
 };
 

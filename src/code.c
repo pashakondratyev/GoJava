@@ -27,9 +27,9 @@ char* prefix(char* str) {
 
 int indexLastForwardSlash(char *str){
 	int index = -1;
-  	for(int i = 0; i <= strlen(str); i++) {
-  		if(str[i] == '/')  
-  			index = i;	
+  for(int i = 0; i <= strlen(str); i++) {
+  	if(str[i] == '/')  
+  		index = i;	
 	}
    	return index;
  }
