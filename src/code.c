@@ -193,40 +193,106 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         fprintf(outputFile, "\"%s\"", exp->val.stringval);
         break;
       case ek_boolean:
-        // TODO: check if want to use GoLite specific boolean values
         fprintf(outputFile, "%s", exp->val.booleanval ? "__golite__true" : "__golite__false");
         break;
       case ek_rune:
         fprintf(outputFile, "'%c'", exp->val.runeval);
         break;
       case ek_plus:
-        // TODO: if char cast to char at the end. May not be needed in Java
-        fprintf(outputFile, "(");
-        codeExp(exp->val.binary.lhs, st, tabCount);
-        fprintf(outputFile, " + ");
-        codeExp(exp->val.binary.rhs, st, tabCount);
-        fprintf(outputFile, ")");
+				type = exp->val.binary.lhs->type;
+        if (type->kind == tk_ref) {
+          SYMBOL *s = getSymbol(st, type->val.name);
+          type = s->val.typeDecl.resolvesTo;
+        }
+        if (type->kind == tk_ref) {
+        	fprintf(stderr, "Error: (line %d) logical failure - shouldn't be a reference type at this point.\n", exp->lineno);
+          exit(1);
+        }
+        if (type->kind == tk_rune) {  // rune
+          fprintf(outputFile, "((char)(");
+          codeExp(exp->val.binary.lhs, st, tabCount);
+        	fprintf(outputFile, " + ");
+        	codeExp(exp->val.binary.rhs, st, tabCount);
+          fprintf(outputFile, "))");
+        } else {
+        	fprintf(outputFile, "(");
+        	codeExp(exp->val.binary.lhs, st, tabCount);
+        	fprintf(outputFile, " + ");
+        	codeExp(exp->val.binary.rhs, st, tabCount);
+        	fprintf(outputFile, ")");
+        }
         break;
       case ek_minus:
-        fprintf(outputFile, "(");
-        codeExp(exp->val.binary.lhs, st, tabCount);
-        fprintf(outputFile, " - ");
-        codeExp(exp->val.binary.rhs, st, tabCount);
-        fprintf(outputFile, ")");
+        type = exp->val.binary.lhs->type;
+        if (type->kind == tk_ref) {
+          SYMBOL *s = getSymbol(st, type->val.name);
+          type = s->val.typeDecl.resolvesTo;
+        }
+        if (type->kind == tk_ref) {
+        	fprintf(stderr, "Error: (line %d) logical failure - shouldn't be a reference type at this point.\n", exp->lineno);
+          exit(1);
+        }
+        if (type->kind == tk_rune) {  // rune
+          fprintf(outputFile, "((char)(");
+          codeExp(exp->val.binary.lhs, st, tabCount);
+        	fprintf(outputFile, " - ");
+        	codeExp(exp->val.binary.rhs, st, tabCount);
+          fprintf(outputFile, "))");
+        } else {
+        	fprintf(outputFile, "(");
+        	codeExp(exp->val.binary.lhs, st, tabCount);
+        	fprintf(outputFile, " - ");
+        	codeExp(exp->val.binary.rhs, st, tabCount);
+        	fprintf(outputFile, ")");
+        }
         break;
       case ek_times:
-        fprintf(outputFile, "(");
-        codeExp(exp->val.binary.lhs, st, tabCount);
-        fprintf(outputFile, " * ");
-        codeExp(exp->val.binary.rhs, st, tabCount);
-        fprintf(outputFile, ")");
+        type = exp->val.binary.lhs->type;
+        if (type->kind == tk_ref) {
+          SYMBOL *s = getSymbol(st, type->val.name);
+          type = s->val.typeDecl.resolvesTo;
+        }
+        if (type->kind == tk_ref) {
+        	fprintf(stderr, "Error: (line %d) logical failure - shouldn't be a reference type at this point.\n", exp->lineno);
+          exit(1);
+        }
+        if (type->kind == tk_rune) {  // rune
+          fprintf(outputFile, "((char)(");
+          codeExp(exp->val.binary.lhs, st, tabCount);
+        	fprintf(outputFile, " * ");
+        	codeExp(exp->val.binary.rhs, st, tabCount);
+          fprintf(outputFile, "))");
+        } else {
+        	fprintf(outputFile, "(");
+        	codeExp(exp->val.binary.lhs, st, tabCount);
+        	fprintf(outputFile, " * ");
+        	codeExp(exp->val.binary.rhs, st, tabCount);
+        	fprintf(outputFile, ")");
+        }
         break;
       case ek_div:
-        fprintf(outputFile, "(");
-        codeExp(exp->val.binary.lhs, st, tabCount);
-        fprintf(outputFile, " / ");
-        codeExp(exp->val.binary.rhs, st, tabCount);
-        fprintf(outputFile, ")");
+        type = exp->val.binary.lhs->type;
+        if (type->kind == tk_ref) {
+          SYMBOL *s = getSymbol(st, type->val.name);
+          type = s->val.typeDecl.resolvesTo;
+        }
+        if (type->kind == tk_ref) {
+        	fprintf(stderr, "Error: (line %d) logical failure - shouldn't be a reference type at this point.\n", exp->lineno);
+          exit(1);
+        }
+        if (type->kind == tk_rune) {  // rune
+          fprintf(outputFile, "((char)(");
+          codeExp(exp->val.binary.lhs, st, tabCount);
+        	fprintf(outputFile, " / ");
+        	codeExp(exp->val.binary.rhs, st, tabCount);
+          fprintf(outputFile, "))");
+        } else {
+        	fprintf(outputFile, "(");
+        	codeExp(exp->val.binary.lhs, st, tabCount);
+        	fprintf(outputFile, " / ");
+        	codeExp(exp->val.binary.rhs, st, tabCount);
+        	fprintf(outputFile, ")");
+        }
         break;
       case ek_eq:
         // TODO: fix for strings, arrays, slices, and structs
@@ -345,6 +411,10 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
           SYMBOL *s = getSymbol(st, type->val.name);
           type = s->val.typeDecl.resolvesTo;
         }
+        if (type->kind == tk_ref) {
+        	fprintf(stderr, "Error: (line %d) logical failure - shouldn't be a reference type at this point.\n", exp->lineno);
+          exit(1);
+        }
         if (type->kind == tk_rune) {  // rune
           fprintf(outputFile, "((char)(+");
           codeExp(exp->val.unary.exp, st, tabCount);
@@ -360,6 +430,10 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         if (type->kind == tk_ref) {
           SYMBOL *s = getSymbol(st, type->val.name);
           type = s->val.typeDecl.resolvesTo;
+        }
+         if (type->kind == tk_ref) {
+        	fprintf(stderr, "Error: (line %d) logical failure - shouldn't be a reference type at this point.\n", exp->lineno);
+          exit(1);
         }
         if (type->kind == tk_rune) {  // rune
           fprintf(outputFile, "((char)(-");
@@ -386,18 +460,23 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         break;
       case ek_append:
         // TODO: complete
+      	// call the slice append method: append(idName, value)
         break;
       case ek_len:
         // TODO: complete
+      	//	valid on string, slice, and array
         break;
       case ek_cap:
         // TODO: complete
+      	// valid on slice, and array
         break;
       case ek_indexExp:
         // TODO: complete
+      	// valid on slice and array
         break;
       case ek_structField:
         // TODO: complete
+      	// java object equivalent.fieldname
         break;
       case ek_paren:
         fprintf(outputFile, "(");
@@ -406,6 +485,7 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         break;
       case ek_conv:
         // TODO: complete
+      	// create functions for valid casts
         break;
     }
   }
