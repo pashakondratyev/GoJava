@@ -263,7 +263,7 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         }
         break;
       case ek_eq:
-        // TODO: fix for strings, arrays, slices, and structs
+        // TODO: fix for strings, arrays, and structs
         fprintf(outputFile, "(");
         codeExp(exp->val.binary.lhs, st, tabCount);
         fprintf(outputFile, " == ");
@@ -271,7 +271,7 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         fprintf(outputFile, ")");
         break;
       case ek_ne:
-        // TODO: fix for strings, arrays, slices, and structs
+        // TODO: fix for strings, arrays, and structs
         fprintf(outputFile, "(");
         codeExp(exp->val.binary.lhs, st, tabCount);
         fprintf(outputFile, " != ");
