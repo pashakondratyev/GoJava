@@ -412,11 +412,11 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         break;
       case ek_append:
         // TODO: complete
-      	// call the slice append method: append(idName, value)
+      	// call the slice append method: idName.append(value)
         break;
       case ek_len:
         // TODO: complete
-      	//	valid on string, slice, and array
+      	//valid on string, slice, and array
         break;
       case ek_cap:
         // TODO: complete
