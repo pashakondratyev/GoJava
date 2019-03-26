@@ -34,6 +34,7 @@ typedef enum {
   SymbolTablePrint,
 } SymbolTableMode;
 
+int Hash(char *str);
 SymbolTable *initSymbolTable();
 SymbolTable *scopeSymbolTable(SymbolTable *s);
 

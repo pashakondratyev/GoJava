@@ -108,7 +108,7 @@ void makeStructTable(DECL *decl, SymbolTable *st){
 }
 
 void makeStructTableVarDecl(VAR_SPECS *vs, SymbolTable *st){
-
+	
 }
 
 void makeStructTableShortDecl(SHORT_SPECS *ss, SymbolTable *st){
