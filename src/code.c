@@ -73,7 +73,21 @@ void codeSetup(char *className) {
   fprintf(outputFile, "public class %s {\n", className);
   // define Go boolean variables
   fprintf(outputFile, "\tpublic boolean __golite__true = true;\n");
-  fprintf(outputFile, "\tpublic boolean __golite__false = false;\n");
+  fprintf(outputFile, "\tpublic boolean __golite__false = false;\n\n");
+  // define string comparison methods
+  fprintf(outputFile, "\tpublic static boolean stringGreaterThan(String s1, String s2) {\n");
+  fprintf(outputFile, "\t\treturn (s1.compareTo(s2) > 0) ? true : false;\n");
+  fprintf(outputFile, "\t}\n\n");
+  fprintf(outputFile, "\tpublic static boolean stringLessThan(String s1, String s2) {\n");
+  fprintf(outputFile, "\t\treturn (s1.compareTo(s2) < 0) ? true : false;\n");
+  fprintf(outputFile, "\t}\n\n");
+  fprintf(outputFile, "\tpublic static boolean stringGreaterEqual(String s1, String s2) {\n");
+  fprintf(outputFile, "\t\treturn (s1.compareTo(s2) >= 0) ? true : false;\n");
+  fprintf(outputFile, "\t}\n\n");
+  fprintf(outputFile, "\tpublic static boolean stringLessEqual(String s1, String s2) {\n");
+  fprintf(outputFile, "\t\treturn (s1.compareTo(s2) <= 0) ? true : false;\n");
+  fprintf(outputFile, "\t}\n\n");
+
 }
 
 // complete class definition
@@ -263,52 +277,102 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         }
         break;
       case ek_eq:
-        // TODO: fix for strings, arrays, and structs
-        fprintf(outputFile, "(");
-        codeExp(exp->val.binary.lhs, st, tabCount);
-        fprintf(outputFile, " == ");
-        codeExp(exp->val.binary.rhs, st, tabCount);
-        fprintf(outputFile, ")");
+        // TODO: fix for arrays, and structs
+      	type = resolveExpType(exp->val.binary.lhs->type, st);
+      	if (type->kind == tk_string) {	// strings
+      		fprintf(outputFile, "(");
+	        codeExp(exp->val.binary.lhs, st, tabCount);
+	        fprintf(outputFile, ".equals(");
+	        codeExp(exp->val.binary.rhs, st, tabCount);
+	        fprintf(outputFile, "))");
+      	} else {	// other base types: int, float64, rune
+	        fprintf(outputFile, "(");
+	        codeExp(exp->val.binary.lhs, st, tabCount);
+	        fprintf(outputFile, " == ");
+	        codeExp(exp->val.binary.rhs, st, tabCount);
+	        fprintf(outputFile, ")");
+	      }
         break;
       case ek_ne:
-        // TODO: fix for strings, arrays, and structs
-        fprintf(outputFile, "(");
-        codeExp(exp->val.binary.lhs, st, tabCount);
-        fprintf(outputFile, " != ");
-        codeExp(exp->val.binary.rhs, st, tabCount);
-        fprintf(outputFile, ")");
+        // TODO: fix for arrays, and structs
+      	type = resolveExpType(exp->val.binary.lhs->type, st);
+      	if (type->kind == tk_string) {	// strings
+      		fprintf(outputFile, "(!");
+	        codeExp(exp->val.binary.lhs, st, tabCount);
+	        fprintf(outputFile, ".equals(");
+	        codeExp(exp->val.binary.rhs, st, tabCount);
+	        fprintf(outputFile, "))");
+      	} else {	// other base types: int, float64, rune
+	        fprintf(outputFile, "(");
+	        codeExp(exp->val.binary.lhs, st, tabCount);
+	        fprintf(outputFile, " != ");
+	        codeExp(exp->val.binary.rhs, st, tabCount);
+	        fprintf(outputFile, ")");
+	      }
         break;
       case ek_ge:
-        // TODO: fix for strings
-        fprintf(outputFile, "(");
-        codeExp(exp->val.binary.lhs, st, tabCount);
-        fprintf(outputFile, " >= ");
-        codeExp(exp->val.binary.rhs, st, tabCount);
-        fprintf(outputFile, ")");
+      	type = resolveExpType(exp->val.binary.lhs->type, st);
+      	if (type->kind == tk_string) {	// strings
+      		fprintf(outputFile, "stringGreaterEqual(");
+	        codeExp(exp->val.binary.lhs, st, tabCount);
+	        fprintf(outputFile, ",");
+	        codeExp(exp->val.binary.rhs, st, tabCount);
+	        fprintf(outputFile, ")");
+      	} else {	// other base types: int, float64, rune
+	        fprintf(outputFile, "(");
+	        codeExp(exp->val.binary.lhs, st, tabCount);
+	        fprintf(outputFile, " >= ");
+	        codeExp(exp->val.binary.rhs, st, tabCount);
+	        fprintf(outputFile, ")");
+	      }
         break;
       case ek_le:
-        // TODO: fix for strings
-        fprintf(outputFile, "(");
-        codeExp(exp->val.binary.lhs, st, tabCount);
-        fprintf(outputFile, " <= ");
-        codeExp(exp->val.binary.rhs, st, tabCount);
-        fprintf(outputFile, ")");
+	      type = resolveExpType(exp->val.binary.lhs->type, st);
+      	if (type->kind == tk_string) {	// strings
+      		fprintf(outputFile, "stringLessEqual(");
+	        codeExp(exp->val.binary.lhs, st, tabCount);
+	        fprintf(outputFile, ",");
+	        codeExp(exp->val.binary.rhs, st, tabCount);
+	        fprintf(outputFile, ")");
+      	} else {	// other base types: int, float64, rune
+	        fprintf(outputFile, "(");
+	        codeExp(exp->val.binary.lhs, st, tabCount);
+	        fprintf(outputFile, " <= ");
+	        codeExp(exp->val.binary.rhs, st, tabCount);
+	        fprintf(outputFile, ")");
+	      }
         break;
       case ek_gt:
-        // TODO: fix for strings
-        fprintf(outputFile, "(");
-        codeExp(exp->val.binary.lhs, st, tabCount);
-        fprintf(outputFile, " > ");
-        codeExp(exp->val.binary.rhs, st, tabCount);
-        fprintf(outputFile, ")");
+         type = resolveExpType(exp->val.binary.lhs->type, st);
+      	if (type->kind == tk_string) {	// strings
+      		fprintf(outputFile, "stringGreaterThan(");
+	        codeExp(exp->val.binary.lhs, st, tabCount);
+	        fprintf(outputFile, ",");
+	        codeExp(exp->val.binary.rhs, st, tabCount);
+	        fprintf(outputFile, ")");
+      	} else {	// other base types: int, float64, rune
+	        fprintf(outputFile, "(");
+	        codeExp(exp->val.binary.lhs, st, tabCount);
+	        fprintf(outputFile, " > ");
+	        codeExp(exp->val.binary.rhs, st, tabCount);
+	        fprintf(outputFile, ")");
+	      }
         break;
       case ek_lt:
-        // TODO: fix for strings
-        fprintf(outputFile, "(");
-        codeExp(exp->val.binary.lhs, st, tabCount);
-        fprintf(outputFile, " < ");
-        codeExp(exp->val.binary.rhs, st, tabCount);
-        fprintf(outputFile, ")");
+         type = resolveExpType(exp->val.binary.lhs->type, st);
+      	if (type->kind == tk_string) {	// strings
+      		fprintf(outputFile, "stringLessThan(");
+	        codeExp(exp->val.binary.lhs, st, tabCount);
+	        fprintf(outputFile, ",");
+	        codeExp(exp->val.binary.rhs, st, tabCount);
+	        fprintf(outputFile, ")");
+      	} else {	// other base types: int, float64, rune
+	        fprintf(outputFile, "(");
+	        codeExp(exp->val.binary.lhs, st, tabCount);
+	        fprintf(outputFile, " < ");
+	        codeExp(exp->val.binary.rhs, st, tabCount);
+	        fprintf(outputFile, ")");
+	      }
         break;
       case ek_and:
         fprintf(outputFile, "(");
