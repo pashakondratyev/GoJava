@@ -7,6 +7,7 @@
 typedef struct STRUCT {
     char *structString;
     char *className;
+    TYPE *type;
     struct STRUCT *next;
 } STRUCT;
 
@@ -28,6 +29,9 @@ void makeStructTableVarDecl(VAR_SPECS *vs, SymbolTable *st);
 void makeStructTableShortDecl(SHORT_SPECS *ss, SymbolTable *st);
 void makeStructTableTypeDecl(TYPE_SPECS *ts, SymbolTable *st);
 void makeStructTableFuncDecl(FUNC_DECL *fd, SymbolTable *st);
+void makeStructTableStmt(STMT *stmt, SymbolTable *st);
+void addToStructTable(TYPE *type, char *name, SymbolTable *st);
+char *getRecTypeString(char *BUFFER, TYPE *type, SymbolTable *st, char *name);
 
 void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, int tabCount);
 void codeShortDecl(SHORT_SPECS *ss, SymbolTable *st, int tabCount);

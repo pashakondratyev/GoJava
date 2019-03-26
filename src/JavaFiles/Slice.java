@@ -52,11 +52,11 @@ class Slice<T> {
     // TODO: handle the different cases with appropriate errors
     public T get(int index) {
         if (index < 0) {
-            return NULL;
+            return null;
         } else if (index > cap) {
-            return NULL;
+            return null;
         } else if (index > len) {
-            return NULL;
+            return null;
         } else {
             return elementList.get(index);
         }

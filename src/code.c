@@ -11,13 +11,24 @@
 FILE *outputFile;
 StructTable *structTable;
 int numInitFunc = 0;
+int identifierCount = 0;
 
 StructTable *initStructTable() {
-	StructTable *st = (StructTable *)malloc(sizeof(StructTable));
-	for (int i=0; i<HashSize; i++){
-		st->table[i] = NULL;
-	}
-	return st;
+  StructTable *structTable = (StructTable *)malloc(sizeof(StructTable));
+  for (int i = 0; i < HashSize; i++) {
+    structTable->table[i] = NULL;
+  }
+  return structTable;
+}
+
+void printStructTable(StructTable *structTable) {
+  for (int i = 0; i < HashSize; i++) {
+    STRUCT *s = structTable->table[i];
+    while (s != NULL) {
+      printf("%s : %s\n", s->className, s->structString);
+      s = s->next;
+    }
+  }
 }
 
 void writeTab(int tabCount) {
@@ -59,8 +70,9 @@ void codeProgram(PROG *prog, SymbolTable *st, char *inputFileName) {
   // set class name as the file name excluding the path
   int index = indexLastForwardSlash(inputFileName);
   codeSetup(&inputFileName[index + 1]);
-
-	makeStructTable(prog->root_decl, st);
+  structTable = initStructTable();
+  makeStructTable(prog->root_decl, st);
+  printStructTable(structTable);
   codeDeclarations(prog->root_decl, st, 1);
   codeComplete();
   fclose(outputFile);
@@ -88,39 +100,119 @@ void codeComplete() {
   fprintf(outputFile, "}\n");
 }
 
-void makeStructTable(DECL *decl, SymbolTable *st){
-	if (decl != NULL) {
-		switch (decl->kind) {
-			case dk_var:
-				makeStructTableVarDecl(decl->val.varSpecs, st);
-				break;
-			case dk_short:
-				makeStructTableShortDecl(decl->val.shortSpecs, st);
-				break;
-			case dk_type:
-				makeStructTableTypeDecl(decl->val.typeSpecs, st);
-				break;
-			case dk_func:
-				makeStructTableFuncDecl(decl->val.funcDecl, st);
-				break;		
-		}
-	}
+void makeStructTable(DECL *decl, SymbolTable *st) {
+  if (decl != NULL) {
+    switch (decl->kind) {
+      case dk_var:
+        makeStructTableVarDecl(decl->val.varSpecs, st);
+        break;
+      case dk_short:
+        break;
+      case dk_type:
+        makeStructTableTypeDecl(decl->val.typeSpecs, st);
+        break;
+      case dk_func:
+        makeStructTableFuncDecl(decl->val.funcDecl, st);
+        break;
+    }
+    makeStructTable(decl->next, st);
+  }
 }
 
-void makeStructTableVarDecl(VAR_SPECS *vs, SymbolTable *st){
-	
+void makeStructTableVarDecl(VAR_SPECS *vs, SymbolTable *st) {
+  while (vs != NULL) {
+    if (vs->type->kind == tk_struct) {
+      addToStructTable(vs->type, NULL, st);
+    }
+    vs = vs->next;
+  }
 }
 
-void makeStructTableShortDecl(SHORT_SPECS *ss, SymbolTable *st){
-
+void makeStructTableTypeDecl(TYPE_SPECS *ts, SymbolTable *st) {
+  while (ts != NULL) {
+    if (ts->type->kind == tk_struct) {
+      addToStructTable(ts->type, ts->name, st);
+    }
+    ts = ts->next;
+  }
 }
 
-void makeStructTableTypeDecl(TYPE_SPECS *ts, SymbolTable *st){
-
+void makeStructTableFuncDecl(FUNC_DECL *fd, SymbolTable *st) {
+  if (fd->body != NULL) {
+    makeStructTableStmt(fd->body, st);
+  }
+  if (fd->returnType != NULL) {
+    if (resolvesToStruct(fd->returnType, st)) {
+      addToStructTable(fd->returnType, NULL, st);
+    }
+  }
+  if (fd->params != NULL) {
+    PARAM_LIST *pl = fd->params;
+    while (pl != NULL) {
+      if (resolvesToStruct(pl->type, st)) {
+        addToStructTable(pl->type, NULL, st);
+      }
+      pl = pl->next;
+    }
+  }
 }
 
-void makeStructTableFuncDecl(FUNC_DECL *fd, SymbolTable *st){
+void makeStructTableStmt(STMT *stmt, SymbolTable *st) {
+  if (stmt != NULL) {
+    STMT_LIST *sl;
+    switch (stmt->kind) {
+      case sk_block:
+        sl = stmt->val.block.blockStatements;
+        while (sl != NULL) {
+          makeStructTableStmt(sl->stmt, st);
+          sl = sl->next;
+        }
+        break;
+      case sk_decl:
+        makeStructTable(stmt->val.decl, st);
+        break;
+      case sk_if:
+        makeStructTableStmt(stmt->val.ifStmt.body, st);
+        if (stmt->val.ifStmt.elseStmt != NULL) {
+          makeStructTableStmt(stmt->val.ifStmt.elseStmt, st);
+        }
+      case sk_else:
+        makeStructTableStmt(stmt->val.elseBody, st);
+        break;
+      default:
+        break;
+    }
+  }
+}
 
+// Take a struct type, check if it exists in the struct table, and add it if it doesn't
+void addToStructTable(TYPE *type, char *name, SymbolTable *st) {
+  char buffer[100];
+  if (name != NULL) {
+    if (type->kind == tk_ref) {
+      name = type->val.name;
+    } else {
+      name = "_";
+    }
+  }
+  getRecTypeString(buffer, type, st, name);
+  int i = Hash(buffer);
+  for (STRUCT *s = structTable->table[i]; s; s = s->next) {
+    if (strcmp(s->structString, buffer) == 0) {
+      // Struct string already exists in struct table
+      return;
+    }
+  }
+
+  STRUCT *s = (STRUCT *)malloc(sizeof(STRUCT));
+  s->structString = strdup(buffer);
+  char javaClassName[10];
+  sprintf(javaClassName, "STRUCT%d", identifierCount);
+  identifierCount += 1;
+  s->className = strdup(javaClassName);
+  s->next = structTable->table[i];
+  s->type = type;
+  structTable->table[i] = s;
 }
 
 void codeDeclarations(DECL *dcl, SymbolTable *st, int tabCount) {
@@ -155,7 +247,47 @@ void codeTypeDecl(TYPE_SPECS *ts, SymbolTable *st, int tabCount) {
   // TODO: implement
 }
 
-char *getJavaTypeString(char *buffer, TYPE *type) { return buffer; }
+char *getRecTypeString(char *BUFFER, TYPE *type, SymbolTable *st, char *name) {
+  FIELD_DECLS *d;
+  if (type == NULL) {
+    sprintf(BUFFER, " ");
+    return BUFFER;
+  }
+  switch (type->kind) {
+    case tk_array:
+      sprintf(BUFFER, "[");
+      sprintf(BUFFER + strlen(BUFFER), "%d", type->val.array.size);
+      sprintf(BUFFER + strlen(BUFFER), "]");
+      getRecTypeString(BUFFER, type->val.array.elemType, st, name);
+      break;
+    case tk_slice:
+      sprintf(BUFFER, "[]");
+      getRecTypeString(BUFFER, type->val.sliceType, st, name);
+      break;
+    case tk_struct:
+      sprintf(BUFFER, "struct {");
+      d = type->val.structFields;
+      while (d != NULL) {
+        sprintf(BUFFER + strlen(BUFFER), " %s ", d->id);
+        getRecTypeString(BUFFER + strlen(BUFFER), d->type, st, name);
+        sprintf(BUFFER + strlen(BUFFER), ";");
+        d = d->next;
+      }
+      sprintf(BUFFER + strlen(BUFFER), " }");
+      break;
+    case tk_ref:
+      if (strcmp(name, type->val.name) != 0) {
+        getRecTypeString(BUFFER + strlen(BUFFER), typeResolve(type, st), st, type->val.name);
+      } else {
+        sprintf(BUFFER + strlen(BUFFER), "%s", type->val.name);
+      }
+      break;
+    default:
+      sprintf(BUFFER, "%s", type->val.name);
+      break;
+  }
+  return BUFFER;
+}
 
 void codeFuncDecl(FUNC_DECL *fd, SymbolTable *st, int tabCount) {
   char buffer[1024];
@@ -411,27 +543,27 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
   }
 }
 
-//TODO: rest of the types
+// TODO: rest of the types
 void codeType(TYPE *type, SymbolTable *st, int tabCount) {
   if (type != NULL) {
     switch (type->kind) {
       case tk_int:
-				fprintf(outputFile, "int ");
+        fprintf(outputFile, "Integer ");
         break;
       case tk_float:
-				fprintf(outputFile, "double ");
+        fprintf(outputFile, "Double ");
         break;
       case tk_rune:
-				fprintf(outputFile, "char ");
+        fprintf(outputFile, "Character ");
         break;
       case tk_string:
-				fprintf(outputFile, "String ");
+        fprintf(outputFile, "String ");
         break;
       case tk_boolean:
-				fprintf(outputFile, "boolean ");
+        fprintf(outputFile, "Boolean ");
         break;
       case tk_struct:
-				codeStructType(type->val.structFields, st);
+        codeStructType(type->val.structFields, st);
         break;
       case tk_array:
         break;
@@ -440,13 +572,11 @@ void codeType(TYPE *type, SymbolTable *st, int tabCount) {
       case tk_ref:
         break;
       case tk_res:
-				fprintf(stderr, "Encountered tk_res type during code generation");
-				exit(1);
+        fprintf(stderr, "Encountered tk_res type during code generation");
+        exit(1);
     }
   }
 }
 
-//TODO: make this read from hash table of classes
-void codeStructType(FIELD_DECLS *fd, SymbolTable *st){
-
-}
+// TODO: make this read from hash table of classes
+void codeStructType(FIELD_DECLS *fd, SymbolTable *st) {}
