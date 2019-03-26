@@ -10,6 +10,8 @@ type int struct {c string;}
 
 type kab struct {a int;}
 
+type kaylee struct {c []kaylee; d string;}
+
 func main() {
   var p paul
   var k kab

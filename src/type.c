@@ -1389,7 +1389,7 @@ TYPE *typeResolve(TYPE *type, SymbolTable *st) {
       s = getSymbol(st, type->val.name);
       return typeResolve(s->val.typeDecl.resolvesTo, st);
     default:
-      return NULL;
+      return type;
   }
 }
 
