@@ -36,6 +36,7 @@ void codeFuncDecl(FUNC_DECL *fd, SymbolTable *st, int tabCount);
 
 void codeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType, int tabCount);
 void codeExp(EXP *exp, SymbolTable *st, int tabCount);
+TYPE* resolveExpType(TYPE* type, SymbolTable *st);
 
 void codeType(TYPE *type, SymbolTable *st, int tabcount);
 void codeStructType(FIELD_DECLS *fd, SymbolTable *st);
