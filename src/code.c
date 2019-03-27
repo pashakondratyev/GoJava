@@ -69,10 +69,13 @@ void codeProgram(PROG *prog, SymbolTable *st, char *inputFileName) {
 
   // set class name as the file name excluding the path
   int index = indexLastForwardSlash(inputFileName);
-  codeSetup(&inputFileName[index + 1]);
   structTable = initStructTable();
   makeStructTable(prog->root_decl, st);
-  printStructTable(structTable);
+
+  // For Debugging purposes
+  // printStructTable(structTable);
+  codeSetup(&inputFileName[index + 1]);
+
   codeDeclarations(prog->root_decl, st, 1);
   codeComplete();
   fclose(outputFile);
@@ -97,6 +100,78 @@ void codeComplete() {
   }
   fprintf(outputFile, "\t\t__golite__main();\n");
   fprintf(outputFile, "\t}\n");
+  fprintf(outputFile, "}\n");
+}
+
+// TODO: make this read from hash table of classes
+void codeStructType(FIELD_DECLS *fd, SymbolTable *st, STRUCT *s) {
+  fprintf(outputFile, "class %s {\n", s->className);
+  char *name;
+
+  int containsSlice = 0;
+
+  // put all the public parameters
+  for (FIELD_DECLS *temp = fd; temp; temp = temp->next) {
+    if(strcmp(temp->id, "_") == 0){
+      continue;
+    }
+    TYPE *type;
+    if (temp->type->kind == tk_ref) {
+      SYMBOL *s = getSymbol(st, temp->type->val.name);
+      type = s->val.typeDecl.resolvesTo;
+    } else {
+      type = temp->type;
+    }
+    switch (type->kind) {
+      case tk_array:
+        name = javaTypeString(type, st);
+        fprintf(outputFile, "\t%s[] %s = new %s[%d];\n", name, temp->id, name, type->val.array.size);
+        break;
+      case tk_slice:
+        containsSlice = 1;
+        name = javaTypeString(type, st);
+        fprintf(outputFile, "\tSlice<%s> %s = new Slice<>();\n", name, temp->id);
+        break;
+      default:
+        name = javaTypeString(type, st);
+        fprintf(outputFile, "\t%s %s = new %s();\n", name, temp->id, name);
+        break;
+    }
+  }
+  // Equality method, note it should not be generated if there is an incomparable type
+  if (!containsSlice) {
+    fprintf(outputFile, "\tpublic Boolean equals(%s other){\n\t\treturn ", s->className);
+
+    for (FIELD_DECLS *temp = fd; temp; temp = temp->next) {
+      if(strcmp(temp->id, "_") == 0){
+        continue;
+      }
+      TYPE *type;
+      if (temp->type->kind == tk_ref) {
+        SYMBOL *s = getSymbol(st, temp->type->val.name);
+        type = s->val.typeDecl.resolvesTo;
+      } else {
+        type = temp->type;
+      }
+      switch (type->kind) {
+        case tk_array:
+          name = javaTypeString(type, st);
+          fprintf(outputFile, "Arrays.deepEquals(this.%s, other.%s)", temp->id, temp->id);
+          break;
+        case tk_slice:
+          break;
+        default:
+          name = javaTypeString(type, st);
+          fprintf(outputFile, "this.%s.equals(other.%s)", temp->id, temp->id);
+          break;
+      }
+      if (temp->next != NULL) {
+        fprintf(outputFile, " && ");
+      }
+    }
+    fprintf(outputFile, ";\n\t}\n");
+  }
+
   fprintf(outputFile, "}\n");
 }
 
@@ -186,9 +261,9 @@ void makeStructTableStmt(STMT *stmt, SymbolTable *st) {
 }
 
 // Take a struct type, check if it exists in the struct table, and add it if it doesn't
-void addToStructTable(TYPE *type, char *name, SymbolTable *st) {
+STRUCT *addToStructTable(TYPE *type, char *name, SymbolTable *st) {
   char buffer[100];
-  if (name != NULL) {
+  if (name == NULL) {
     if (type->kind == tk_ref) {
       name = type->val.name;
     } else {
@@ -200,7 +275,7 @@ void addToStructTable(TYPE *type, char *name, SymbolTable *st) {
   for (STRUCT *s = structTable->table[i]; s; s = s->next) {
     if (strcmp(s->structString, buffer) == 0) {
       // Struct string already exists in struct table
-      return;
+      return NULL;
     }
   }
 
@@ -213,6 +288,19 @@ void addToStructTable(TYPE *type, char *name, SymbolTable *st) {
   s->next = structTable->table[i];
   s->type = type;
   structTable->table[i] = s;
+
+  codeStructType(type->val.structFields, st, s);
+  return s;
+}
+
+STRUCT *getFromStructTable(char *id) {
+  int i = Hash(id);
+  for (STRUCT *s = structTable->table[i]; s; s = s->next) {
+    if (strcmp(s->structString, id) == 0) {
+      return s;
+    }
+  }
+  return NULL;
 }
 
 void codeDeclarations(DECL *dcl, SymbolTable *st, int tabCount) {
@@ -293,10 +381,11 @@ void codeFuncDecl(FUNC_DECL *fd, SymbolTable *st, int tabCount) {
   char buffer[1024];
   // If this is not a reference we need to handle this specially
   char *returnTypeString = fd->returnType == NULL ? "void" : getTypeString(buffer, fd->returnType);
-  fprintf(outputFile, "public %s %s (", returnTypeString, fd->name);
+  fprintf(outputFile, "\tpublic static %s %s (", returnTypeString, prefix(fd->name));
   // print args
   fprintf(outputFile, ") {\n");
   // TODO: implement
+  fprintf(outputFile, "\t}\n");
 }
 
 void codeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType, int tabCount) {
@@ -563,7 +652,7 @@ void codeType(TYPE *type, SymbolTable *st, int tabCount) {
         fprintf(outputFile, "Boolean ");
         break;
       case tk_struct:
-        codeStructType(type->val.structFields, st);
+        // codeStructType(type->val.structFields, st);
         break;
       case tk_array:
         break;
@@ -578,5 +667,39 @@ void codeType(TYPE *type, SymbolTable *st, int tabCount) {
   }
 }
 
-// TODO: make this read from hash table of classes
-void codeStructType(FIELD_DECLS *fd, SymbolTable *st) {}
+// TODO: rest of the types
+char *javaTypeString(TYPE *type, SymbolTable *st) {
+  char buffer[1024];
+  if (type != NULL) {
+    switch (type->kind) {
+      case tk_int:
+        return "Integer";
+      case tk_float:
+        return "Double";
+      case tk_rune:
+        return "Character";
+      case tk_string:
+        return "String";
+      case tk_boolean:
+        return "Boolean";
+      case tk_struct:
+        getRecTypeString(buffer, type, st, NULL);
+        STRUCT *s = getFromStructTable(buffer);
+        if (s == NULL) {
+          fprintf(stderr, "Error! Could not retrieve struct during code generation\n");
+          exit(1);
+        }
+        return s->className;
+      case tk_array:
+        break;
+      case tk_slice:
+        break;
+      case tk_ref:
+        break;
+      case tk_res:
+        fprintf(stderr, "Encountered tk_res type during code generation");
+        exit(1);
+    }
+  }
+  return "";
+}

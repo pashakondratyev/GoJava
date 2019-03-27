@@ -30,7 +30,9 @@ void makeStructTableShortDecl(SHORT_SPECS *ss, SymbolTable *st);
 void makeStructTableTypeDecl(TYPE_SPECS *ts, SymbolTable *st);
 void makeStructTableFuncDecl(FUNC_DECL *fd, SymbolTable *st);
 void makeStructTableStmt(STMT *stmt, SymbolTable *st);
-void addToStructTable(TYPE *type, char *name, SymbolTable *st);
+STRUCT *addToStructTable(TYPE *type, char *name, SymbolTable *st);
+STRUCT *getFromStructTable(char *id);
+
 char *getRecTypeString(char *BUFFER, TYPE *type, SymbolTable *st, char *name);
 
 void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, int tabCount);
@@ -42,6 +44,8 @@ void codeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType, int tabCount);
 void codeExp(EXP *exp, SymbolTable *st, int tabCount);
 
 void codeType(TYPE *type, SymbolTable *st, int tabcount);
-void codeStructType(FIELD_DECLS *fd, SymbolTable *st);
+void codeStructType(FIELD_DECLS *fd, SymbolTable *st, STRUCT *s);
+
+char *javaTypeString(TYPE *type, SymbolTable *st);
 
 #endif
