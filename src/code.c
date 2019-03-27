@@ -667,20 +667,46 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         fprintf(outputFile, ")");
         break;
       case ek_len:
-        // TODO: complete
-      	//valid on string, slice, and array
+      	type = resolveExpType(exp->val.unary.exp->type, st);
+        if (type->kind == tk_string) {  // string
+        	codeExp(exp->val.lenExp, st, tabCount);
+        	fprintf(outputFile, ".length()");
+        } else if (type->kind == tk_array) {  // array
+        	codeExp(exp->val.lenExp, st, tabCount);
+        	fprintf(outputFile, ".length");
+        } else 	{		// slice
+        	codeExp(exp->val.lenExp, st, tabCount);
+        	fprintf(outputFile, ".len");
+        }
         break;
       case ek_cap:
-        // TODO: complete
-      	// valid on slice, and array
+      	type = resolveExpType(exp->val.unary.exp->type, st);
+        if (type->kind == tk_array) {  // array
+        	codeExp(exp->val.capExp, st, tabCount);
+        	fprintf(outputFile, ".length");
+        } else 	{		// slice
+        	codeExp(exp->val.capExp, st, tabCount);
+        	fprintf(outputFile, ".cap");
+        }
         break;
       case ek_indexExp:
-        // TODO: complete
-      	// valid on slice and array
+      	type = resolveExpType(exp->val.unary.exp->type, st);
+        if (type->kind == tk_array) {  // array
+        	codeExp(exp->val.indexExp.objectExp, st, tabCount);
+        	fprintf(outputFile, "[");
+        	codeExp(exp->val.indexExp.indexExp, st, tabCount);
+        	fprintf(outputFile, "]");
+        } else 	{		// slice
+        	codeExp(exp->val.indexExp.objectExp, st, tabCount);
+        	fprintf(outputFile, ".get(");
+        	codeExp(exp->val.indexExp.indexExp, st, tabCount);
+        	fprintf(outputFile, ")");
+        }
         break;
       case ek_structField:
-        // TODO: complete
-      	// java object equivalent.fieldname
+     		codeExp(exp->val.structField.structExp, st, tabCount);
+        fprintf(outputFile, ".");
+        codeExp(exp->val.structField.fieldName, st, tabCount);
         break;
       case ek_paren:
         fprintf(outputFile, "(");
