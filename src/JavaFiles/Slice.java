@@ -36,8 +36,11 @@ class Slice<T> {
             return newSlice;
         } else{
             elementList.add(len, element);
-            len++;
-            return this;
+            Slice<T> newSlice = new Slice<>();
+            newSlice.len = len + 1;
+            newSlice.cap = cap;
+            newSlice.elementList = elementList;
+            return newSlice;
         }
     }
 

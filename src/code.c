@@ -55,6 +55,7 @@ void codeProgram(PROG *prog, SymbolTable *st, char *inputFileName) {
   // Creates all the structs necessary as java objects that can be reused later
   makeStructTable(prog->root_decl, st);
   // Outputs the created java objects into the outtput file by traversing
+  printStructTable();
   codeStructTable();
   codeSetup(&inputFileName[index + 1]);
 
@@ -80,7 +81,7 @@ void codeComplete() {
   // TODO: complete
   fprintf(outputFile, "\tpublic static void main(String[] args) {\n");
   for (int i = 0; i < numInitFunc; i++) {
-    fprintf(outputFile, "\t\t__golite__init_%d();\n", numInitFunc);
+    fprintf(outputFile, "\t\t__golite__init_%d();\n", i);
   }
   fprintf(outputFile, "\t\t__golite__main();\n");
   fprintf(outputFile, "\t}\n");
@@ -241,7 +242,7 @@ STRUCT *addToStructTable(TYPE *type, char *name, SymbolTable *st) {
   s->comparable = resolvesToComparable(type, st);
   structTable->table[i] = s;
 
-  char *javaClass = (char*)malloc(4096*sizeof(char));
+  char *javaClass = (char *)malloc(4096 * sizeof(char));
   if (DEBUG) printf("Creating Java Object: %s\n", s->className);
   javaClass = codeStructType(javaClass, type->val.structFields, st, s, name);
   s->javaClass = javaClass;
@@ -272,7 +273,7 @@ void printStructTable() {
 }
 
 // Outputs the java objects based on all the structs encountered in the file
-void codeStructTable(){
+void codeStructTable() {
   for (int i = 0; i < HashSize; i++) {
     STRUCT *s = structTable->table[i];
     while (s != NULL) {
@@ -392,15 +393,22 @@ char *codeStructType(char *BUFFER, FIELD_DECLS *fd, SymbolTable *st, STRUCT *s, 
 
 void codeFuncDecl(FUNC_DECL *fd, SymbolTable *st, int tabCount) {
   char BUFFER[1024];
+  char methodName[1024];
   // If this is not a reference we need to handle this specially
-  char *returnTypeString = fd->returnType == NULL ? "void" : javaTypeString(fd->returnType, st, NULL);
-  fprintf(outputFile, "\tpublic static %s %s (", returnTypeString, prefix(fd->name));
-  for (PARAM_LIST *temp = fd->params; temp; temp = temp->next) {
-    fprintf(outputFile, "%s %s", javaTypeString(temp->type, st, NULL), temp->id);
-    if (temp->next) {
-      fprintf(outputFile, ", ");
+  if (strcmp(fd->name, "init") == 0){
+    fprintf(outputFile, "\tpublic static void %s_%d (", prefix(fd->name), numInitFunc);
+    numInitFunc++;
+  } else {
+    char *returnTypeString = fd->returnType == NULL ? "void" : javaTypeString(fd->returnType, st, NULL);
+    fprintf(outputFile, "\tpublic static %s %s (", returnTypeString, prefix(fd->name));
+    for (PARAM_LIST *temp = fd->params; temp; temp = temp->next) {
+      fprintf(outputFile, "%s %s", javaTypeString(temp->type, st, NULL), temp->id);
+      if (temp->next) {
+        fprintf(outputFile, ", ");
+      }
     }
   }
+
   // print args
   fprintf(outputFile, ") {\n");
   // TODO: implement

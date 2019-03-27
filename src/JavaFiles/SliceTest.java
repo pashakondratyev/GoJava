@@ -44,10 +44,19 @@ public class SliceTest{
         assert(intSlice2.elementList.get(1) == 3);
     }
 
+    static public void testAppend4(){
+        Slice<Integer> intSlice = new Slice<>();
+        intSlice = intSlice.append(1);
+        Slice<Integer> intSlice2 = intSlice.append(2);
+        assert(intSlice != intSlice2);
+        assert(intSlice.len != intSlice2.len);
+    }
+
     public static void main(String[] args) {
         testCreate();
         testAppend();
         testAppend2();
         testAppend3();
+        testAppend4();
     }
 }
