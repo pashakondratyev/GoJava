@@ -8,28 +8,12 @@
 #include "symbol.h"
 #include "type.h"
 
+#define DEBUG 0
+
 FILE *outputFile;
 StructTable *structTable;
 int numInitFunc = 0;
 int identifierCount = 0;
-
-StructTable *initStructTable() {
-  StructTable *structTable = (StructTable *)malloc(sizeof(StructTable));
-  for (int i = 0; i < HashSize; i++) {
-    structTable->table[i] = NULL;
-  }
-  return structTable;
-}
-
-void printStructTable(StructTable *structTable) {
-  for (int i = 0; i < HashSize; i++) {
-    STRUCT *s = structTable->table[i];
-    while (s != NULL) {
-      printf("%s : %s\n", s->className, s->structString);
-      s = s->next;
-    }
-  }
-}
 
 void writeTab(int tabCount) {
   for (int i = 0; i < tabCount; i++) {
@@ -69,11 +53,10 @@ void codeProgram(PROG *prog, SymbolTable *st, char *inputFileName) {
 
   // set class name as the file name excluding the path
   int index = indexLastForwardSlash(inputFileName);
-  structTable = initStructTable();
+  initStructTable();
   makeStructTable(prog->root_decl, st);
-
   // For Debugging purposes
-  // printStructTable(structTable);
+  //printStructTable();
   codeSetup(&inputFileName[index + 1]);
 
   codeDeclarations(prog->root_decl, st, 1);
@@ -99,7 +82,6 @@ void codeSetup(char *className) {
   fprintf(outputFile, "\tpublic static boolean stringLessEqual(String s1, String s2) {\n");
   fprintf(outputFile, "\t\treturn (s1.compareTo(s2) <= 0) ? Boolean.TRUE : Boolean.FALSE;\n");
   fprintf(outputFile, "\t}\n\n");
-
 }
 
 // complete class definition
@@ -114,77 +96,7 @@ void codeComplete() {
   fprintf(outputFile, "}\n");
 }
 
-// TODO: make this read from hash table of classes
-void codeStructType(FIELD_DECLS *fd, SymbolTable *st, STRUCT *s) {
-  fprintf(outputFile, "class %s {\n", s->className);
-  char *name;
-
-  int containsSlice = 0;
-
-  // put all the public parameters
-  for (FIELD_DECLS *temp = fd; temp; temp = temp->next) {
-    if(strcmp(temp->id, "_") == 0){
-      continue;
-    }
-    TYPE *type;
-    if (temp->type->kind == tk_ref) {
-      SYMBOL *s = getSymbol(st, temp->type->val.name);
-      type = s->val.typeDecl.resolvesTo;
-    } else {
-      type = temp->type;
-    }
-    switch (type->kind) {
-      case tk_array:
-        name = javaTypeString(type, st);
-        fprintf(outputFile, "\t%s[] %s = new %s[%d];\n", name, temp->id, name, type->val.array.size);
-        break;
-      case tk_slice:
-        containsSlice = 1;
-        name = javaTypeString(type, st);
-        fprintf(outputFile, "\tSlice<%s> %s = new Slice<>();\n", name, temp->id);
-        break;
-      default:
-        name = javaTypeString(type, st);
-        fprintf(outputFile, "\t%s %s = new %s();\n", name, temp->id, name);
-        break;
-    }
-  }
-  // Equality method, note it should not be generated if there is an incomparable type
-  if (!containsSlice) {
-    fprintf(outputFile, "\tpublic Boolean equals(%s other){\n\t\treturn ", s->className);
-
-    for (FIELD_DECLS *temp = fd; temp; temp = temp->next) {
-      if(strcmp(temp->id, "_") == 0){
-        continue;
-      }
-      TYPE *type;
-      if (temp->type->kind == tk_ref) {
-        SYMBOL *s = getSymbol(st, temp->type->val.name);
-        type = s->val.typeDecl.resolvesTo;
-      } else {
-        type = temp->type;
-      }
-      switch (type->kind) {
-        case tk_array:
-          name = javaTypeString(type, st);
-          fprintf(outputFile, "Arrays.deepEquals(this.%s, other.%s)", temp->id, temp->id);
-          break;
-        case tk_slice:
-          break;
-        default:
-          name = javaTypeString(type, st);
-          fprintf(outputFile, "this.%s.equals(other.%s)", temp->id, temp->id);
-          break;
-      }
-      if (temp->next != NULL) {
-        fprintf(outputFile, " && ");
-      }
-    }
-    fprintf(outputFile, ";\n\t}\n");
-  }
-
-  fprintf(outputFile, "}\n");
-}
+// Struct Table Functions
 
 void makeStructTable(DECL *decl, SymbolTable *st) {
   if (decl != NULL) {
@@ -228,7 +140,7 @@ void makeStructTableFuncDecl(FUNC_DECL *fd, SymbolTable *st) {
     makeStructTableStmt(fd->body, st);
   }
   if (fd->returnType != NULL) {
-    if (resolvesToStruct(fd->returnType, st)) {
+    if (fd->returnType->kind == tk_struct) {
       addToStructTable(fd->returnType, NULL, st);
     }
   }
@@ -250,7 +162,7 @@ void makeStructTableStmt(STMT *stmt, SymbolTable *st) {
       case sk_block:
         sl = stmt->val.block.blockStatements;
         while (sl != NULL) {
-          makeStructTableStmt(sl->stmt, st);
+          makeStructTableStmt(sl->stmt, stmt->val.block.scope);
           sl = sl->next;
         }
         break;
@@ -271,9 +183,18 @@ void makeStructTableStmt(STMT *stmt, SymbolTable *st) {
   }
 }
 
+void initStructTable() {
+  StructTable *newStructTable = (StructTable *)malloc(sizeof(StructTable));
+  for (int i = 0; i < HashSize; i++) {
+    newStructTable->table[i] = NULL;
+  }
+  structTable = newStructTable;
+}
+
 // Take a struct type, check if it exists in the struct table, and add it if it doesn't
 STRUCT *addToStructTable(TYPE *type, char *name, SymbolTable *st) {
-  char buffer[100];
+  if (DEBUG) printf("Creating Struct in Table\n");
+  char buffer[1024];
   if (name == NULL) {
     if (type->kind == tk_ref) {
       name = type->val.name;
@@ -298,9 +219,12 @@ STRUCT *addToStructTable(TYPE *type, char *name, SymbolTable *st) {
   s->className = strdup(javaClassName);
   s->next = structTable->table[i];
   s->type = type;
+  s->comparable = resolvesToComparable(type, st);
   structTable->table[i] = s;
 
-  codeStructType(type->val.structFields, st, s);
+  if (DEBUG) printf("Creating Java Object: %s\n", s->className);
+  codeStructType(type->val.structFields, st, s, name);
+  if (DEBUG) printf("Java Object Created\n");
   return s;
 }
 
@@ -313,6 +237,18 @@ STRUCT *getFromStructTable(char *id) {
   }
   return NULL;
 }
+
+void printStructTable() {
+  for (int i = 0; i < HashSize; i++) {
+    STRUCT *s = structTable->table[i];
+    while (s != NULL) {
+      printf("%s : %s\n", s->className, s->structString);
+      s = s->next;
+    }
+  }
+}
+
+// Declarations
 
 void codeDeclarations(DECL *dcl, SymbolTable *st, int tabCount) {
   if (dcl != NULL) {
@@ -346,56 +282,88 @@ void codeTypeDecl(TYPE_SPECS *ts, SymbolTable *st, int tabCount) {
   // TODO: implement
 }
 
-char *getRecTypeString(char *BUFFER, TYPE *type, SymbolTable *st, char *name) {
-  FIELD_DECLS *d;
-  if (type == NULL) {
-    sprintf(BUFFER, " ");
-    return BUFFER;
+// Specific Constructs
+
+// TODO: make this read from hash table of classes
+void codeStructType(FIELD_DECLS *fd, SymbolTable *st, STRUCT *s, char *name) {
+  fprintf(outputFile, "class %s {\n", s->className);
+  char *constructor;
+  char *typeName;
+  // put all the public parameters
+  for (FIELD_DECLS *temp = fd; temp; temp = temp->next) {
+    if (strcmp(temp->id, "_") == 0) {
+      continue;
+    }
+    if (DEBUG) printf("Creating field : %s\n", temp->id);
+    TYPE *type;
+    if (temp->type->kind == tk_ref) {
+      SYMBOL *s = getSymbol(st, temp->type->val.name);
+      type = s->val.typeDecl.resolvesTo;
+    } else {
+      type = temp->type;
+    }
+    switch (type->kind) {
+      case tk_array:
+        constructor = javaTypeStringConstructor(type, st, name);
+        typeName = javaTypeString(type, st, name);
+        fprintf(outputFile, "\t%s %s = new %s;\n", typeName, temp->id, constructor);
+        break;
+      case tk_slice:
+        typeName = javaTypeString(type, st, name);
+        fprintf(outputFile, "\t%s %s = new Slice<>();\n", typeName, temp->id);
+        break;
+      default:
+        constructor = javaTypeStringConstructor(type, st, name);
+        typeName = javaTypeString(type, st, name);
+        fprintf(outputFile, "\t%s %s = new %s();\n", typeName, temp->id, constructor);
+        break;
+    }
   }
-  switch (type->kind) {
-    case tk_array:
-      sprintf(BUFFER, "[");
-      sprintf(BUFFER + strlen(BUFFER), "%d", type->val.array.size);
-      sprintf(BUFFER + strlen(BUFFER), "]");
-      getRecTypeString(BUFFER, type->val.array.elemType, st, name);
-      break;
-    case tk_slice:
-      sprintf(BUFFER, "[]");
-      getRecTypeString(BUFFER, type->val.sliceType, st, name);
-      break;
-    case tk_struct:
-      sprintf(BUFFER, "struct {");
-      d = type->val.structFields;
-      while (d != NULL) {
-        sprintf(BUFFER + strlen(BUFFER), " %s ", d->id);
-        getRecTypeString(BUFFER + strlen(BUFFER), d->type, st, name);
-        sprintf(BUFFER + strlen(BUFFER), ";");
-        d = d->next;
+  // Equality method, note it should not be generated if there is an incomparable type
+  if (s->comparable) {
+    fprintf(outputFile, "\tpublic Boolean equals(%s other){\n\t\treturn ", s->className);
+
+    for (FIELD_DECLS *temp = fd; temp; temp = temp->next) {
+      if (strcmp(temp->id, "_") == 0) {
+        continue;
       }
-      sprintf(BUFFER + strlen(BUFFER), " }");
-      break;
-    case tk_ref:
-      if (strcmp(name, type->val.name) != 0) {
-        getRecTypeString(BUFFER + strlen(BUFFER), typeResolve(type, st), st, type->val.name);
+      TYPE *type;
+      if (temp->type->kind == tk_ref) {
+        SYMBOL *s = getSymbol(st, temp->type->val.name);
+        type = s->val.typeDecl.resolvesTo;
       } else {
-        sprintf(BUFFER + strlen(BUFFER), "%s", type->val.name);
+        type = temp->type;
       }
-      break;
-    default:
-      sprintf(BUFFER, "%s", type->val.name);
-      break;
+      switch (type->kind) {
+        case tk_array:
+          name = javaTypeString(type, st, name);
+          fprintf(outputFile, "Arrays.deepEquals(this.%s, other.%s)", temp->id, temp->id);
+          break;
+        case tk_slice:
+          break;
+        default:
+          name = javaTypeString(type, st, name);
+          fprintf(outputFile, "this.%s.equals(other.%s)", temp->id, temp->id);
+          break;
+      }
+      if (temp->next != NULL) {
+        fprintf(outputFile, " && ");
+      }
+    }
+    fprintf(outputFile, ";\n\t}\n");
   }
-  return BUFFER;
+
+  fprintf(outputFile, "}\n");
 }
 
 void codeFuncDecl(FUNC_DECL *fd, SymbolTable *st, int tabCount) {
   char buffer[1024];
   // If this is not a reference we need to handle this specially
-  char *returnTypeString = fd->returnType == NULL ? "void" : javaTypeString(fd->returnType, st);
+  char *returnTypeString = fd->returnType == NULL ? "void" : javaTypeString(fd->returnType, st, NULL);
   fprintf(outputFile, "\tpublic static %s %s (", returnTypeString, prefix(fd->name));
-  for(PARAM_LIST *temp = fd->params; temp; temp = temp->next ){
-    fprintf(outputFile, "%s %s", javaTypeString(temp->type, st), temp->id);
-    if(temp->next){
+  for (PARAM_LIST *temp = fd->params; temp; temp = temp->next) {
+    fprintf(outputFile, "%s %s", javaTypeString(temp->type, st, NULL), temp->id);
+    if (temp->next) {
       fprintf(outputFile, ", ");
     }
   }
@@ -437,19 +405,19 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         fprintf(outputFile, "new Character('%c')", exp->val.runeval);
         break;
       case ek_plus:
-				type = resolveExpType(exp->val.binary.lhs->type, st);
+        type = resolveExpType(exp->val.binary.lhs->type, st);
         if (type->kind == tk_rune) {  // rune
           fprintf(outputFile, "((char)(");
           codeExp(exp->val.binary.lhs, st, tabCount);
-        	fprintf(outputFile, " + ");
-        	codeExp(exp->val.binary.rhs, st, tabCount);
+          fprintf(outputFile, " + ");
+          codeExp(exp->val.binary.rhs, st, tabCount);
           fprintf(outputFile, "))");
         } else {
-        	fprintf(outputFile, "(");
-        	codeExp(exp->val.binary.lhs, st, tabCount);
-        	fprintf(outputFile, " + ");
-        	codeExp(exp->val.binary.rhs, st, tabCount);
-        	fprintf(outputFile, ")");
+          fprintf(outputFile, "(");
+          codeExp(exp->val.binary.lhs, st, tabCount);
+          fprintf(outputFile, " + ");
+          codeExp(exp->val.binary.rhs, st, tabCount);
+          fprintf(outputFile, ")");
         }
         break;
       case ek_minus:
@@ -457,15 +425,15 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         if (type->kind == tk_rune) {  // rune
           fprintf(outputFile, "((char)(");
           codeExp(exp->val.binary.lhs, st, tabCount);
-        	fprintf(outputFile, " - ");
-        	codeExp(exp->val.binary.rhs, st, tabCount);
+          fprintf(outputFile, " - ");
+          codeExp(exp->val.binary.rhs, st, tabCount);
           fprintf(outputFile, "))");
         } else {
-        	fprintf(outputFile, "(");
-        	codeExp(exp->val.binary.lhs, st, tabCount);
-        	fprintf(outputFile, " - ");
-        	codeExp(exp->val.binary.rhs, st, tabCount);
-        	fprintf(outputFile, ")");
+          fprintf(outputFile, "(");
+          codeExp(exp->val.binary.lhs, st, tabCount);
+          fprintf(outputFile, " - ");
+          codeExp(exp->val.binary.rhs, st, tabCount);
+          fprintf(outputFile, ")");
         }
         break;
       case ek_times:
@@ -473,15 +441,15 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         if (type->kind == tk_rune) {  // rune
           fprintf(outputFile, "((char)(");
           codeExp(exp->val.binary.lhs, st, tabCount);
-        	fprintf(outputFile, " * ");
-        	codeExp(exp->val.binary.rhs, st, tabCount);
+          fprintf(outputFile, " * ");
+          codeExp(exp->val.binary.rhs, st, tabCount);
           fprintf(outputFile, "))");
         } else {
-        	fprintf(outputFile, "(");
-        	codeExp(exp->val.binary.lhs, st, tabCount);
-        	fprintf(outputFile, " * ");
-        	codeExp(exp->val.binary.rhs, st, tabCount);
-        	fprintf(outputFile, ")");
+          fprintf(outputFile, "(");
+          codeExp(exp->val.binary.lhs, st, tabCount);
+          fprintf(outputFile, " * ");
+          codeExp(exp->val.binary.rhs, st, tabCount);
+          fprintf(outputFile, ")");
         }
         break;
       case ek_div:
@@ -489,58 +457,58 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         if (type->kind == tk_rune) {  // rune
           fprintf(outputFile, "((char)(");
           codeExp(exp->val.binary.lhs, st, tabCount);
-        	fprintf(outputFile, " / ");
-        	codeExp(exp->val.binary.rhs, st, tabCount);
+          fprintf(outputFile, " / ");
+          codeExp(exp->val.binary.rhs, st, tabCount);
           fprintf(outputFile, "))");
         } else {
-        	fprintf(outputFile, "(");
-        	codeExp(exp->val.binary.lhs, st, tabCount);
-        	fprintf(outputFile, " / ");
-        	codeExp(exp->val.binary.rhs, st, tabCount);
-        	fprintf(outputFile, ")");
+          fprintf(outputFile, "(");
+          codeExp(exp->val.binary.lhs, st, tabCount);
+          fprintf(outputFile, " / ");
+          codeExp(exp->val.binary.rhs, st, tabCount);
+          fprintf(outputFile, ")");
         }
         break;
       case ek_eq:
-      	type = resolveExpType(exp->val.binary.lhs->type, st);
-      	if (type->kind == tk_array) {	// arrays
-      		fprintf(outputFile, "(Arrays.deepEquals(");
-	        codeExp(exp->val.binary.lhs, st, tabCount);
-	        fprintf(outputFile, ",");
-	        codeExp(exp->val.binary.rhs, st, tabCount);
-	        fprintf(outputFile, "))");
-      	} else {	// all other types: int, float64, rune, string, structs
-	        fprintf(outputFile, "(");
-	        codeExp(exp->val.binary.lhs, st, tabCount);
-	        fprintf(outputFile, ".equals(");
-	        codeExp(exp->val.binary.rhs, st, tabCount);
-	        fprintf(outputFile, "))");
-	      }
+        type = resolveExpType(exp->val.binary.lhs->type, st);
+        if (type->kind == tk_array) {  // arrays
+          fprintf(outputFile, "(Arrays.deepEquals(");
+          codeExp(exp->val.binary.lhs, st, tabCount);
+          fprintf(outputFile, ",");
+          codeExp(exp->val.binary.rhs, st, tabCount);
+          fprintf(outputFile, "))");
+        } else {  // all other types: int, float64, rune, string, structs
+          fprintf(outputFile, "(");
+          codeExp(exp->val.binary.lhs, st, tabCount);
+          fprintf(outputFile, ".equals(");
+          codeExp(exp->val.binary.rhs, st, tabCount);
+          fprintf(outputFile, "))");
+        }
         break;
       case ek_ne:
-      	type = resolveExpType(exp->val.binary.lhs->type, st);
-      	if (type->kind == tk_array) {	// arrays
-      		fprintf(outputFile, "(!Arrays.deepEquals(");
-	        codeExp(exp->val.binary.lhs, st, tabCount);
-	        fprintf(outputFile, ",");
-	        codeExp(exp->val.binary.rhs, st, tabCount);
-	        fprintf(outputFile, "))");
-      	} else {	// all other types: int, float64, rune, string, structs
-	        fprintf(outputFile, "(!");
-	        codeExp(exp->val.binary.lhs, st, tabCount);
-	        fprintf(outputFile, ".equals(");
-	        codeExp(exp->val.binary.rhs, st, tabCount);
-	        fprintf(outputFile, "))");
-	      }
+        type = resolveExpType(exp->val.binary.lhs->type, st);
+        if (type->kind == tk_array) {  // arrays
+          fprintf(outputFile, "(!Arrays.deepEquals(");
+          codeExp(exp->val.binary.lhs, st, tabCount);
+          fprintf(outputFile, ",");
+          codeExp(exp->val.binary.rhs, st, tabCount);
+          fprintf(outputFile, "))");
+        } else {  // all other types: int, float64, rune, string, structs
+          fprintf(outputFile, "(!");
+          codeExp(exp->val.binary.lhs, st, tabCount);
+          fprintf(outputFile, ".equals(");
+          codeExp(exp->val.binary.rhs, st, tabCount);
+          fprintf(outputFile, "))");
+        }
         break;
       case ek_ge:
-     		fprintf(outputFile, "((");
+        fprintf(outputFile, "((");
         codeExp(exp->val.binary.lhs, st, tabCount);
         fprintf(outputFile, ".compareTo(");
         codeExp(exp->val.binary.rhs, st, tabCount);
         fprintf(outputFile, ") >= 0) ? Boolean.TRUE : Boolean.FALSE)");
         break;
       case ek_le:
-	      fprintf(outputFile, "((");
+        fprintf(outputFile, "((");
         codeExp(exp->val.binary.lhs, st, tabCount);
         fprintf(outputFile, ".compareTo(");
         codeExp(exp->val.binary.rhs, st, tabCount);
@@ -668,19 +636,19 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         break;
       case ek_len:
         // TODO: complete
-      	//valid on string, slice, and array
+        // valid on string, slice, and array
         break;
       case ek_cap:
         // TODO: complete
-      	// valid on slice, and array
+        // valid on slice, and array
         break;
       case ek_indexExp:
         // TODO: complete
-      	// valid on slice and array
+        // valid on slice and array
         break;
       case ek_structField:
         // TODO: complete
-      	// java object equivalent.fieldname
+        // java object equivalent.fieldname
         break;
       case ek_paren:
         fprintf(outputFile, "(");
@@ -689,13 +657,13 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         break;
       case ek_conv:
         // TODO: complete
-      	// create functions for valid casts
+        // create functions for valid casts
         break;
     }
   }
 }
 
-TYPE* resolveExpType(TYPE* type, SymbolTable* st) {
+TYPE *resolveExpType(TYPE *type, SymbolTable *st) {
   if (type->kind == tk_ref) {
     SYMBOL *s = getSymbol(st, type->val.name);
     type = s->val.typeDecl.resolvesTo;
@@ -705,6 +673,47 @@ TYPE* resolveExpType(TYPE* type, SymbolTable* st) {
     exit(1);
   }
   return type;
+}
+
+// Types - Get string representations of types
+char *getRecTypeString(char *BUFFER, TYPE *type, SymbolTable *st, char *name) {
+  FIELD_DECLS *d;
+  if (type == NULL) {
+    sprintf(BUFFER, " ");
+    return BUFFER;
+  }
+  switch (type->kind) {
+    case tk_array:
+      sprintf(BUFFER, "[%d]", type->val.array.size);
+      getRecTypeString(BUFFER + strlen(BUFFER), type->val.array.elemType, st, name);
+      break;
+    case tk_slice:
+      sprintf(BUFFER, "[]");
+      getRecTypeString(BUFFER + strlen(BUFFER), type->val.sliceType, st, name);
+      break;
+    case tk_struct:
+      sprintf(BUFFER, "struct {");
+      d = type->val.structFields;
+      while (d != NULL) {
+        sprintf(BUFFER + strlen(BUFFER), " %s ", d->id);
+        getRecTypeString(BUFFER + strlen(BUFFER), d->type, st, name);
+        sprintf(BUFFER + strlen(BUFFER), ";");
+        d = d->next;
+      }
+      sprintf(BUFFER + strlen(BUFFER), " }");
+      break;
+    case tk_ref:
+      if (name == NULL || strcmp(name, type->val.name) != 0) {
+        getRecTypeString(BUFFER + strlen(BUFFER), typeResolve(type, st), st, type->val.name);
+      } else {
+        sprintf(BUFFER + strlen(BUFFER), "%s", type->val.name);
+      }
+      break;
+    default:
+      getTypeString(BUFFER + strlen(BUFFER), type);
+      break;
+  }
+  return BUFFER;
 }
 
 // TODO: rest of the types
@@ -743,7 +752,7 @@ void codeType(TYPE *type, SymbolTable *st, int tabCount) {
 }
 
 // TODO: rest of the types
-char *javaTypeString(TYPE *type, SymbolTable *st) {
+char *javaTypeString(TYPE *type, SymbolTable *st, char *name) {
   char buffer[1024];
   SYMBOL *symbol;
   if (type != NULL) {
@@ -759,7 +768,8 @@ char *javaTypeString(TYPE *type, SymbolTable *st) {
       case tk_boolean:
         return "Boolean";
       case tk_struct:
-        getRecTypeString(buffer, type, st, NULL);
+        if (DEBUG) printf("javaTypeString: tk_struct\n");
+        getRecTypeString(buffer, type, st, name);
         STRUCT *s = getFromStructTable(buffer);
         if (s == NULL) {
           fprintf(stderr, "Error! Could not retrieve struct during code generation\n");
@@ -767,14 +777,57 @@ char *javaTypeString(TYPE *type, SymbolTable *st) {
         }
         return s->className;
       case tk_array:
-        sprintf(buffer, "%s[]", javaTypeString(type->val.array.elemType, st));
+        if (DEBUG) printf("javaTypeString: tk_array\n");
+        sprintf(buffer, "%s[]", javaTypeString(type->val.array.elemType, st, name));
         return strdup(buffer);
       case tk_slice:
-        sprintf(buffer, "Slice<%s>", javaTypeString(type->val.sliceType, st));
+        if (DEBUG) printf("javaTypeString: tk_slice\n");
+        sprintf(buffer, "Slice<%s>", javaTypeString(type->val.sliceType, st, name));
+        return strdup(buffer);
+      case tk_ref:
+        if (DEBUG) printf("javaTypeString: tk_ref %s\n", name);
+        symbol = getSymbol(st, type->val.name);
+        return javaTypeString(symbol->val.typeDecl.resolvesTo, st, name);
+      case tk_res:
+        fprintf(stderr, "Encountered tk_res type during code generation");
+        exit(1);
+    }
+  }
+  return "";
+}
+
+char *javaTypeStringConstructor(TYPE *type, SymbolTable *st, char *name) {
+  char *buffer = (char *)(malloc(1024));
+  SYMBOL *symbol;
+  if (type != NULL) {
+    switch (type->kind) {
+      case tk_int:
+        return "Integer";
+      case tk_float:
+        return "Double";
+      case tk_rune:
+        return "Character";
+      case tk_string:
+        return "String";
+      case tk_boolean:
+        return "Boolean";
+      case tk_struct:
+        getRecTypeString(buffer, type, st, name);
+        STRUCT *s = getFromStructTable(buffer);
+        if (s == NULL) {
+          fprintf(stderr, "Error! Could not retrieve struct during code generation\n");
+          exit(1);
+        }
+        return strdup(s->className);
+      case tk_array:
+        sprintf(buffer, "%s[%d]", javaTypeStringConstructor(type->val.array.elemType, st, name), type->val.array.size);
+        return strdup(buffer);
+      case tk_slice:
+        sprintf(buffer, "Slice<%s>", javaTypeString(type->val.sliceType, st, name));
         return strdup(buffer);
       case tk_ref:
         symbol = getSymbol(st, type->val.name);
-        return javaTypeString(symbol->val.typeDecl.resolvesTo, st);
+        return javaTypeStringConstructor(symbol->val.typeDecl.resolvesTo, st, name);
       case tk_res:
         fprintf(stderr, "Encountered tk_res type during code generation");
         exit(1);
