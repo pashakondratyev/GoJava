@@ -235,7 +235,7 @@ void makeStructTableFuncDecl(FUNC_DECL *fd, SymbolTable *st) {
   if (fd->params != NULL) {
     PARAM_LIST *pl = fd->params;
     while (pl != NULL) {
-      if (resolvesToStruct(pl->type, st)) {
+      if (pl->type->kind == tk_struct) {
         addToStructTable(pl->type, NULL, st);
       }
       pl = pl->next;
@@ -391,8 +391,14 @@ char *getRecTypeString(char *BUFFER, TYPE *type, SymbolTable *st, char *name) {
 void codeFuncDecl(FUNC_DECL *fd, SymbolTable *st, int tabCount) {
   char buffer[1024];
   // If this is not a reference we need to handle this specially
-  char *returnTypeString = fd->returnType == NULL ? "void" : getTypeString(buffer, fd->returnType);
+  char *returnTypeString = fd->returnType == NULL ? "void" : javaTypeString(fd->returnType, st);
   fprintf(outputFile, "\tpublic static %s %s (", returnTypeString, prefix(fd->name));
+  for(PARAM_LIST *temp = fd->params; temp; temp = temp->next ){
+    fprintf(outputFile, "%s %s", javaTypeString(temp->type, st), temp->id);
+    if(temp->next){
+      fprintf(outputFile, ", ");
+    }
+  }
   // print args
   fprintf(outputFile, ") {\n");
   // TODO: implement
@@ -739,6 +745,7 @@ void codeType(TYPE *type, SymbolTable *st, int tabCount) {
 // TODO: rest of the types
 char *javaTypeString(TYPE *type, SymbolTable *st) {
   char buffer[1024];
+  SYMBOL *symbol;
   if (type != NULL) {
     switch (type->kind) {
       case tk_int:
@@ -760,11 +767,14 @@ char *javaTypeString(TYPE *type, SymbolTable *st) {
         }
         return s->className;
       case tk_array:
-        break;
+        sprintf(buffer, "%s[]", javaTypeString(type->val.array.elemType, st));
+        return strdup(buffer);
       case tk_slice:
-        break;
+        sprintf(buffer, "Slice<%s>", javaTypeString(type->val.sliceType, st));
+        return strdup(buffer);
       case tk_ref:
-        break;
+        symbol = getSymbol(st, type->val.name);
+        return javaTypeString(symbol->val.typeDecl.resolvesTo, st);
       case tk_res:
         fprintf(stderr, "Encountered tk_res type during code generation");
         exit(1);

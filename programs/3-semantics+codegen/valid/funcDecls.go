@@ -23,6 +23,13 @@ func baz(a struct { a int ; }) {
 	println(a.a)
 }
 
+func bah() struct {a int;} {
+	var temp struct {
+		a int;
+	}
+	temp.a = 5
+	return temp
+}
 
 func main() {
 	var a kind
