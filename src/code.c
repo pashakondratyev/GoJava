@@ -596,6 +596,8 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
       case ek_conv:
         // TODO: complete
       	// create functions for valid casts
+      	// casts/conversion may be caught by ek_func
+      	fprintf(stderr, "Logical failure: type conversion should be caught by function expressions.\n");
         break;
     }
   }
@@ -607,7 +609,7 @@ TYPE* resolveExpType(TYPE* type, SymbolTable* st) {
     type = s->val.typeDecl.resolvesTo;
   }
   if (type->kind == tk_ref) {
-    fprintf(stderr, "Logical failure: shouldn't reach a reference type\n");
+    fprintf(stderr, "Logical failure: shouldn't reach a reference type.\n");
     exit(1);
   }
   return type;
