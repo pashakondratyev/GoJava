@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 
 #include "code.h"
 #include "symbol.h"
@@ -87,19 +85,10 @@ void codeSetup(char *className) {
   // class name must match file name
   fprintf(outputFile, "public class %s {\n", className);
   // define Go boolean variables
-  fprintf(outputFile, "\tpublic Boolean __golite__true = Boolean.TRUE;\n");
-  fprintf(outputFile, "\tpublic Boolean __golite__false = Boolean.FALSE;\n\n");
-
-  fprintf(outputFile, "\tpublic static boolean stringLessThan(String s1, String s2) {\n");
-  fprintf(outputFile, "\t\treturn (s1.compareTo(s2) < 0) ? Boolean.TRUE : Boolean.FALSE;\n");
-  fprintf(outputFile, "\t}\n\n");
-  fprintf(outputFile, "\tpublic static boolean stringGreaterEqual(String s1, String s2) {\n");
-  fprintf(outputFile, "\t\treturn (s1.compareTo(s2) >= 0) ? Boolean.TRUE : Boolean.FALSE;\n");
-  fprintf(outputFile, "\t}\n\n");
-  fprintf(outputFile, "\tpublic static boolean stringLessEqual(String s1, String s2) {\n");
-  fprintf(outputFile, "\t\treturn (s1.compareTo(s2) <= 0) ? Boolean.TRUE : Boolean.FALSE;\n");
-  fprintf(outputFile, "\t}\n\n");
-
+  fprintf(outputFile, "\tpublic static Boolean __golite__true = Boolean.TRUE;\n");
+  fprintf(outputFile, "\tpublic static Boolean __golite__false = Boolean.FALSE;\n\n");
+  // utility class to handle casts/type conversions
+  fprintf(outputFile, "\tpublic static Cast castUtil = new Cast();\n");
 }
 
 // complete class definition
@@ -411,7 +400,8 @@ void codeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType, int tabCount) {
 
 void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
   // TODO: complete
-  TYPE *type;
+  TYPE *type = NULL;
+  SYMBOL *s = NULL;
   if (exp != NULL) {
     switch (exp->kind) {
       case ek_id:
@@ -658,16 +648,53 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         fprintf(outputFile, ")");
         break;
       case ek_func:
+      	// type casting check first
+      	s = getSymbol(st, exp->val.funcCall.funcId);
+      	TYPE *type1 = NULL;
+      	TYPE *type2 = NULL;
+      	TYPE *type3 = NULL;
+      	if (s->kind == dk_type) {		// TODO: Fix this once we know what type field to check
+      		type1 = s->val.type;
+      		type2 = s->val.typeDecl.type;
+      		type3 = s->val.typeDecl.resolvesTo;
+      	} 
+      	if (type1->kind == tk_int || type2->kind == tk_int || type3->kind == tk_int) {		// int
+      		fprintf(outputFile, "castUtil.castToInteger(");
+        	EXP_LIST *exps = exp->val.funcCall.args;
+	      	codeExp(exps->exp, st, tabCount);
+        	fprintf(outputFile, ")");
+      		break;
+      	}
+      	if (type1->kind == tk_float || type2->kind == tk_float || type3->kind == tk_float) {		// float64
+      		fprintf(outputFile, "castUtil.castToDouble(");
+        	EXP_LIST *exps = exp->val.funcCall.args;
+	      	codeExp(exps->exp, st, tabCount);
+        	fprintf(outputFile, ")");
+      		break;
+      	}
+      	if (type1->kind == tk_string || type2->kind == tk_string || type3->kind == tk_string) {		// string
+      		fprintf(outputFile, "castUtil.castToString(");
+        	EXP_LIST *exps = exp->val.funcCall.args;
+	      	codeExp(exps->exp, st, tabCount);
+        	fprintf(outputFile, ")");
+      		break;
+      	}
+      	if (type1->kind == tk_rune || type2->kind == tk_rune || type3->kind == tk_rune) {		// rune
+      		fprintf(outputFile, "castUtil.castToCharacter(");
+        	EXP_LIST *exps = exp->val.funcCall.args;
+	      	codeExp(exps->exp, st, tabCount);
+        	fprintf(outputFile, ")");
+      		break;
+      	}
+      	// normal function call
       	fprintf(outputFile, "%s(", prefix(exp->val.funcCall.funcId));
       	EXP_LIST *exps = exp->val.funcCall.args;
       	while (exps != NULL) {
-      		type = resolveExpType(exps->exp, st);
-      		fprintf(outputFile, "%s ", javaTypeString(type, st));
       		codeExp(exps->exp, st, tabCount);
 
       		exps = exps -> next;
       		if (exps != NULL) {
-      			fprintf(outputFile, ", ", javaTypeString(type, st));
+      			fprintf(outputFile, ", ");
       		}
       	}
       	fprintf(outputFile, ")");
@@ -717,8 +744,7 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         break;
       case ek_structField:
      		codeExp(exp->val.structField.structExp, st, tabCount);
-        fprintf(outputFile, ".");
-        codeExp(exp->val.structField.fieldName, st, tabCount);
+        fprintf(outputFile, ".%s", exp->val.structField.fieldName);
         break;
       case ek_paren:
         fprintf(outputFile, "(");
@@ -726,9 +752,6 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         fprintf(outputFile, ")");
         break;
       case ek_conv:
-        // TODO: complete
-      	// create functions for valid casts
-      	// casts/conversion may be caught by ek_func
       	fprintf(stderr, "Logical failure: type conversion should be caught by function expressions.\n");
         break;
     }
