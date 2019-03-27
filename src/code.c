@@ -84,20 +84,17 @@ void codeSetup(char *className) {
   // class name must match file name
   fprintf(outputFile, "public class %s {\n", className);
   // define Go boolean variables
-  fprintf(outputFile, "\tpublic boolean __golite__true = true;\n");
-  fprintf(outputFile, "\tpublic boolean __golite__false = false;\n\n");
-  // define string comparison methods
-  fprintf(outputFile, "\tpublic static boolean stringGreaterThan(String s1, String s2) {\n");
-  fprintf(outputFile, "\t\treturn (s1.compareTo(s2) > 0) ? true : false;\n");
-  fprintf(outputFile, "\t}\n\n");
+  fprintf(outputFile, "\tpublic Boolean __golite__true = Boolean.TRUE;\n");
+  fprintf(outputFile, "\tpublic Boolean __golite__false = Boolean.FALSE;\n\n");
+
   fprintf(outputFile, "\tpublic static boolean stringLessThan(String s1, String s2) {\n");
-  fprintf(outputFile, "\t\treturn (s1.compareTo(s2) < 0) ? true : false;\n");
+  fprintf(outputFile, "\t\treturn (s1.compareTo(s2) < 0) ? Boolean.TRUE : Boolean.FALSE;\n");
   fprintf(outputFile, "\t}\n\n");
   fprintf(outputFile, "\tpublic static boolean stringGreaterEqual(String s1, String s2) {\n");
-  fprintf(outputFile, "\t\treturn (s1.compareTo(s2) >= 0) ? true : false;\n");
+  fprintf(outputFile, "\t\treturn (s1.compareTo(s2) >= 0) ? Boolean.TRUE : Boolean.FALSE;\n");
   fprintf(outputFile, "\t}\n\n");
   fprintf(outputFile, "\tpublic static boolean stringLessEqual(String s1, String s2) {\n");
-  fprintf(outputFile, "\t\treturn (s1.compareTo(s2) <= 0) ? true : false;\n");
+  fprintf(outputFile, "\t\treturn (s1.compareTo(s2) <= 0) ? Boolean.TRUE : Boolean.FALSE;\n");
   fprintf(outputFile, "\t}\n\n");
 
 }
@@ -331,19 +328,19 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         fprintf(outputFile, "%s", prefix(exp->val.id));
         break;
       case ek_float:
-        fprintf(outputFile, "%f", exp->val.floatval);
+        fprintf(outputFile, "new Double(%f)", exp->val.floatval);
         break;
       case ek_int:
-        fprintf(outputFile, "%i", exp->val.intval);
+        fprintf(outputFile, "new Integer(%i)", exp->val.intval);
         break;
       case ek_string:
         fprintf(outputFile, "\"%s\"", exp->val.stringval);
         break;
       case ek_boolean:
-        fprintf(outputFile, "%s", exp->val.booleanval ? "__golite__true" : "__golite__false");
+        fprintf(outputFile, "new Boolean(%s)", exp->val.booleanval ? "__golite__true" : "__golite__false");
         break;
       case ek_rune:
-        fprintf(outputFile, "'%c'", exp->val.runeval);
+        fprintf(outputFile, "new Character('%c')", exp->val.runeval);
         break;
       case ek_plus:
 				type = resolveExpType(exp->val.binary.lhs->type, st);
@@ -410,102 +407,58 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         }
         break;
       case ek_eq:
-        // TODO: fix for arrays, and structs
+        // TODO: fix for arrays
       	type = resolveExpType(exp->val.binary.lhs->type, st);
-      	if (type->kind == tk_string) {	// strings
-      		fprintf(outputFile, "(");
+      	if (type->kind == tk_array) {	// arrays
+
+      	} else {	// all other types: int, float64, rune, string, structs
+	        fprintf(outputFile, "(");
 	        codeExp(exp->val.binary.lhs, st, tabCount);
 	        fprintf(outputFile, ".equals(");
 	        codeExp(exp->val.binary.rhs, st, tabCount);
 	        fprintf(outputFile, "))");
-      	} else {	// other base types: int, float64, rune
-	        fprintf(outputFile, "(");
-	        codeExp(exp->val.binary.lhs, st, tabCount);
-	        fprintf(outputFile, " == ");
-	        codeExp(exp->val.binary.rhs, st, tabCount);
-	        fprintf(outputFile, ")");
 	      }
         break;
       case ek_ne:
-        // TODO: fix for arrays, and structs
+        // TODO: fix for arrays
       	type = resolveExpType(exp->val.binary.lhs->type, st);
-      	if (type->kind == tk_string) {	// strings
-      		fprintf(outputFile, "(!");
+      	if (type->kind == tk_array) {	// arrays
+
+      	} else {	// all other types: int, float64, rune, string, structs
+	        fprintf(outputFile, "(!");
 	        codeExp(exp->val.binary.lhs, st, tabCount);
 	        fprintf(outputFile, ".equals(");
 	        codeExp(exp->val.binary.rhs, st, tabCount);
 	        fprintf(outputFile, "))");
-      	} else {	// other base types: int, float64, rune
-	        fprintf(outputFile, "(");
-	        codeExp(exp->val.binary.lhs, st, tabCount);
-	        fprintf(outputFile, " != ");
-	        codeExp(exp->val.binary.rhs, st, tabCount);
-	        fprintf(outputFile, ")");
 	      }
         break;
       case ek_ge:
-      	type = resolveExpType(exp->val.binary.lhs->type, st);
-      	if (type->kind == tk_string) {	// strings
-      		fprintf(outputFile, "stringGreaterEqual(");
-	        codeExp(exp->val.binary.lhs, st, tabCount);
-	        fprintf(outputFile, ",");
-	        codeExp(exp->val.binary.rhs, st, tabCount);
-	        fprintf(outputFile, ")");
-      	} else {	// other base types: int, float64, rune
-	        fprintf(outputFile, "(");
-	        codeExp(exp->val.binary.lhs, st, tabCount);
-	        fprintf(outputFile, " >= ");
-	        codeExp(exp->val.binary.rhs, st, tabCount);
-	        fprintf(outputFile, ")");
-	      }
+     		fprintf(outputFile, "((");
+        codeExp(exp->val.binary.lhs, st, tabCount);
+        fprintf(outputFile, ".compareTo(");
+        codeExp(exp->val.binary.rhs, st, tabCount);
+        fprintf(outputFile, ") >= 0) ? Boolean.TRUE : Boolean.FALSE)");
         break;
       case ek_le:
-	      type = resolveExpType(exp->val.binary.lhs->type, st);
-      	if (type->kind == tk_string) {	// strings
-      		fprintf(outputFile, "stringLessEqual(");
-	        codeExp(exp->val.binary.lhs, st, tabCount);
-	        fprintf(outputFile, ",");
-	        codeExp(exp->val.binary.rhs, st, tabCount);
-	        fprintf(outputFile, ")");
-      	} else {	// other base types: int, float64, rune
-	        fprintf(outputFile, "(");
-	        codeExp(exp->val.binary.lhs, st, tabCount);
-	        fprintf(outputFile, " <= ");
-	        codeExp(exp->val.binary.rhs, st, tabCount);
-	        fprintf(outputFile, ")");
-	      }
+	      fprintf(outputFile, "((");
+        codeExp(exp->val.binary.lhs, st, tabCount);
+        fprintf(outputFile, ".compareTo(");
+        codeExp(exp->val.binary.rhs, st, tabCount);
+        fprintf(outputFile, ") <= 0) ? Boolean.TRUE : Boolean.FALSE)");
         break;
       case ek_gt:
-         type = resolveExpType(exp->val.binary.lhs->type, st);
-      	if (type->kind == tk_string) {	// strings
-      		fprintf(outputFile, "stringGreaterThan(");
-	        codeExp(exp->val.binary.lhs, st, tabCount);
-	        fprintf(outputFile, ",");
-	        codeExp(exp->val.binary.rhs, st, tabCount);
-	        fprintf(outputFile, ")");
-      	} else {	// other base types: int, float64, rune
-	        fprintf(outputFile, "(");
-	        codeExp(exp->val.binary.lhs, st, tabCount);
-	        fprintf(outputFile, " > ");
-	        codeExp(exp->val.binary.rhs, st, tabCount);
-	        fprintf(outputFile, ")");
-	      }
+        fprintf(outputFile, "((");
+        codeExp(exp->val.binary.lhs, st, tabCount);
+        fprintf(outputFile, ".compareTo(");
+        codeExp(exp->val.binary.rhs, st, tabCount);
+        fprintf(outputFile, ") > 0) ? Boolean.TRUE : Boolean.FALSE)");
         break;
       case ek_lt:
-         type = resolveExpType(exp->val.binary.lhs->type, st);
-      	if (type->kind == tk_string) {	// strings
-      		fprintf(outputFile, "stringLessThan(");
-	        codeExp(exp->val.binary.lhs, st, tabCount);
-	        fprintf(outputFile, ",");
-	        codeExp(exp->val.binary.rhs, st, tabCount);
-	        fprintf(outputFile, ")");
-      	} else {	// other base types: int, float64, rune
-	        fprintf(outputFile, "(");
-	        codeExp(exp->val.binary.lhs, st, tabCount);
-	        fprintf(outputFile, " < ");
-	        codeExp(exp->val.binary.rhs, st, tabCount);
-	        fprintf(outputFile, ")");
-	      }
+        fprintf(outputFile, "((");
+        codeExp(exp->val.binary.lhs, st, tabCount);
+        fprintf(outputFile, ".compareTo(");
+        codeExp(exp->val.binary.rhs, st, tabCount);
+        fprintf(outputFile, ") < 0) ? Boolean.TRUE : Boolean.FALSE)");
         break;
       case ek_and:
         fprintf(outputFile, "(");
