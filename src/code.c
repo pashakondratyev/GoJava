@@ -658,7 +658,19 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         fprintf(outputFile, ")");
         break;
       case ek_func:
-        // TODO: complete
+      	fprintf(outputFile, "%s(", prefix(exp->val.funcCall.funcId));
+      	EXP_LIST *exps = exp->val.funcCall.args;
+      	while (exps != NULL) {
+      		type = resolveExpType(exps->exp, st);
+      		fprintf(outputFile, "%s ", javaTypeString(type, st));
+      		codeExp(exps->exp, st, tabCount);
+
+      		exps = exps -> next;
+      		if (exps != NULL) {
+      			fprintf(outputFile, ", ", javaTypeString(type, st));
+      		}
+      	}
+      	fprintf(outputFile, ")");
         break;
       case ek_append:
         codeExp(exp->val.append.sliceExp, st, tabCount);
