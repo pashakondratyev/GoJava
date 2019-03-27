@@ -399,14 +399,13 @@ void codeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType, int tabCount) {
 }
 
 void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
-  // TODO: complete
   TYPE *type = NULL;
   SYMBOL *s = NULL;
   if (exp != NULL) {
     switch (exp->kind) {
       case ek_id:
         if (strcmp(exp->val.id, "_") == 0) {
-          // TODO: do something with blank id
+          fprintf(stderr, "ERROR: blank identifier not handled.\n");
           break;
         }
         fprintf(outputFile, "%s", prefix(exp->val.id));
@@ -648,12 +647,12 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         fprintf(outputFile, ")");
         break;
       case ek_func:
-      	// type casting check first
+      	// type casting checked first
       	s = getSymbol(st, exp->val.funcCall.funcId);
       	TYPE *type1 = NULL;
       	TYPE *type2 = NULL;
       	TYPE *type3 = NULL;
-      	if (s->kind == dk_type) {		// TODO: Fix this once we know what type field to check
+      	if (s->kind == dk_type) {	
       		type1 = s->val.type;
       		type2 = s->val.typeDecl.type;
       		type3 = s->val.typeDecl.resolvesTo;
