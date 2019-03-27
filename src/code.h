@@ -7,6 +7,7 @@
 typedef struct STRUCT {
     char *structString;
     char *className;
+    char *javaClass;
     int comparable;
     TYPE *type;
     struct STRUCT *next;
@@ -48,7 +49,8 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount);
 TYPE* resolveExpType(TYPE* type, SymbolTable *st);
 
 void codeType(TYPE *type, SymbolTable *st, int tabcount);
-void codeStructType(FIELD_DECLS *fd, SymbolTable *st, STRUCT *s, char *name);
+char *codeStructType(char *BUFFER, FIELD_DECLS *fd, SymbolTable *st, STRUCT *s, char *name);
+void codeStructTable();
 
 char *javaTypeString(TYPE *type, SymbolTable *st, char *name);
 char *javaTypeStringConstructor(TYPE *type, SymbolTable *st, char *name);

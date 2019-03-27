@@ -15,5 +15,5 @@ type kaylee struct {c []kaylee; d string;}
 func main() {
 	type alex struct {f int;}
 	type alex2 struct {g float64;}
-	type alex3 struct {h [5]kab; i [5][3]string; a [][]int; c [][]alex3;}
+	type alex3 struct {h [5]kab; i [5][3]string; a [][]int; c [][]alex3; d [][3]string; e [3][]float64;}
 }
