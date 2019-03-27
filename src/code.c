@@ -567,8 +567,10 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         // TODO: complete
         break;
       case ek_append:
-        // TODO: complete
-      	// call the slice append method: idName.append(value)
+        codeExp(exp->val.append.sliceExp, st, tabCount);
+        fprintf(outputFile, ".append(");
+        codeExp(exp->val.append.elem, st, tabCount);
+        fprintf(outputFile, ")");
         break;
       case ek_len:
         // TODO: complete
