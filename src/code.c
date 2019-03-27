@@ -407,10 +407,13 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         }
         break;
       case ek_eq:
-        // TODO: fix for arrays
       	type = resolveExpType(exp->val.binary.lhs->type, st);
       	if (type->kind == tk_array) {	// arrays
-
+      		fprintf(outputFile, "(Arrays.deepEquals(");
+	        codeExp(exp->val.binary.lhs, st, tabCount);
+	        fprintf(outputFile, ",");
+	        codeExp(exp->val.binary.rhs, st, tabCount);
+	        fprintf(outputFile, "))");
       	} else {	// all other types: int, float64, rune, string, structs
 	        fprintf(outputFile, "(");
 	        codeExp(exp->val.binary.lhs, st, tabCount);
@@ -420,10 +423,13 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
 	      }
         break;
       case ek_ne:
-        // TODO: fix for arrays
       	type = resolveExpType(exp->val.binary.lhs->type, st);
       	if (type->kind == tk_array) {	// arrays
-
+      		fprintf(outputFile, "(!Arrays.deepEquals(");
+	        codeExp(exp->val.binary.lhs, st, tabCount);
+	        fprintf(outputFile, ",");
+	        codeExp(exp->val.binary.rhs, st, tabCount);
+	        fprintf(outputFile, "))");
       	} else {	// all other types: int, float64, rune, string, structs
 	        fprintf(outputFile, "(!");
 	        codeExp(exp->val.binary.lhs, st, tabCount);
@@ -599,7 +605,7 @@ TYPE* resolveExpType(TYPE* type, SymbolTable* st) {
     type = s->val.typeDecl.resolvesTo;
   }
   if (type->kind == tk_ref) {
-    fprintf(stderr, "Error: logical failure - shouldn't be a reference type at this point.\n");
+    fprintf(stderr, "Logical failure: shouldn't reach a reference type\n");
     exit(1);
   }
   return type;
