@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 
 #include "code.h"
 #include "symbol.h"
@@ -70,18 +68,10 @@ void codeSetup(char *className) {
   // class name must match file name
   fprintf(outputFile, "public class %s {\n", className);
   // define Go boolean variables
-  fprintf(outputFile, "\tpublic Boolean __golite__true = Boolean.TRUE;\n");
-  fprintf(outputFile, "\tpublic Boolean __golite__false = Boolean.FALSE;\n\n");
-
-  fprintf(outputFile, "\tpublic static boolean stringLessThan(String s1, String s2) {\n");
-  fprintf(outputFile, "\t\treturn (s1.compareTo(s2) < 0) ? Boolean.TRUE : Boolean.FALSE;\n");
-  fprintf(outputFile, "\t}\n\n");
-  fprintf(outputFile, "\tpublic static boolean stringGreaterEqual(String s1, String s2) {\n");
-  fprintf(outputFile, "\t\treturn (s1.compareTo(s2) >= 0) ? Boolean.TRUE : Boolean.FALSE;\n");
-  fprintf(outputFile, "\t}\n\n");
-  fprintf(outputFile, "\tpublic static boolean stringLessEqual(String s1, String s2) {\n");
-  fprintf(outputFile, "\t\treturn (s1.compareTo(s2) <= 0) ? Boolean.TRUE : Boolean.FALSE;\n");
-  fprintf(outputFile, "\t}\n\n");
+  fprintf(outputFile, "\tpublic static Boolean __golite__true = Boolean.TRUE;\n");
+  fprintf(outputFile, "\tpublic static Boolean __golite__false = Boolean.FALSE;\n\n");
+  // utility class to handle casts/type conversions
+  fprintf(outputFile, "\tpublic static Cast castUtil = new Cast();\n");
 }
 
 // complete class definition
@@ -373,18 +363,62 @@ void codeFuncDecl(FUNC_DECL *fd, SymbolTable *st, int tabCount) {
   fprintf(outputFile, "\t}\n");
 }
 
-void codeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType, int tabCount) {
+void codeStmt(STMT *stmt, SymbolTable *st, int tabCount) {
   // TODO: implement
+  if (stmt != NULL) {
+  	switch (stmt->kind) {
+  		case sk_block:
+  			break;
+  		case sk_exp:
+  			break;
+  		case sk_assign:
+  			break;
+  		case sk_assignOp:
+  			break;
+  		case sk_decl:
+  			break;
+  		case sk_shortDecl:
+  			break;
+  		case sk_incr:
+  			break;
+  		case sk_decr:
+  			break;
+  		case sk_print:
+  			break;
+  		case sk_println:
+  			break;
+  		case sk_return:
+  			break;
+  		case sk_if:
+  			break;
+  		case sk_else:
+  			break;
+  		case sk_switch:
+  			break;
+  		case sk_for:
+  			break;
+  		case sk_break:
+  			break;
+  		case sk_continue:
+  			break;
+  		case sk_fallthrough:
+  			fprintf(stderr, "Error: fallthough not supported.\n");
+  			break;
+  		case sk_empty:
+  			// empty statement
+  			break;
+  	}
+  }
 }
 
 void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
-  // TODO: complete
-  TYPE *type;
+  TYPE *type = NULL;
+  SYMBOL *s = NULL;
   if (exp != NULL) {
     switch (exp->kind) {
       case ek_id:
         if (strcmp(exp->val.id, "_") == 0) {
-          // TODO: do something with blank id
+          fprintf(stderr, "ERROR: blank identifier not handled.\n");
           break;
         }
         fprintf(outputFile, "%s", prefix(exp->val.id));
@@ -626,7 +660,56 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         fprintf(outputFile, ")");
         break;
       case ek_func:
-        // TODO: complete
+      	// type casting checked first
+      	s = getSymbol(st, exp->val.funcCall.funcId);
+      	TYPE *type1 = NULL;
+      	TYPE *type2 = NULL;
+      	TYPE *type3 = NULL;
+      	if (s->kind == dk_type) {	
+      		type1 = s->val.type;
+      		type2 = s->val.typeDecl.type;
+      		type3 = s->val.typeDecl.resolvesTo;
+      	} 
+      	if (type1->kind == tk_int || type2->kind == tk_int || type3->kind == tk_int) {		// int
+      		fprintf(outputFile, "castUtil.castToInteger(");
+        	EXP_LIST *exps = exp->val.funcCall.args;
+	      	codeExp(exps->exp, st, tabCount);
+        	fprintf(outputFile, ")");
+      		break;
+      	}
+      	if (type1->kind == tk_float || type2->kind == tk_float || type3->kind == tk_float) {		// float64
+      		fprintf(outputFile, "castUtil.castToDouble(");
+        	EXP_LIST *exps = exp->val.funcCall.args;
+	      	codeExp(exps->exp, st, tabCount);
+        	fprintf(outputFile, ")");
+      		break;
+      	}
+      	if (type1->kind == tk_string || type2->kind == tk_string || type3->kind == tk_string) {		// string
+      		fprintf(outputFile, "castUtil.castToString(");
+        	EXP_LIST *exps = exp->val.funcCall.args;
+	      	codeExp(exps->exp, st, tabCount);
+        	fprintf(outputFile, ")");
+      		break;
+      	}
+      	if (type1->kind == tk_rune || type2->kind == tk_rune || type3->kind == tk_rune) {		// rune
+      		fprintf(outputFile, "castUtil.castToCharacter(");
+        	EXP_LIST *exps = exp->val.funcCall.args;
+	      	codeExp(exps->exp, st, tabCount);
+        	fprintf(outputFile, ")");
+      		break;
+      	}
+      	// normal function call
+      	fprintf(outputFile, "%s(", prefix(exp->val.funcCall.funcId));
+      	EXP_LIST *exps = exp->val.funcCall.args;
+      	while (exps != NULL) {
+      		codeExp(exps->exp, st, tabCount);
+
+      		exps = exps -> next;
+      		if (exps != NULL) {
+      			fprintf(outputFile, ", ");
+      		}
+      	}
+      	fprintf(outputFile, ")");
         break;
       case ek_append:
         codeExp(exp->val.append.sliceExp, st, tabCount);
@@ -635,20 +718,45 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         fprintf(outputFile, ")");
         break;
       case ek_len:
-        // TODO: complete
-        // valid on string, slice, and array
+      	type = resolveExpType(exp->val.unary.exp->type, st);
+        if (type->kind == tk_string) {  // string
+        	codeExp(exp->val.lenExp, st, tabCount);
+        	fprintf(outputFile, ".length()");
+        } else if (type->kind == tk_array) {  // array
+        	codeExp(exp->val.lenExp, st, tabCount);
+        	fprintf(outputFile, ".length");
+        } else 	{		// slice
+        	codeExp(exp->val.lenExp, st, tabCount);
+        	fprintf(outputFile, ".len");
+        }
         break;
       case ek_cap:
-        // TODO: complete
-        // valid on slice, and array
+      	type = resolveExpType(exp->val.unary.exp->type, st);
+        if (type->kind == tk_array) {  // array
+        	codeExp(exp->val.capExp, st, tabCount);
+        	fprintf(outputFile, ".length");
+        } else 	{		// slice
+        	codeExp(exp->val.capExp, st, tabCount);
+        	fprintf(outputFile, ".cap");
+        }
         break;
       case ek_indexExp:
-        // TODO: complete
-        // valid on slice and array
+      	type = resolveExpType(exp->val.unary.exp->type, st);
+        if (type->kind == tk_array) {  // array
+        	codeExp(exp->val.indexExp.objectExp, st, tabCount);
+        	fprintf(outputFile, "[");
+        	codeExp(exp->val.indexExp.indexExp, st, tabCount);
+        	fprintf(outputFile, "]");
+        } else 	{		// slice
+        	codeExp(exp->val.indexExp.objectExp, st, tabCount);
+        	fprintf(outputFile, ".get(");
+        	codeExp(exp->val.indexExp.indexExp, st, tabCount);
+        	fprintf(outputFile, ")");
+        }
         break;
       case ek_structField:
-        // TODO: complete
-        // java object equivalent.fieldname
+     		codeExp(exp->val.structField.structExp, st, tabCount);
+        fprintf(outputFile, ".%s", exp->val.structField.fieldName);
         break;
       case ek_paren:
         fprintf(outputFile, "(");
@@ -656,8 +764,7 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         fprintf(outputFile, ")");
         break;
       case ek_conv:
-        // TODO: complete
-        // create functions for valid casts
+      	fprintf(stderr, "Logical failure: type conversion should be caught by function expressions.\n");
         break;
     }
   }
@@ -669,7 +776,7 @@ TYPE *resolveExpType(TYPE *type, SymbolTable *st) {
     type = s->val.typeDecl.resolvesTo;
   }
   if (type->kind == tk_ref) {
-    fprintf(stderr, "Logical failure: shouldn't reach a reference type\n");
+    fprintf(stderr, "Logical failure: shouldn't reach a reference type.\n");
     exit(1);
   }
   return type;

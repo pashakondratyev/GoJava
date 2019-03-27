@@ -43,7 +43,7 @@ void codeShortDecl(SHORT_SPECS *ss, SymbolTable *st, int tabCount);
 void codeTypeDecl(TYPE_SPECS *ts, SymbolTable *st, int tabCount);
 void codeFuncDecl(FUNC_DECL *fd, SymbolTable *st, int tabCount);
 
-void codeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType, int tabCount);
+void codeStmt(STMT *stmt, SymbolTable *st, int tabCount);
 void codeExp(EXP *exp, SymbolTable *st, int tabCount);
 TYPE* resolveExpType(TYPE* type, SymbolTable *st);
 
