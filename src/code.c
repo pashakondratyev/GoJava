@@ -148,6 +148,7 @@ void makeStructTableFuncDecl(FUNC_DECL *fd, SymbolTable *st) {
 void makeStructTableStmt(STMT *stmt, SymbolTable *st) {
   if (stmt != NULL) {
     STMT_LIST *sl;
+    CASE_CLAUSE_LIST *ccl;
     switch (stmt->kind) {
       case sk_block:
         sl = stmt->val.block.blockStatements;
@@ -166,6 +167,31 @@ void makeStructTableStmt(STMT *stmt, SymbolTable *st) {
         }
       case sk_else:
         makeStructTableStmt(stmt->val.elseBody, st);
+        break;
+      case sk_for:
+        makeStructTableStmt(stmt->val.forStmt.body, st);
+        break;
+      case sk_switch:
+        ccl = stmt->val.switchStmt.caseClauses;
+        while (ccl != NULL){
+          switch (ccl->clause->kind){
+            case ck_case:
+              sl = ccl->clause->val.caseClause.clauses;
+              while (sl != NULL){
+                makeStructTableStmt(sl->stmt, st);
+                sl = sl->next;
+              }
+              break;
+            case ck_default:
+              sl = ccl->clause->val.defaultClauses;
+              while (sl != NULL){
+                makeStructTableStmt(sl->stmt, st);
+                sl = sl->next;
+              }
+              break;
+          }
+          ccl = ccl->next;
+        }
         break;
       default:
         break;
