@@ -87,8 +87,19 @@ void codeSetup(char *className) {
   // class name must match file name
   fprintf(outputFile, "public class %s {\n", className);
   // define Go boolean variables
-  fprintf(outputFile, "\tpublic boolean __golite__true = true;\n");
-  fprintf(outputFile, "\tpublic boolean __golite__false = false;\n");
+  fprintf(outputFile, "\tpublic Boolean __golite__true = Boolean.TRUE;\n");
+  fprintf(outputFile, "\tpublic Boolean __golite__false = Boolean.FALSE;\n\n");
+
+  fprintf(outputFile, "\tpublic static boolean stringLessThan(String s1, String s2) {\n");
+  fprintf(outputFile, "\t\treturn (s1.compareTo(s2) < 0) ? Boolean.TRUE : Boolean.FALSE;\n");
+  fprintf(outputFile, "\t}\n\n");
+  fprintf(outputFile, "\tpublic static boolean stringGreaterEqual(String s1, String s2) {\n");
+  fprintf(outputFile, "\t\treturn (s1.compareTo(s2) >= 0) ? Boolean.TRUE : Boolean.FALSE;\n");
+  fprintf(outputFile, "\t}\n\n");
+  fprintf(outputFile, "\tpublic static boolean stringLessEqual(String s1, String s2) {\n");
+  fprintf(outputFile, "\t\treturn (s1.compareTo(s2) <= 0) ? Boolean.TRUE : Boolean.FALSE;\n");
+  fprintf(outputFile, "\t}\n\n");
+
 }
 
 // complete class definition
@@ -405,97 +416,143 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         fprintf(outputFile, "%s", prefix(exp->val.id));
         break;
       case ek_float:
-        fprintf(outputFile, "%f", exp->val.floatval);
+        fprintf(outputFile, "new Double(%f)", exp->val.floatval);
         break;
       case ek_int:
-        fprintf(outputFile, "%i", exp->val.intval);
+        fprintf(outputFile, "new Integer(%i)", exp->val.intval);
         break;
       case ek_string:
         fprintf(outputFile, "\"%s\"", exp->val.stringval);
         break;
       case ek_boolean:
-        // TODO: check if want to use GoLite specific boolean values
-        fprintf(outputFile, "%s", exp->val.booleanval ? "__golite__true" : "__golite__false");
+        fprintf(outputFile, "new Boolean(%s)", exp->val.booleanval ? "__golite__true" : "__golite__false");
         break;
       case ek_rune:
-        fprintf(outputFile, "'%c'", exp->val.runeval);
+        fprintf(outputFile, "new Character('%c')", exp->val.runeval);
         break;
       case ek_plus:
-        // TODO: if char cast to char at the end. May not be needed in Java
-        fprintf(outputFile, "(");
-        codeExp(exp->val.binary.lhs, st, tabCount);
-        fprintf(outputFile, " + ");
-        codeExp(exp->val.binary.rhs, st, tabCount);
-        fprintf(outputFile, ")");
+				type = resolveExpType(exp->val.binary.lhs->type, st);
+        if (type->kind == tk_rune) {  // rune
+          fprintf(outputFile, "((char)(");
+          codeExp(exp->val.binary.lhs, st, tabCount);
+        	fprintf(outputFile, " + ");
+        	codeExp(exp->val.binary.rhs, st, tabCount);
+          fprintf(outputFile, "))");
+        } else {
+        	fprintf(outputFile, "(");
+        	codeExp(exp->val.binary.lhs, st, tabCount);
+        	fprintf(outputFile, " + ");
+        	codeExp(exp->val.binary.rhs, st, tabCount);
+        	fprintf(outputFile, ")");
+        }
         break;
       case ek_minus:
-        fprintf(outputFile, "(");
-        codeExp(exp->val.binary.lhs, st, tabCount);
-        fprintf(outputFile, " - ");
-        codeExp(exp->val.binary.rhs, st, tabCount);
-        fprintf(outputFile, ")");
+        type = resolveExpType(exp->val.binary.lhs->type, st);
+        if (type->kind == tk_rune) {  // rune
+          fprintf(outputFile, "((char)(");
+          codeExp(exp->val.binary.lhs, st, tabCount);
+        	fprintf(outputFile, " - ");
+        	codeExp(exp->val.binary.rhs, st, tabCount);
+          fprintf(outputFile, "))");
+        } else {
+        	fprintf(outputFile, "(");
+        	codeExp(exp->val.binary.lhs, st, tabCount);
+        	fprintf(outputFile, " - ");
+        	codeExp(exp->val.binary.rhs, st, tabCount);
+        	fprintf(outputFile, ")");
+        }
         break;
       case ek_times:
-        fprintf(outputFile, "(");
-        codeExp(exp->val.binary.lhs, st, tabCount);
-        fprintf(outputFile, " * ");
-        codeExp(exp->val.binary.rhs, st, tabCount);
-        fprintf(outputFile, ")");
+        type = resolveExpType(exp->val.binary.lhs->type, st);
+        if (type->kind == tk_rune) {  // rune
+          fprintf(outputFile, "((char)(");
+          codeExp(exp->val.binary.lhs, st, tabCount);
+        	fprintf(outputFile, " * ");
+        	codeExp(exp->val.binary.rhs, st, tabCount);
+          fprintf(outputFile, "))");
+        } else {
+        	fprintf(outputFile, "(");
+        	codeExp(exp->val.binary.lhs, st, tabCount);
+        	fprintf(outputFile, " * ");
+        	codeExp(exp->val.binary.rhs, st, tabCount);
+        	fprintf(outputFile, ")");
+        }
         break;
       case ek_div:
-        fprintf(outputFile, "(");
-        codeExp(exp->val.binary.lhs, st, tabCount);
-        fprintf(outputFile, " / ");
-        codeExp(exp->val.binary.rhs, st, tabCount);
-        fprintf(outputFile, ")");
+        type = resolveExpType(exp->val.binary.lhs->type, st);
+        if (type->kind == tk_rune) {  // rune
+          fprintf(outputFile, "((char)(");
+          codeExp(exp->val.binary.lhs, st, tabCount);
+        	fprintf(outputFile, " / ");
+        	codeExp(exp->val.binary.rhs, st, tabCount);
+          fprintf(outputFile, "))");
+        } else {
+        	fprintf(outputFile, "(");
+        	codeExp(exp->val.binary.lhs, st, tabCount);
+        	fprintf(outputFile, " / ");
+        	codeExp(exp->val.binary.rhs, st, tabCount);
+        	fprintf(outputFile, ")");
+        }
         break;
       case ek_eq:
-        // TODO: fix for strings, arrays, slices, and structs
-        fprintf(outputFile, "(");
-        codeExp(exp->val.binary.lhs, st, tabCount);
-        fprintf(outputFile, " == ");
-        codeExp(exp->val.binary.rhs, st, tabCount);
-        fprintf(outputFile, ")");
+      	type = resolveExpType(exp->val.binary.lhs->type, st);
+      	if (type->kind == tk_array) {	// arrays
+      		fprintf(outputFile, "(Arrays.deepEquals(");
+	        codeExp(exp->val.binary.lhs, st, tabCount);
+	        fprintf(outputFile, ",");
+	        codeExp(exp->val.binary.rhs, st, tabCount);
+	        fprintf(outputFile, "))");
+      	} else {	// all other types: int, float64, rune, string, structs
+	        fprintf(outputFile, "(");
+	        codeExp(exp->val.binary.lhs, st, tabCount);
+	        fprintf(outputFile, ".equals(");
+	        codeExp(exp->val.binary.rhs, st, tabCount);
+	        fprintf(outputFile, "))");
+	      }
         break;
       case ek_ne:
-        // TODO: fix for strings, arrays, slices, and structs
-        fprintf(outputFile, "(");
-        codeExp(exp->val.binary.lhs, st, tabCount);
-        fprintf(outputFile, " != ");
-        codeExp(exp->val.binary.rhs, st, tabCount);
-        fprintf(outputFile, ")");
+      	type = resolveExpType(exp->val.binary.lhs->type, st);
+      	if (type->kind == tk_array) {	// arrays
+      		fprintf(outputFile, "(!Arrays.deepEquals(");
+	        codeExp(exp->val.binary.lhs, st, tabCount);
+	        fprintf(outputFile, ",");
+	        codeExp(exp->val.binary.rhs, st, tabCount);
+	        fprintf(outputFile, "))");
+      	} else {	// all other types: int, float64, rune, string, structs
+	        fprintf(outputFile, "(!");
+	        codeExp(exp->val.binary.lhs, st, tabCount);
+	        fprintf(outputFile, ".equals(");
+	        codeExp(exp->val.binary.rhs, st, tabCount);
+	        fprintf(outputFile, "))");
+	      }
         break;
       case ek_ge:
-        // TODO: fix for strings
-        fprintf(outputFile, "(");
+     		fprintf(outputFile, "((");
         codeExp(exp->val.binary.lhs, st, tabCount);
-        fprintf(outputFile, " >= ");
+        fprintf(outputFile, ".compareTo(");
         codeExp(exp->val.binary.rhs, st, tabCount);
-        fprintf(outputFile, ")");
+        fprintf(outputFile, ") >= 0) ? Boolean.TRUE : Boolean.FALSE)");
         break;
       case ek_le:
-        // TODO: fix for strings
-        fprintf(outputFile, "(");
+	      fprintf(outputFile, "((");
         codeExp(exp->val.binary.lhs, st, tabCount);
-        fprintf(outputFile, " <= ");
+        fprintf(outputFile, ".compareTo(");
         codeExp(exp->val.binary.rhs, st, tabCount);
-        fprintf(outputFile, ")");
+        fprintf(outputFile, ") <= 0) ? Boolean.TRUE : Boolean.FALSE)");
         break;
       case ek_gt:
-        // TODO: fix for strings
-        fprintf(outputFile, "(");
+        fprintf(outputFile, "((");
         codeExp(exp->val.binary.lhs, st, tabCount);
-        fprintf(outputFile, " > ");
+        fprintf(outputFile, ".compareTo(");
         codeExp(exp->val.binary.rhs, st, tabCount);
-        fprintf(outputFile, ")");
+        fprintf(outputFile, ") > 0) ? Boolean.TRUE : Boolean.FALSE)");
         break;
       case ek_lt:
-        // TODO: fix for strings
-        fprintf(outputFile, "(");
+        fprintf(outputFile, "((");
         codeExp(exp->val.binary.lhs, st, tabCount);
-        fprintf(outputFile, " < ");
+        fprintf(outputFile, ".compareTo(");
         codeExp(exp->val.binary.rhs, st, tabCount);
-        fprintf(outputFile, ")");
+        fprintf(outputFile, ") < 0) ? Boolean.TRUE : Boolean.FALSE)");
         break;
       case ek_and:
         fprintf(outputFile, "(");
@@ -561,11 +618,7 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         fprintf(outputFile, "))");
         break;
       case ek_uplus:
-        type = exp->val.unary.exp->type;
-        if (type->kind == tk_ref) {
-          SYMBOL *s = getSymbol(st, type->val.name);
-          type = s->val.typeDecl.resolvesTo;
-        }
+        type = resolveExpType(exp->val.unary.exp->type, st);
         if (type->kind == tk_rune) {  // rune
           fprintf(outputFile, "((char)(+");
           codeExp(exp->val.unary.exp, st, tabCount);
@@ -577,11 +630,7 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         }
         break;
       case ek_uminus:
-        type = exp->val.unary.exp->type;
-        if (type->kind == tk_ref) {
-          SYMBOL *s = getSymbol(st, type->val.name);
-          type = s->val.typeDecl.resolvesTo;
-        }
+        type = resolveExpType(exp->val.unary.exp->type, st);
         if (type->kind == tk_rune) {  // rune
           fprintf(outputFile, "((char)(-");
           codeExp(exp->val.unary.exp, st, tabCount);
@@ -606,19 +655,26 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         // TODO: complete
         break;
       case ek_append:
-        // TODO: complete
+        codeExp(exp->val.append.sliceExp, st, tabCount);
+        fprintf(outputFile, ".append(");
+        codeExp(exp->val.append.elem, st, tabCount);
+        fprintf(outputFile, ")");
         break;
       case ek_len:
         // TODO: complete
+      	//valid on string, slice, and array
         break;
       case ek_cap:
         // TODO: complete
+      	// valid on slice, and array
         break;
       case ek_indexExp:
         // TODO: complete
+      	// valid on slice and array
         break;
       case ek_structField:
         // TODO: complete
+      	// java object equivalent.fieldname
         break;
       case ek_paren:
         fprintf(outputFile, "(");
@@ -627,9 +683,22 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         break;
       case ek_conv:
         // TODO: complete
+      	// create functions for valid casts
         break;
     }
   }
+}
+
+TYPE* resolveExpType(TYPE* type, SymbolTable* st) {
+  if (type->kind == tk_ref) {
+    SYMBOL *s = getSymbol(st, type->val.name);
+    type = s->val.typeDecl.resolvesTo;
+  }
+  if (type->kind == tk_ref) {
+    fprintf(stderr, "Logical failure: shouldn't reach a reference type\n");
+    exit(1);
+  }
+  return type;
 }
 
 // TODO: rest of the types
