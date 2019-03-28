@@ -3,6 +3,7 @@
 
 #include "tree.h"
 #include "symbol.h"
+#include "codeIdentifiers.h"
 
-void codeStmt(STMT *stmt, SymbolTable *st, int tabCount);
+void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount);
 #endif

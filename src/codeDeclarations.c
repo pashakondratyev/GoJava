@@ -6,6 +6,8 @@
 
 #include "code.h"
 #include "codeTypes.h"
+#include "codeIdentifiers.h"
+#include "codeExpressions.h"
 #include "codeStructs.h"
 #include "codeStatements.h"
 #include "symbol.h"
@@ -15,52 +17,78 @@
 // Struct Table Functions
 
 
-void codeDeclarations(DECL *dcl, SymbolTable *st, int tabCount) {
+void codeDeclarations(DECL *dcl, SymbolTable *st, IdentifierTable *it, int tabCount) {
   if (dcl != NULL) {
     switch (dcl->kind) {
       case dk_var:
-        codeVarDecl(dcl->val.varSpecs, st, tabCount);
+        codeVarDecl(dcl->val.varSpecs, st, it, tabCount);
         break;
       case dk_short:
-        codeShortDecl(dcl->val.shortSpecs, st, tabCount);
+        codeShortDecl(dcl->val.shortSpecs, st, it, tabCount);
         break;
       case dk_type:
-        codeTypeDecl(dcl->val.typeSpecs, st, tabCount);
+        codeTypeDecl(dcl->val.typeSpecs, st, it, tabCount);
         break;
       case dk_func:
-        codeFuncDecl(dcl->val.funcDecl, st, tabCount);
+        codeFuncDecl(dcl->val.funcDecl, st, it, tabCount);
         break;
     }
-    codeDeclarations(dcl->next, st, tabCount);
+    codeDeclarations(dcl->next, st, it, tabCount);
   }
 }
 
-void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, int tabCount) {
+void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCount) {
     if(vs != NULL){
         char *type = javaTypeString(vs->type, st, NULL);
         char *constructor = javaTypeStringConstructor(vs->type, st, NULL);
-        fprintf(outputFile,"%s %s = new %s(", type, prefix(vs->id), constructor);
+
+        IDENTIFIER *i = getFromIdentifierTable(vs->id, it);
+        if(i != NULL){
+            int scopeCount = i->scopeCount + 1;
+            i = addToIdentifierTable(vs->id, scopeCount, it);
+        } else{
+            i = addToIdentifierTable(vs->id, 1, it);
+        }
+        i->identifier = "_";
+
+        char identifier[1024];
+        sprintf(identifier, "%s_%d", prefix(vs->id), i->scopeCount);
+
+        fprintf(outputFile,"%s %s = new %s(", type, identifier, constructor);
         if(vs->exp != NULL){
-            codeExp(vs->exp, st, tabCount);
+            codeExp(vs->exp, st, it, tabCount);
         }
         fprintf(outputFile,");");
         if(vs->next != NULL){
             fprintf(outputFile, "\n");
             writeTab(tabCount);
         }
-        codeVarDecl(vs->next, st, tabCount);
+        i->identifier = vs->id;
+        codeVarDecl(vs->next, st, it, tabCount);
     }
 }
 
-void codeShortDecl(SHORT_SPECS *ss, SymbolTable *st, int tabCount) {
+void codeShortDecl(SHORT_SPECS *ss, SymbolTable *st, IdentifierTable *it, int tabCount) {
+    if(ss != NULL){
+        char *type = javaTypeString(ss->lhs->type, st, NULL);
+        char *constructor = javaTypeStringConstructor(ss->lhs->type, st, NULL);
+        fprintf(outputFile,"%s %s = new %s(", type, prefix(ss->lhs->val.id), constructor);
+        codeExp(ss->rhs, st, it, tabCount);
+        fprintf(outputFile,");");
+        if(ss->next != NULL){
+            fprintf(outputFile, "\n");
+            writeTab(tabCount);
+        }
+        codeShortDecl(ss->next, st, it, tabCount);
+    }
   // TODO: implement
 }
 
-void codeTypeDecl(TYPE_SPECS *ts, SymbolTable *st, int tabCount) {
+void codeTypeDecl(TYPE_SPECS *ts, SymbolTable *st, IdentifierTable *it, int tabCount) {
   // TODO: implement
 }
 
-void codeFuncDecl(FUNC_DECL *fd, SymbolTable *st, int tabCount) {
+void codeFuncDecl(FUNC_DECL *fd, SymbolTable *st, IdentifierTable *it, int tabCount) {
   char BUFFER[1024];
   char methodName[1024];
   // If this is not a reference we need to handle this specially
@@ -77,10 +105,9 @@ void codeFuncDecl(FUNC_DECL *fd, SymbolTable *st, int tabCount) {
       }
     }
   }
-
   // print args
   fprintf(outputFile, ") ");
-  codeStmt(fd->body, st, tabCount);
+  codeStmt(fd->body, st, it, tabCount);
   fprintf(outputFile, "\n");
   // TODO: implement
 }
