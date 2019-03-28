@@ -30,4 +30,7 @@ STRUCT *addToStructTable(TYPE *type, char *name, SymbolTable *st);
 STRUCT *getFromStructTable(char *id);
 void initStructTable();
 void printStructTable();
+
+char *codeStructType(char *BUFFER, FIELD_DECLS *fd, SymbolTable *st, STRUCT *s, char *name);
+void codeStructTable();
 #endif

@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "codeTypes.h"
+
 #include "code.h"
 #include "codeStructs.h"
 #include "symbol.h"

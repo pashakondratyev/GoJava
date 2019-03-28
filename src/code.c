@@ -3,6 +3,8 @@
 #include <string.h>
 
 #include "code.h"
+#include "codeDeclarations.h"
+#include "codeStatements.h"
 #include "codeStructs.h"
 #include "codeTypes.h"
 #include "symbol.h"
@@ -85,114 +87,6 @@ void codeComplete() {
   fprintf(outputFile, "\t\t__golite__main();\n");
   fprintf(outputFile, "\t}\n");
   fprintf(outputFile, "}\n");
-}
-
-// Declarations
-
-void codeDeclarations(DECL *dcl, SymbolTable *st, int tabCount) {
-  if (dcl != NULL) {
-    switch (dcl->kind) {
-      case dk_var:
-        codeVarDecl(dcl->val.varSpecs, st, tabCount);
-        break;
-      case dk_short:
-        codeShortDecl(dcl->val.shortSpecs, st, tabCount);
-        break;
-      case dk_type:
-        codeTypeDecl(dcl->val.typeSpecs, st, tabCount);
-        break;
-      case dk_func:
-        codeFuncDecl(dcl->val.funcDecl, st, tabCount);
-        break;
-    }
-    codeDeclarations(dcl->next, st, tabCount);
-  }
-}
-
-void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, int tabCount) {
-  // TODO: implement
-}
-
-void codeShortDecl(SHORT_SPECS *ss, SymbolTable *st, int tabCount) {
-  // TODO: implement
-}
-
-void codeTypeDecl(TYPE_SPECS *ts, SymbolTable *st, int tabCount) {
-  // TODO: implement
-}
-
-// Specific Constructs
-
-void codeFuncDecl(FUNC_DECL *fd, SymbolTable *st, int tabCount) {
-  char BUFFER[1024];
-  char methodName[1024];
-  // If this is not a reference we need to handle this specially
-  if (strcmp(fd->name, "init") == 0){
-    fprintf(outputFile, "\tpublic static void %s_%d (", prefix(fd->name), numInitFunc);
-    numInitFunc++;
-  } else {
-    char *returnTypeString = fd->returnType == NULL ? "void" : javaTypeString(fd->returnType, st, NULL);
-    fprintf(outputFile, "\tpublic static %s %s (", returnTypeString, prefix(fd->name));
-    for (PARAM_LIST *temp = fd->params; temp; temp = temp->next) {
-      fprintf(outputFile, "%s %s", javaTypeString(temp->type, st, NULL), temp->id);
-      if (temp->next) {
-        fprintf(outputFile, ", ");
-      }
-    }
-  }
-
-  // print args
-  fprintf(outputFile, ") {\n");
-  // TODO: implement
-  fprintf(outputFile, "\t}\n");
-}
-
-void codeStmt(STMT *stmt, SymbolTable *st, int tabCount) {
-  // TODO: implement
-  if (stmt != NULL) {
-    switch (stmt->kind) {
-      case sk_block:
-        break;
-      case sk_exp:
-        break;
-      case sk_assign:
-        break;
-      case sk_assignOp:
-        break;
-      case sk_decl:
-        break;
-      case sk_shortDecl:
-        break;
-      case sk_incr:
-        break;
-      case sk_decr:
-        break;
-      case sk_print:
-        break;
-      case sk_println:
-        break;
-      case sk_return:
-        break;
-      case sk_if:
-        break;
-      case sk_else:
-        break;
-      case sk_switch:
-        break;
-      case sk_for:
-        break;
-      case sk_break:
-        break;
-      case sk_continue:
-        break;
-      case sk_fallthrough:
-        fprintf(stderr, "Error: fallthough not supported.\n");
-        break;
-      case sk_empty:
-        // empty statement
-        break;
-    }
-  }
 }
 
 void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
