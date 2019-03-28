@@ -1,3 +1,4 @@
+package JavaFiles;
 // Utility class containing all methods to cast between types
 
 class Cast {
