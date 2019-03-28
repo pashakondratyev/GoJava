@@ -20,3 +20,6 @@ Typecheck Test Programs to Grade:
 4.3-unaryExp–1.go, 4.4-binaryExp-||4.go, 4.4-binaryExp--6.go, 4.4-binaryExp-<<5.go, 4.5-funcCall-funcType.go,
 4.5-funcCall-params1.go, 4.5-funcCall-params2.go, 4.6-index-index1.go, 4.6-index-exp1.go, 4.7-fieldSelect-exp1.go,
 4.7-fieldSelect-id1.go, 4.8.1-append-elem1.go, 4.8.1-append-slice1.go, 4.8.2-cap-exp1.go, 4.8.3-len-exp2.go
+
+First 3 Semantic Code Generation Test Programs to Grade:
+ifStmt.go, funcDecls.go, structsSubmit.go
