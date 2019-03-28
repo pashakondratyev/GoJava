@@ -7,6 +7,7 @@
 #include "code.h"
 #include "codeTypes.h"
 #include "codeStructs.h"
+#include "codeStatements.h"
 #include "symbol.h"
 #include "type.h"
 
@@ -35,7 +36,20 @@ void codeDeclarations(DECL *dcl, SymbolTable *st, int tabCount) {
 }
 
 void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, int tabCount) {
-  // TODO: implement
+    if(vs != NULL){
+        char *type = javaTypeString(vs->type, st, NULL);
+        char *constructor = javaTypeStringConstructor(vs->type, st, NULL);
+        fprintf(outputFile,"%s %s = new %s(", type, prefix(vs->id), constructor);
+        if(vs->exp != NULL){
+            codeExp(vs->exp, st, tabCount);
+        }
+        fprintf(outputFile,");");
+        if(vs->next != NULL){
+            fprintf(outputFile, "\n");
+            writeTab(tabCount);
+        }
+        codeVarDecl(vs->next, st, tabCount);
+    }
 }
 
 void codeShortDecl(SHORT_SPECS *ss, SymbolTable *st, int tabCount) {
@@ -65,7 +79,8 @@ void codeFuncDecl(FUNC_DECL *fd, SymbolTable *st, int tabCount) {
   }
 
   // print args
-  fprintf(outputFile, ") {\n");
+  fprintf(outputFile, ") ");
+  codeStmt(fd->body, st, tabCount);
+  fprintf(outputFile, "\n");
   // TODO: implement
-  fprintf(outputFile, "\t}\n");
 }

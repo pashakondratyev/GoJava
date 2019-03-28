@@ -108,7 +108,7 @@ void codeExp(EXP *exp, SymbolTable *st, int tabCount) {
         fprintf(outputFile, "new Integer(%i)", exp->val.intval);
         break;
       case ek_string:
-        fprintf(outputFile, "\"%s\"", exp->val.stringval);
+        fprintf(outputFile, "%s", exp->val.stringval);
         break;
       case ek_boolean:
         fprintf(outputFile, "new Boolean(%s)", exp->val.booleanval ? "__golite__true" : "__golite__false");
