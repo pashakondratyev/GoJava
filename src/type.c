@@ -1379,12 +1379,6 @@ TYPE *typeResolve(TYPE *type, SymbolTable *st) {
     case tk_res:
       fprintf(stderr, "Error: (line %d) shouldn't be reached\n", type->lineno);
       exit(1);
-    case tk_int:
-    case tk_float:
-    case tk_rune:
-    case tk_string:
-    case tk_boolean:
-      return type;
     case tk_ref:
       s = getSymbol(st, type->val.name);
       return typeResolve(s->val.typeDecl.resolvesTo, st);
