@@ -20,11 +20,16 @@ void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
           fprintf(stderr, "ERROR: blank identifier not handled.\n");
           break;
         }
-        IDENTIFIER *i = getFromIdentifierTable(exp->val.id, it);
-        if(i == NULL){
-            i = addToIdentifierTable(exp->val.id, 1, it); 
+
+        if(getSymbol(st, exp->val.id)->kind != dk_func){
+          IDENTIFIER *i = getFromIdentifierTable(exp->val.id, it);
+          if(i == NULL){
+              i = addToIdentifierTable(exp->val.id, 1, it); 
+          }
+          fprintf(outputFile, "%s_%d", prefix(i->identifier), i->scopeCount);
+        } else{
+          fprintf(outputFile, "%s", prefix(exp->val.id));
         }
-        fprintf(outputFile, "%s_%d", prefix(i->identifier), i->scopeCount);
         break;
       case ek_float:
         fprintf(outputFile, "new Double(%f)", exp->val.floatval);

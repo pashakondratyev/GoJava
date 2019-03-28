@@ -22,4 +22,5 @@ IdentifierTable *initIdentifierTable();
 IdentifierTable *scopeIdentifierTable(IdentifierTable *identifierTable);
 IDENTIFIER *addToIdentifierTable(char *identifier, int scopeCount, IdentifierTable *it);
 IDENTIFIER *getFromIdentifierTable(char *id, IdentifierTable *it);
+IDENTIFIER *addIfNotInTable(char *id, IdentifierTable *it);
 #endif

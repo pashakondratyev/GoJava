@@ -12,7 +12,7 @@
 #include "symbol.h"
 #include "type.h"
 
-#define DEBUG 1 
+#define DEBUG 0 
 
 void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
   // TODO: implement
@@ -20,6 +20,7 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
   if (stmt != NULL) {
     switch (stmt->kind) {
       case sk_block:
+        if(DEBUG) printf("Entering block scope\n");
         fprintf(outputFile, "{");
         IdentifierTable *child = scopeIdentifierTable(it);
         for(STMT_LIST *temp = stmt->val.block.blockStatements; temp; temp = temp->next){

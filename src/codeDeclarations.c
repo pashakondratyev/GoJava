@@ -16,7 +16,6 @@
 #define DEBUG 0
 // Struct Table Functions
 
-
 void codeDeclarations(DECL *dcl, SymbolTable *st, IdentifierTable *it, int tabCount) {
   if (dcl != NULL) {
     switch (dcl->kind) {
@@ -49,12 +48,12 @@ void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCou
         } else{
             i = addToIdentifierTable(vs->id, 1, it);
         }
-        i->identifier = "_";
+        i->identifier = " ";
 
         char identifier[1024];
         sprintf(identifier, "%s_%d", prefix(vs->id), i->scopeCount);
 
-        fprintf(outputFile,"%s %s = new %s(", type, identifier, constructor);
+        fprintf(outputFile,"%s %s_%d = new %s(", type, prefix(vs->id), i->scopeCount, constructor);
         if(vs->exp != NULL){
             codeExp(vs->exp, st, it, tabCount);
         }
@@ -69,17 +68,24 @@ void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCou
 }
 
 void codeShortDecl(SHORT_SPECS *ss, SymbolTable *st, IdentifierTable *it, int tabCount) {
+    if(ss != NULL && strcmp(ss->lhs->val.id, "_") != 0){
+      char *type = javaTypeString(ss->lhs->type, st, NULL);
+      char *constructor = javaTypeStringConstructor(ss->lhs->type, st, NULL);
+
+      IDENTIFIER *i = addIfNotInTable(ss->lhs->val.id, it);
+      i->identifier = " ";
+      
+      fprintf(outputFile,"%s %s_%d = new %s(", type, prefix(ss->lhs->val.id), i->scopeCount, constructor);
+      codeExp(ss->rhs, st, it, tabCount);
+      fprintf(outputFile,");");
+      if(ss->next != NULL){
+          fprintf(outputFile, "\n");
+          writeTab(tabCount);
+      }
+      i->identifier = ss->lhs->val.id;
+    }
     if(ss != NULL){
-        char *type = javaTypeString(ss->lhs->type, st, NULL);
-        char *constructor = javaTypeStringConstructor(ss->lhs->type, st, NULL);
-        fprintf(outputFile,"%s %s = new %s(", type, prefix(ss->lhs->val.id), constructor);
-        codeExp(ss->rhs, st, it, tabCount);
-        fprintf(outputFile,");");
-        if(ss->next != NULL){
-            fprintf(outputFile, "\n");
-            writeTab(tabCount);
-        }
-        codeShortDecl(ss->next, st, it, tabCount);
+      codeShortDecl(ss->next, st, it, tabCount);
     }
   // TODO: implement
 }
@@ -92,14 +98,22 @@ void codeFuncDecl(FUNC_DECL *fd, SymbolTable *st, IdentifierTable *it, int tabCo
   char BUFFER[1024];
   char methodName[1024];
   // If this is not a reference we need to handle this specially
-  if (strcmp(fd->name, "init") == 0){
+  if(DEBUG) printf("Processing header %s\n", fd->name);
+  if (strcmp(fd->name, "_") == 0){
+    if(DEBUG) printf("Blank function\n");
+    return;
+  } else if (strcmp(fd->name, "init") == 0){
     fprintf(outputFile, "\tpublic static void %s_%d (", prefix(fd->name), numInitFunc);
     numInitFunc++;
   } else {
     char *returnTypeString = fd->returnType == NULL ? "void" : javaTypeString(fd->returnType, st, NULL);
     fprintf(outputFile, "\tpublic static %s %s (", returnTypeString, prefix(fd->name));
     for (PARAM_LIST *temp = fd->params; temp; temp = temp->next) {
-      fprintf(outputFile, "%s %s", javaTypeString(temp->type, st, NULL), temp->id);
+      if(strcmp(temp->id, "_") == 0){
+        continue;
+      }
+      IDENTIFIER *i = addIfNotInTable(temp->id, it);
+      fprintf(outputFile, "%s %s_%d", javaTypeString(temp->type, st, NULL), prefix(i->identifier), i->scopeCount);
       if (temp->next) {
         fprintf(outputFile, ", ");
       }
@@ -107,7 +121,9 @@ void codeFuncDecl(FUNC_DECL *fd, SymbolTable *st, IdentifierTable *it, int tabCo
   }
   // print args
   fprintf(outputFile, ") ");
+  if(DEBUG) printf("Finished converting header\n");
   codeStmt(fd->body, st, it, tabCount);
+  if(DEBUG) printf("Finished converting body\n");
   fprintf(outputFile, "\n");
   // TODO: implement
 }
