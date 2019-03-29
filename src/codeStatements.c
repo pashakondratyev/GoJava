@@ -51,19 +51,18 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
         codeDeclarations(stmt->val.decl, st, it, tabCount);
         break;
       case sk_incr:
-        // TODO: check works for all necessary types
         codeExp(stmt->val.exp, st, it, tabCount);
         fprintf(outputFile, "++;");
         break;
       case sk_decr:
-        // TODO: check works for all necessary types
         codeExp(stmt->val.exp, st, it, tabCount);
         fprintf(outputFile, "--;");
         break;
       case sk_print:
-        // TODO: fix for multiple items and output correct value
+        // TODO: fix output for doubles
         for(EXP_LIST *temp = stmt->val.printExps; temp; temp=temp->next){
           fprintf(outputFile, "System.out.print(");
+          if (temp->exp.type == tk_rune) fprintf(outputFile, "(int)");
           codeExp(temp->exp, st, it, tabCount);
           fprintf(outputFile, ");");
           if(temp->next != NULL){
@@ -72,9 +71,11 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
         }
         break;
       case sk_println:
-        // TODO: fix for multiple items and output correct value
+        // TODO: fix for multiple items
+        // TODO: fix output for doubles
         for(EXP_LIST *temp = stmt->val.printExps; temp; temp=temp->next){ 
           fprintf(outputFile, "System.out.println(");
+          if (temp->exp.type == tk_rune) fprintf(outputFile, "(int)");
           codeExp(temp->exp, st, it, tabCount);
           fprintf(outputFile, ");");
           if(temp->next != NULL){
@@ -85,7 +86,7 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
       case sk_return:
         fprintf(outputFile, "return ");
         codeExp(stmt->val.exp, st, it, tabCount);
-        fprintf(outputFile, ";\n");
+        fprintf(outputFile, ";");
         break;
       case sk_if:
         // TODO: complete
@@ -100,11 +101,11 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
         // TODO: complete
         break;
       case sk_break:
-        // TODO: fix within control flow
+        // TODO: fix with control flow
         fprintf(outputFile, "break;");  
         break;
       case sk_continue:
-        // TODO: fix within control flow
+        // TODO: fix with control flow
         fprintf(outputFile, "continue;"); 
         break;
       case sk_fallthrough:
