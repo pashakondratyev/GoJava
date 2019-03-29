@@ -7,6 +7,7 @@
 #include "codeIdentifiers.h"
 
 int numInitFunc;
+int blankVar;
 int identifierCount;
 FILE *outputFile;
 

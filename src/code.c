@@ -39,6 +39,7 @@ void codeProgram(PROG *prog, SymbolTable *st, char *inputFileName) {
   // create file name and open it
   numInitFunc = 0;
   identifierCount = 0;
+  blankVar = 0;
   char *outputFileName = malloc((strlen(inputFileName) + 6) * sizeof(char));
   strncpy(outputFileName, inputFileName, strlen(inputFileName));
   sprintf(outputFileName, "%s.java", inputFileName);

@@ -44,6 +44,7 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
         codeAssignment(stmt, st, it, tabCount);
         break;
       case sk_assignOp:
+        codeAssignmentOp(stmt, st, it, tabCount);
         break;
       case sk_decl:
       case sk_shortDecl:

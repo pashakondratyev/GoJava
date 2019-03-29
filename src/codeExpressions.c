@@ -20,7 +20,7 @@ void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
     switch (exp->kind) {
       case ek_id:
         if (strcmp(exp->val.id, "_") == 0) {
-          fprintf(outputFile, "_");
+          fprintf(outputFile, "%s_%d", prefix("blank"), blankVar);
           break;
         }
 
