@@ -23,6 +23,7 @@ void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
           fprintf(outputFile, "%s_%d", prefix("blank"), blankVar);
           break;
         }
+        
 
         if (getSymbol(st, exp->val.id)->kind != dk_func) {
           IDENTIFIER *i = getFromIdentifierTable(exp->val.id, it);

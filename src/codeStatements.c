@@ -62,7 +62,7 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
         // TODO: fix output for doubles
         for(EXP_LIST *temp = stmt->val.printExps; temp; temp=temp->next){
           fprintf(outputFile, "System.out.print(");
-          if (temp->exp.type == tk_rune) fprintf(outputFile, "(int)");
+          if (temp->exp->type->kind == tk_rune) fprintf(outputFile, "(int)");
           codeExp(temp->exp, st, it, tabCount);
           fprintf(outputFile, ");");
           if(temp->next != NULL){
@@ -75,7 +75,7 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
         // TODO: fix output for doubles
         for(EXP_LIST *temp = stmt->val.printExps; temp; temp=temp->next){ 
           fprintf(outputFile, "System.out.println(");
-          if (temp->exp.type == tk_rune) fprintf(outputFile, "(int)");
+          if (temp->exp->type->kind == tk_rune) fprintf(outputFile, "(int)");
           codeExp(temp->exp, st, it, tabCount);
           fprintf(outputFile, ");");
           if(temp->next != NULL){
@@ -165,9 +165,12 @@ void codeAssignmentOp(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabC
       fprintf(outputFile, " >>= ");
       break;
     case aok_bitClear:
-      //TODO
+      fprintf(outputFile, " &= ~(");
+      codeExp(stmt->val.assignOp.rhs, st, it, tabCount);
+      fprintf(outputFile, ");");
       break;
   }
   codeExp(stmt->val.assignOp.rhs, st, it, tabCount);
   fprintf(outputFile, ";");
 }
+
