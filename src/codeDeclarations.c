@@ -72,25 +72,81 @@ void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCou
 }
 
 void codeShortDecl(SHORT_SPECS *ss, SymbolTable *st, IdentifierTable *it, int tabCount) {
-    if(ss != NULL && strcmp(ss->lhs->val.id, "_") != 0){
-      char *type = javaTypeString(ss->lhs->type, st, NULL);
-      char *constructor = javaTypeStringConstructor(ss->lhs->type, st, NULL);
-
-      IDENTIFIER *i = addIfNotInTable(ss->lhs->val.id, it);
-      i->identifier = " ";
-      
-      fprintf(outputFile,"%s %s_%d = new %s(", type, prefix(ss->lhs->val.id), i->scopeCount, constructor);
-      codeExp(ss->rhs, st, it, tabCount);
-      fprintf(outputFile,");");
+  int temp = identifierCount;
+  //Want to save rhs as temps
+  for(SHORT_SPECS *temp = ss; temp; temp = temp->next){
+    char *type = javaTypeString(temp->lhs->type, st, NULL);
+    char *constructor = javaTypeStringConstructor(temp->lhs->type, st, NULL);
+    IDENTIFIER *i;
+    if(strcmp(temp->lhs->val.id, "_") == 0){
+      fprintf(outputFile, "%s %s_%d = %s", type, prefix("blank"), blankVar, constructor);
+      blankVar++; 
+      codeExp(temp->rhs, st, it, tabCount);
+      fprintf(outputFile,";");
       if(ss->next != NULL){
-          fprintf(outputFile, "\n");
-          writeTab(tabCount);
+        fprintf(outputFile, "\n");
+        writeTab(tabCount);
       }
-      i->identifier = ss->lhs->val.id;
+      continue;
+    } else if(!temp->declared){
+      i = addIfNotInTable(temp->lhs->val.id, it);
+      i->identifier = " ";
+    } else{
+      i = getFromIdentifierTable(temp->lhs->val.id, it);
     }
-    if(ss != NULL){
-      codeShortDecl(ss->next, st, it, tabCount);
+    
+    fprintf(outputFile, "%s %s_temp_%d = %s", type, prefix(temp->lhs->val.id), i->scopeCount, constructor);
+    codeExp(temp->rhs, st, it, tabCount);
+    fprintf(outputFile,";");
+    if(ss->next != NULL){
+        fprintf(outputFile, "\n");
+        writeTab(tabCount);
     }
+    if(!temp->declared){
+      i->identifier = temp->lhs->val.id;
+    }
+  }
+  int printLine = 0;
+  for(SHORT_SPECS *temp = ss; temp; temp = temp->next){
+    if(strcmp(temp->lhs->val.id, "_") == 0){
+      continue;
+    }
+    if(printLine){
+      fprintf(outputFile, "\n");
+      writeTab(tabCount); 
+    }
+    char *type = javaTypeString(temp->lhs->type, st, NULL);
+    char *constructor = javaTypeStringConstructor(temp->lhs->type, st, NULL);
+
+    IDENTIFIER *i = getFromIdentifierTable(temp->lhs->val.id, it);
+    
+    fprintf(outputFile, "%s %s_%d = ", type, prefix(temp->lhs->val.id), i->scopeCount);
+    fprintf(outputFile, "%s %s_temp_%d;", type, prefix(temp->lhs->val.id), i->scopeCount);
+    if(ss->next != NULL){
+        printLine = 1;
+    }
+  }
+
+
+  /*if(ss != NULL && strcmp(ss->lhs->val.id, "_") != 0){
+    char *type = javaTypeString(ss->lhs->type, st, NULL);
+    char *constructor = javaTypeStringConstructor(ss->lhs->type, st, NULL);
+
+    IDENTIFIER *i = addIfNotInTable(ss->lhs->val.id, it);
+    i->identifier = " ";
+    
+    fprintf(outputFile,"%s %s_%d = new %s(", type, prefix(ss->lhs->val.id), i->scopeCount, constructor);
+    codeExp(ss->rhs, st, it, tabCount);
+    fprintf(outputFile,");");
+    if(ss->next != NULL){
+        fprintf(outputFile, "\n");
+        writeTab(tabCount);
+    }
+    i->identifier = ss->lhs->val.id;
+  }
+  if(ss != NULL){
+    codeShortDecl(ss->next, st, it, tabCount);
+  }*/
   // TODO: implement
 }
 
