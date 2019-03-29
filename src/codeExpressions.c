@@ -12,6 +12,9 @@
 
 void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
   TYPE *type = NULL;
+  TYPE *type1 = NULL;
+  TYPE *type2 = NULL;
+  TYPE *type3 = NULL;
   SYMBOL *s = NULL;
   if (exp != NULL) {
     switch (exp->kind) {
@@ -270,9 +273,9 @@ void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
       case ek_func:
         // type casting checked first
         s = getSymbol(st, exp->val.funcCall.funcId);
-        TYPE *type1 = NULL;
-        TYPE *type2 = NULL;
-        TYPE *type3 = NULL;
+        type1 = NULL;
+        type2 = NULL;
+        type3 = NULL;
         if (s->kind == dk_type) {
           type1 = s->val.type;
           type2 = s->val.typeDecl.type;
@@ -372,7 +375,43 @@ void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
         fprintf(outputFile, ")");
         break;
       case ek_conv:
-        fprintf(stderr, "Logical failure: type conversion should be caught by function expressions.\n");
+        s = getSymbol(st, exp->val.funcCall.funcId);
+        type1 = NULL;
+        type2 = NULL;
+        type3 = NULL;
+        if (s->kind == dk_type) {
+          type1 = s->val.type;
+          type2 = s->val.typeDecl.type;
+          type3 = s->val.typeDecl.resolvesTo;
+        }
+        if (type1->kind == tk_int || type2->kind == tk_int || type3->kind == tk_int) {  // int
+          fprintf(outputFile, "castUtil.castToInteger(");
+          EXP_LIST *exps = exp->val.funcCall.args;
+          codeExp(exps->exp, st, it, tabCount);
+          fprintf(outputFile, ")");
+          break;
+        }
+        if (type1->kind == tk_float || type2->kind == tk_float || type3->kind == tk_float) {  // float64
+          fprintf(outputFile, "castUtil.castToDouble(");
+          EXP_LIST *exps = exp->val.funcCall.args;
+          codeExp(exps->exp, st, it, tabCount);
+          fprintf(outputFile, ")");
+          break;
+        }
+        if (type1->kind == tk_string || type2->kind == tk_string || type3->kind == tk_string) {  // string
+          fprintf(outputFile, "castUtil.castToString(");
+          EXP_LIST *exps = exp->val.funcCall.args;
+          codeExp(exps->exp, st, it, tabCount);
+          fprintf(outputFile, ")");
+          break;
+        }
+        if (type1->kind == tk_rune || type2->kind == tk_rune || type3->kind == tk_rune) {  // rune
+          fprintf(outputFile, "castUtil.castToCharacter(");
+          EXP_LIST *exps = exp->val.funcCall.args;
+          codeExp(exps->exp, st, it, tabCount);
+          fprintf(outputFile, ")");
+          break;
+        }
         break;
     }
   }
