@@ -40,22 +40,27 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
         codeExp(stmt->val.exp, st, it, tabCount);
         break;
       case sk_assign:
+        // TODO: complete
         break;
       case sk_assignOp:
+        // TODO: complete
         break;
       case sk_decl:
       case sk_shortDecl:
         codeDeclarations(stmt->val.decl, st, it, tabCount);
         break;
       case sk_incr:
+        // TODO: check works for all necessary types
         codeExp(stmt->val.exp, st, it, tabCount);
         fprintf(outputFile, "++;");
         break;
       case sk_decr:
+        // TODO: check works for all necessary types
         codeExp(stmt->val.exp, st, it, tabCount);
         fprintf(outputFile, "--;");
         break;
       case sk_print:
+        // TODO: fix for multiple items and output correct value
         for(EXP_LIST *temp = stmt->val.printExps; temp; temp=temp->next){
           fprintf(outputFile, "System.out.print(");
           codeExp(temp->exp, st, it, tabCount);
@@ -66,7 +71,8 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
         }
         break;
       case sk_println:
-        for(EXP_LIST *temp = stmt->val.printExps; temp; temp=temp->next){
+        // TODO: fix for multiple items and output correct value
+        for(EXP_LIST *temp = stmt->val.printExps; temp; temp=temp->next){ 
           fprintf(outputFile, "System.out.println(");
           codeExp(temp->exp, st, it, tabCount);
           fprintf(outputFile, ");");
@@ -78,21 +84,27 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
       case sk_return:
         fprintf(outputFile, "return ");
         codeExp(stmt->val.exp, st, it, tabCount);
-        fprintf(outputFile, ";");
+        fprintf(outputFile, ";\n");
         break;
       case sk_if:
+        // TODO: complete
         break;
       case sk_else:
+        // TODO: complete
         break;
       case sk_switch:
+        // TODO: complete
         break;
       case sk_for:
+        // TODO: complete
         break;
       case sk_break:
-        fprintf(outputFile, "break;");
+        // TODO: fix within control flow
+        fprintf(outputFile, "break;");  
         break;
       case sk_continue:
-        fprintf(outputFile, "continue;");
+        // TODO: fix within control flow
+        fprintf(outputFile, "continue;"); 
         break;
       case sk_fallthrough:
         fprintf(stderr, "Error: fallthough not supported.\n");
