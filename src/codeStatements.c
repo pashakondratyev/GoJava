@@ -59,8 +59,10 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
         fprintf(outputFile, "--;");
         break;
       case sk_print:
+        // TODO: fix output for doubles
         for(EXP_LIST *temp = stmt->val.printExps; temp; temp=temp->next){
           fprintf(outputFile, "System.out.print(");
+          if (temp->exp.type == tk_rune) fprintf(outputFile, "(int)");
           codeExp(temp->exp, st, it, tabCount);
           fprintf(outputFile, ");");
           if(temp->next != NULL){
@@ -69,8 +71,11 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
         }
         break;
       case sk_println:
-        for(EXP_LIST *temp = stmt->val.printExps; temp; temp=temp->next){
+        // TODO: fix for multiple items
+        // TODO: fix output for doubles
+        for(EXP_LIST *temp = stmt->val.printExps; temp; temp=temp->next){ 
           fprintf(outputFile, "System.out.println(");
+          if (temp->exp.type == tk_rune) fprintf(outputFile, "(int)");
           codeExp(temp->exp, st, it, tabCount);
           fprintf(outputFile, ");");
           if(temp->next != NULL){
@@ -84,18 +89,24 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
         fprintf(outputFile, ";");
         break;
       case sk_if:
+        // TODO: complete
         break;
       case sk_else:
+        // TODO: complete
         break;
       case sk_switch:
+        // TODO: complete
         break;
       case sk_for:
+        // TODO: complete
         break;
       case sk_break:
-        fprintf(outputFile, "break;");
+        // TODO: fix with control flow
+        fprintf(outputFile, "break;");  
         break;
       case sk_continue:
-        fprintf(outputFile, "continue;");
+        // TODO: fix with control flow
+        fprintf(outputFile, "continue;"); 
         break;
       case sk_fallthrough:
         fprintf(stderr, "Error: fallthough not supported.\n");

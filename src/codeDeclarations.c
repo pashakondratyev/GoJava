@@ -15,7 +15,6 @@
 
 #define DEBUG 0
 
-int blankVar = 0;
 
 void codeDeclarations(DECL *dcl, SymbolTable *st, IdentifierTable *it, int tabCount) {
   if (dcl != NULL) {
