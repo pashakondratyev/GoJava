@@ -643,7 +643,7 @@ STMT *paramListToStmt(PARAM_LIST *pl, int lineno) {
     }
     last->id = pl->id;
     last->type = pl->type;
-    last->declared = 0;
+    last->declared = -1; // Denotes that paramlist
     pl = pl->next;
   }
   DECL *d = makeVarDecl(vs, lineno);

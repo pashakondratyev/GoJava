@@ -7,4 +7,6 @@
 #include "codeIdentifiers.h"
 
 void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount);
+
+void codeFunctionCall(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount);
 #endif

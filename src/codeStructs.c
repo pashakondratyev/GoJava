@@ -233,9 +233,13 @@ char *codeStructType(char *BUFFER, FIELD_DECLS *fd, SymbolTable *st, STRUCT *s, 
   if (s->comparable) {
     sprintf(BUFFER + strlen(BUFFER), "\tpublic Boolean equals(%s other){\n\t\treturn ", s->className);
 
+    int needsAnd = 0;
     for (FIELD_DECLS *temp = fd; temp; temp = temp->next) {
       if (strcmp(temp->id, "_") == 0) {
         continue;
+      }
+      if(needsAnd){
+        sprintf(BUFFER + strlen(BUFFER), " && ");
       }
       TYPE *type;
       if (temp->type->kind == tk_ref) {
@@ -257,7 +261,7 @@ char *codeStructType(char *BUFFER, FIELD_DECLS *fd, SymbolTable *st, STRUCT *s, 
           break;
       }
       if (temp->next != NULL) {
-        sprintf(BUFFER + strlen(BUFFER), " && ");
+        needsAnd = 1;
       }
     }
     sprintf(BUFFER + strlen(BUFFER), ";\n\t}\n");

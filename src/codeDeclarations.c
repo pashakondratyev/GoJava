@@ -14,10 +14,12 @@
 #include "type.h"
 
 #define DEBUG 0
-// Struct Table Functions
+
+int blankVar = 0;
 
 void codeDeclarations(DECL *dcl, SymbolTable *st, IdentifierTable *it, int tabCount) {
   if (dcl != NULL) {
+    if(DEBUG) printf("Code Declaration: %d\n", dcl->kind);
     switch (dcl->kind) {
       case dk_var:
         codeVarDecl(dcl->val.varSpecs, st, it, tabCount);
@@ -37,32 +39,35 @@ void codeDeclarations(DECL *dcl, SymbolTable *st, IdentifierTable *it, int tabCo
 }
 
 void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCount) {
-    if(vs != NULL){
+    if(vs != NULL && vs->declared != -1){
         char *type = javaTypeString(vs->type, st, NULL);
         char *constructor = javaTypeStringConstructor(vs->type, st, NULL);
 
-        IDENTIFIER *i = getFromIdentifierTable(vs->id, it);
-        if(i != NULL){
-            int scopeCount = i->scopeCount + 1;
-            i = addToIdentifierTable(vs->id, scopeCount, it);
+        if(strcmp(vs->id, "_") == 0){
+          fprintf(outputFile, "%s %s_%d = new %s", javaTypeString(vs->type, st, NULL), prefix("blank"), blankVar, constructor);
+          blankVar++;
         } else{
-            i = addToIdentifierTable(vs->id, 1, it);
+          IDENTIFIER *i = addIfNotInTable(vs->id, it); 
+          i->identifier = " ";
+          char identifier[1024];
+          sprintf(identifier, "%s_%d", prefix(vs->id), i->scopeCount);
+          fprintf(outputFile,"%s %s_%d = new %s", type, prefix(vs->id), i->scopeCount, constructor);
+          i->identifier = vs->id;
         }
-        i->identifier = " ";
-
-        char identifier[1024];
-        sprintf(identifier, "%s_%d", prefix(vs->id), i->scopeCount);
-
-        fprintf(outputFile,"%s %s_%d = new %s(", type, prefix(vs->id), i->scopeCount, constructor);
+        if(typeResolve(vs->type, st)->kind != tk_array){
+          fprintf(outputFile, "(");
+        }
         if(vs->exp != NULL){
             codeExp(vs->exp, st, it, tabCount);
         }
-        fprintf(outputFile,");");
+        if(typeResolve(vs->type, st)->kind != tk_array){
+          fprintf(outputFile,")");
+        }
+        fprintf(outputFile, ";");
         if(vs->next != NULL){
             fprintf(outputFile, "\n");
             writeTab(tabCount);
         }
-        i->identifier = vs->id;
         codeVarDecl(vs->next, st, it, tabCount);
     }
 }
@@ -110,10 +115,12 @@ void codeFuncDecl(FUNC_DECL *fd, SymbolTable *st, IdentifierTable *it, int tabCo
     fprintf(outputFile, "\tpublic static %s %s (", returnTypeString, prefix(fd->name));
     for (PARAM_LIST *temp = fd->params; temp; temp = temp->next) {
       if(strcmp(temp->id, "_") == 0){
-        continue;
+        fprintf(outputFile, "%s %s_%d", javaTypeString(temp->type, st, NULL), prefix("blank"), blankVar);
+        blankVar++;
+      } else {
+        IDENTIFIER *i = addIfNotInTable(temp->id, it);
+        fprintf(outputFile, "%s %s_%d", javaTypeString(temp->type, st, NULL), prefix(i->identifier), i->scopeCount);
       }
-      IDENTIFIER *i = addIfNotInTable(temp->id, it);
-      fprintf(outputFile, "%s %s_%d", javaTypeString(temp->type, st, NULL), prefix(i->identifier), i->scopeCount);
       if (temp->next) {
         fprintf(outputFile, ", ");
       }
