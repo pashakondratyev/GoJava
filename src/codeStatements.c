@@ -17,6 +17,7 @@
 void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
   // TODO: implement
   int newTabCount = tabCount == -1 ? -1 : tabCount + 1;
+  if(DEBUG) printf("Code Statement: %d\n", stmt->kind);
   if (stmt != NULL) {
     switch (stmt->kind) {
       case sk_block:
@@ -40,6 +41,7 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
         codeExp(stmt->val.exp, st, it, tabCount);
         break;
       case sk_assign:
+        codeAssignment(stmt, st, it, tabCount);
         break;
       case sk_assignOp:
         break;
@@ -102,4 +104,58 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
         break;
     }
   }
+}
+
+void codeAssignment(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount){
+  for(ASSIGN *temp = stmt->val.assign; temp; temp = temp->next){
+    codeExp(temp->lhs, st, it, tabCount);
+    fprintf(outputFile, " = ");
+    codeExp(temp->rhs, st, it, tabCount);
+    fprintf(outputFile, ";");
+    if(temp->next){
+      fprintf(outputFile, "\n");
+      writeTab(tabCount);
+    }
+  }
+}
+
+void codeAssignmentOp(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount){
+  codeExp(stmt->val.assignOp.lhs, st, it, tabCount);
+  switch(stmt->val.assignOp.kind){
+    case aok_plus:
+      fprintf(outputFile, " += ");
+      break;
+    case aok_minus:
+      fprintf(outputFile, " -= ");
+      break;
+    case aok_times:
+      fprintf(outputFile, " *= ");
+      break;
+    case aok_div:
+      fprintf(outputFile, " /= ");
+      break;
+    case aok_mod:
+      fprintf(outputFile, " %%= ");
+      break;
+    case aok_bitAnd:
+      fprintf(outputFile, " &= ");
+      break;
+    case aok_bitOr:
+      fprintf(outputFile, " |= ");
+      break;
+    case aok_bitXor:
+      fprintf(outputFile, " ^= ");
+      break;
+    case aok_bitLeftShift:
+      fprintf(outputFile, " <<= ");
+      break;
+    case aok_bitRightShift:
+      fprintf(outputFile, " >>= ");
+      break;
+    case aok_bitClear:
+      //TODO
+      break;
+  }
+  codeExp(stmt->val.assignOp.rhs, st, it, tabCount);
+  fprintf(outputFile, ";");
 }

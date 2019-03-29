@@ -6,4 +6,6 @@
 #include "codeIdentifiers.h"
 
 void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount);
+
+void codeAssignment(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount);
 #endif

@@ -17,17 +17,17 @@ void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
     switch (exp->kind) {
       case ek_id:
         if (strcmp(exp->val.id, "_") == 0) {
-          fprintf(stderr, "ERROR: blank identifier not handled.\n");
+          fprintf(outputFile, "_");
           break;
         }
 
-        if(getSymbol(st, exp->val.id)->kind != dk_func){
+        if (getSymbol(st, exp->val.id)->kind != dk_func) {
           IDENTIFIER *i = getFromIdentifierTable(exp->val.id, it);
-          if(i == NULL){
-              i = addToIdentifierTable(exp->val.id, 1, it); 
+          if (i == NULL) {
+            i = addToIdentifierTable(exp->val.id, 1, it);
           }
           fprintf(outputFile, "%s_%d", prefix(i->identifier), i->scopeCount);
-        } else{
+        } else {
           fprintf(outputFile, "%s", prefix(exp->val.id));
         }
         break;
@@ -277,47 +277,38 @@ void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
           type1 = s->val.type;
           type2 = s->val.typeDecl.type;
           type3 = s->val.typeDecl.resolvesTo;
+        } else{
+          codeFunctionCall(exp, st, it, tabCount);
+          break;
         }
         if (type1->kind == tk_int || type2->kind == tk_int || type3->kind == tk_int) {  // int
           fprintf(outputFile, "castUtil.castToInteger(");
           EXP_LIST *exps = exp->val.funcCall.args;
           codeExp(exps->exp, st, it, tabCount);
-          fprintf(outputFile, ")");
+          fprintf(outputFile, ");");
           break;
         }
         if (type1->kind == tk_float || type2->kind == tk_float || type3->kind == tk_float) {  // float64
           fprintf(outputFile, "castUtil.castToDouble(");
           EXP_LIST *exps = exp->val.funcCall.args;
           codeExp(exps->exp, st, it, tabCount);
-          fprintf(outputFile, ")");
+          fprintf(outputFile, ");");
           break;
         }
         if (type1->kind == tk_string || type2->kind == tk_string || type3->kind == tk_string) {  // string
           fprintf(outputFile, "castUtil.castToString(");
           EXP_LIST *exps = exp->val.funcCall.args;
           codeExp(exps->exp, st, it, tabCount);
-          fprintf(outputFile, ")");
+          fprintf(outputFile, ");");
           break;
         }
         if (type1->kind == tk_rune || type2->kind == tk_rune || type3->kind == tk_rune) {  // rune
           fprintf(outputFile, "castUtil.castToCharacter(");
           EXP_LIST *exps = exp->val.funcCall.args;
           codeExp(exps->exp, st, it, tabCount);
-          fprintf(outputFile, ")");
+          fprintf(outputFile, ");");
           break;
         }
-        // normal function call
-        fprintf(outputFile, "%s(", prefix(exp->val.funcCall.funcId));
-        EXP_LIST *exps = exp->val.funcCall.args;
-        while (exps != NULL) {
-          codeExp(exps->exp, st, it, tabCount);
-
-          exps = exps->next;
-          if (exps != NULL) {
-            fprintf(outputFile, ", ");
-          }
-        }
-        fprintf(outputFile, ")");
         break;
       case ek_append:
         codeExp(exp->val.append.sliceExp, st, it, tabCount);
@@ -376,4 +367,18 @@ void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
         break;
     }
   }
+}
+
+void codeFunctionCall(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
+  fprintf(outputFile, "%s(", prefix(exp->val.funcCall.funcId));
+  EXP_LIST *exps = exp->val.funcCall.args;
+  while (exps != NULL) {
+    codeExp(exps->exp, st, it, tabCount);
+
+    exps = exps->next;
+    if (exps != NULL) {
+      fprintf(outputFile, ", ");
+    }
+  }
+  fprintf(outputFile, ");");
 }
