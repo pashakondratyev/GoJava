@@ -67,6 +67,7 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
           fprintf(outputFile, ");");
           if(temp->next != NULL){
             fprintf(outputFile, "\n");
+            writeTab(tabCount);
           }
         }
         break;
@@ -80,6 +81,7 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
           fprintf(outputFile, ");");
           if(temp->next != NULL){
             fprintf(outputFile, "\n");
+            writeTab(tabCount);
           }
         }
         break;
@@ -89,10 +91,30 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
         fprintf(outputFile, ";");
         break;
       case sk_if:
+        fprintf(outputFile, "{\n");
+        writeTab(newTabCount);
+        it = scopeIdentifierTable(it);
+        if(stmt->val.ifStmt.simpleStmt != NULL){
+          codeStmt(stmt->val.ifStmt.simpleStmt, stmt->val.ifStmt.scope, it, newTabCount);
+          fprintf(outputFile,"\n");
+          writeTab(newTabCount);
+        }
+        fprintf(outputFile, "if (");
+        codeExp(stmt->val.ifStmt.cond, stmt->val.ifStmt.scope, it, newTabCount);
+        fprintf(outputFile, ")");
+        codeStmt(stmt->val.ifStmt.body, stmt->val.ifStmt.scope, it, newTabCount);
+        if(stmt->val.ifStmt.elseStmt != NULL){
+          codeStmt(stmt->val.ifStmt.elseStmt, stmt->val.ifStmt.scope, it, tabCount);
+        }
+        fprintf(outputFile, "\n");
+        writeTab(tabCount);
+        fprintf(outputFile, "}");
         // TODO: complete
         break;
       case sk_else:
-        // TODO: complete
+        fprintf(outputFile, "else");
+        codeStmt(stmt->val.elseBody, st, it, newTabCount);
+        writeTab(tabCount);
         break;
       case sk_switch:
         // TODO: complete
