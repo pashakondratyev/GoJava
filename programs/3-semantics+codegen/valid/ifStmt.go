@@ -4,6 +4,7 @@
 //^yup 15
 //^<=2
 //^is 2
+//3
 
 // If statements
 package main
@@ -63,6 +64,12 @@ func main() {
 
 	foo();
 	bar();
+
+	if p:=3; p>5 {
+		// empty
+	} else {
+		println(p)
+	}
 
 }
 
