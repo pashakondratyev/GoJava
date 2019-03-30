@@ -15,7 +15,9 @@
 
 #define DEBUG 0 
 
-void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bool incompleteBlock, STMT *parentPost, int switchNum) {
+int switchCount = 0;
+
+void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bool incompleteBlock, STMT *parentPost) { 
   // TODO: implement
   int newTabCount = tabCount == -1 ? -1 : tabCount + 1;
   // int loopNum;
@@ -120,13 +122,14 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
         fprintf(outputFile, "if (");
         codeExp(stmt->val.ifStmt.cond, stmt->val.ifStmt.scope, it, newTabCount);
         fprintf(outputFile, ")");
-        codeStmt(stmt->val.ifStmt.body, stmt->val.ifStmt.scope, it, newTabCount, false, parentPost);
+        codeStmt(stmt->val.ifStmt.body, stmt->val.ifStmt.scope, it, newTabCount+1, false, parentPost);
         if(stmt->val.ifStmt.elseStmt != NULL){
-          codeStmt(stmt->val.ifStmt.elseStmt, stmt->val.ifStmt.scope, it, tabCount, false, parentPost);
+          codeStmt(stmt->val.ifStmt.elseStmt, stmt->val.ifStmt.scope, it, newTabCount+1, false, parentPost);
         }
         fprintf(outputFile, "\n");
         writeTab(tabCount);
-        fprintf(outputFile, "}");
+        fprintf(outputFile, "}\n");
+        writeTab(tabCount);
         break;
       case sk_else:
         fprintf(outputFile, "else");
@@ -134,7 +137,6 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
         writeTab(tabCount);
         break;
       case sk_switch:
-        // TODO: complete
         fprintf(outputFile, "{\n");
         writeTab(newTabCount);
         it = scopeIdentifierTable(it);
@@ -147,18 +149,51 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
         writeTab(newTabCount+1);
         
         char *type = javaTypeString(stmt->val.switchStmt.exp->type, st, NULL);
-        fprintf(outputFile, "%s switchCond_%d = ", type, switchNum+1);
+        char *condId = (char *) malloc(15);
+        sprintf(condId, "switchCond_%d", switchCount++);
+        fprintf(outputFile, "%s %s = ", type, condId);
         codeExp(stmt->val.switchStmt.exp, stmt->val.switchStmt.scope, it, newTabCount+1);
         fprintf(outputFile, ";\n");
         writeTab(newTabCount+1);
 
-        // create if-else if-else statements
-
-  
+        CASE_CLAUSE *defaultClause = NULL;
+        CASE_CLAUSE_LIST *clauseList = stmt->val.switchStmt.caseClauses;
+        bool ifStmtUsed = false;
+        while (clauseList != NULL) {
+          if (clauseList->clause != NULL) {
+            if (clauseList->clause->kind == ck_default) {
+              defaultClause = clauseList->clause;
+            } else {
+              if (!ifStmtUsed) {
+                fprintf(outputFile, "if (");
+                codeClauseCases(condId, clauseList->clause->val.caseClause.cases, st, it, newTabCount+1, false, parentPost);
+                fprintf(outputFile, ") {\n");
+                writeTab(newTabCount+1);
+                codeClauses(clauseList->clause->val.caseClause.clauses, st, it, newTabCount+1, false, parentPost);
+                fprintf(outputFile, "} ");
+              } else {
+                fprintf(outputFile, "else if (");
+                codeClauseCases(condId, clauseList->clause->val.caseClause.cases, st, it, newTabCount+1, false, parentPost);
+                fprintf(outputFile, ") {\n");
+                writeTab(newTabCount+1);
+                codeClauses(clauseList->clause->val.caseClause.clauses, st, it, newTabCount+1, false, parentPost);
+                fprintf(outputFile, "} ");
+              }
+            }
+          }
+          clauseList = clauseList->next;
+        }
+        if (defaultClause != NULL) {
+          fprintf(outputFile, "else { \n");
+          writeTab(newTabCount+1);
+          codeClauses(defaultClause->val.defaultClauses, st, it, newTabCount+1, false, parentPost);
+          fprintf(outputFile, "}\n");
+          writeTab(newTabCount);
+        }
 
         fprintf(outputFile, "break;\n");
         writeTab(newTabCount);
-        fprintf(outputFile, "}"); // terminate while(true)
+        fprintf(outputFile, "}\n"); // terminate while(true)
         writeTab(tabCount);
         fprintf(outputFile, "}");
         break;
@@ -228,6 +263,37 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
     }
   }
 }
+
+void codeClauseCases(char *switchExpId, EXP_LIST *cases, SymbolTable *st, IdentifierTable *it, int tabCount, bool incompleteBlock, STMT *parentPost) {
+  while (cases != NULL) {
+    if (cases->exp != NULL) {
+      if (cases->exp->type->kind == tk_array) {
+        fprintf(outputFile, "Arrays.deepEquals(%s, ", switchExpId);
+        codeExp(cases->exp, st, it, tabCount);
+        fprintf(outputFile, ")");
+      } else {
+        fprintf(outputFile, "%s.equals(", switchExpId);
+        codeExp(cases->exp, st, it, tabCount);
+        fprintf(outputFile, ")");
+      }
+    }
+
+    cases = cases->next;
+    if (cases != NULL) {
+      fprintf(outputFile, " || "); 
+    }
+  }
+}
+
+void codeClauses(STMT_LIST *clauses, SymbolTable *st, IdentifierTable *it, int tabCount, bool incompleteBlock, STMT *parentPost) {
+  while (clauses != NULL) {
+    if (clauses->stmt != NULL) {
+      codeStmt(clauses->stmt, st, it, tabCount, incompleteBlock, parentPost); 
+    }
+    clauses = clauses->next;
+  }
+}
+
 
 void codeAssignment(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount){
   for(ASSIGN *temp = stmt->val.assign; temp; temp = temp->next){
