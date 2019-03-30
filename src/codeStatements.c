@@ -15,7 +15,7 @@
 
 #define DEBUG 0 
 
-void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bool incompleteBlock, STMT *parentPost) {
+void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bool incompleteBlock, STMT *parentPost, int switchNum) {
   // TODO: implement
   int newTabCount = tabCount == -1 ? -1 : tabCount + 1;
   // int loopNum;
@@ -135,6 +135,32 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
         break;
       case sk_switch:
         // TODO: complete
+        fprintf(outputFile, "{\n");
+        writeTab(newTabCount);
+        it = scopeIdentifierTable(it);
+        if(stmt->val.switchStmt.simpleStmt != NULL){
+          codeStmt(stmt->val.switchStmt.simpleStmt, stmt->val.switchStmt.scope, it, newTabCount, false, parentPost);
+          fprintf(outputFile,"\n");
+          writeTab(newTabCount);
+        }
+        fprintf(outputFile, "while (true) {\n");
+        writeTab(newTabCount+1);
+        
+        char *type = javaTypeString(stmt->val.switchStmt.exp->type, st, NULL);
+        fprintf(outputFile, "%s switchCond_%d = ", type, switchNum+1);
+        codeExp(stmt->val.switchStmt.exp, stmt->val.switchStmt.scope, it, newTabCount+1);
+        fprintf(outputFile, ";\n");
+        writeTab(newTabCount+1);
+
+        // create if-else if-else statements
+
+  
+
+        fprintf(outputFile, "break;\n");
+        writeTab(newTabCount);
+        fprintf(outputFile, "}"); // terminate while(true)
+        writeTab(tabCount);
+        fprintf(outputFile, "}");
         break;
       case sk_for:
         // infinite loops
@@ -183,7 +209,6 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
         fprintf(stderr, "Logical Failure: for loop not caught by any loop type.\n");
         break;
       case sk_break:
-        // TODO: fix with control flow
         fprintf(outputFile, "break;");  
         break;
       case sk_continue:
