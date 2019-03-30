@@ -18,9 +18,7 @@
 int switchCount = 0;
 
 void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bool incompleteBlock, STMT *parentPost) { 
-  // TODO: implement
   int newTabCount = tabCount == -1 ? -1 : tabCount + 1;
-  // int loopNum;
 
   if(DEBUG) printf("Code Statement: %d\n", stmt->kind);
   if (stmt != NULL) {
