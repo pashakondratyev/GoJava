@@ -5,7 +5,7 @@
 #include "symbol.h"
 #include "codeIdentifiers.h"
 
-void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount);
+void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, int parentLoopNum);
 
 void codeAssignment(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount);
 void codeAssignmentOp(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount);

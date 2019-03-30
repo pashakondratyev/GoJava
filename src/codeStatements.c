@@ -14,12 +14,10 @@
 
 #define DEBUG 0 
 
-int loopCount = 0;
-
-void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
+void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, int parentLoopNum) {
   // TODO: implement
   int newTabCount = tabCount == -1 ? -1 : tabCount + 1;
-  int loopNum = 0;
+  // int loopNum;
 
   if(DEBUG) printf("Code Statement: %d\n", stmt->kind);
   if (stmt != NULL) {
@@ -35,7 +33,7 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
             }
             fprintf(outputFile, "\n");
             writeTab(newTabCount);
-            codeStmt(temp->stmt, stmt->val.block.scope, child, newTabCount);
+            codeStmt(temp->stmt, stmt->val.block.scope, child, newTabCount, parentLoopNum);
         }
         fprintf(outputFile, "\n");
         writeTab(tabCount);
@@ -99,6 +97,8 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
             writeTab(tabCount);
           }
         }
+        fprintf(outputFile, "\n");
+        writeTab(tabCount);
         fprintf(outputFile, "System.out.println();\n");
         writeTab(tabCount);
         break;
@@ -112,16 +112,16 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
         writeTab(newTabCount);
         it = scopeIdentifierTable(it);
         if(stmt->val.ifStmt.simpleStmt != NULL){
-          codeStmt(stmt->val.ifStmt.simpleStmt, stmt->val.ifStmt.scope, it, newTabCount);
+          codeStmt(stmt->val.ifStmt.simpleStmt, stmt->val.ifStmt.scope, it, newTabCount, parentLoopNum);
           fprintf(outputFile,"\n");
           writeTab(newTabCount);
         }
         fprintf(outputFile, "if (");
         codeExp(stmt->val.ifStmt.cond, stmt->val.ifStmt.scope, it, newTabCount);
         fprintf(outputFile, ")");
-        codeStmt(stmt->val.ifStmt.body, stmt->val.ifStmt.scope, it, newTabCount);
+        codeStmt(stmt->val.ifStmt.body, stmt->val.ifStmt.scope, it, newTabCount, parentLoopNum);
         if(stmt->val.ifStmt.elseStmt != NULL){
-          codeStmt(stmt->val.ifStmt.elseStmt, stmt->val.ifStmt.scope, it, tabCount);
+          codeStmt(stmt->val.ifStmt.elseStmt, stmt->val.ifStmt.scope, it, tabCount, parentLoopNum);
         }
         fprintf(outputFile, "\n");
         writeTab(tabCount);
@@ -129,18 +129,17 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
         break;
       case sk_else:
         fprintf(outputFile, "else");
-        codeStmt(stmt->val.elseBody, st, it, newTabCount);
+        codeStmt(stmt->val.elseBody, st, it, newTabCount, parentLoopNum);
         writeTab(tabCount);
         break;
       case sk_switch:
         // TODO: complete
         break;
       case sk_for:
-        loopNum = ++loopCount;
         // infinite loops
         if (stmt->val.forStmt.whileExp == NULL && stmt->val.forStmt.forClause == NULL) {
           fprintf(outputFile, "while (true) ");
-          codeStmt(stmt->val.forStmt.body, stmt->val.forStmt.scope, it, newTabCount);
+          codeStmt(stmt->val.forStmt.body, stmt->val.forStmt.scope, it, newTabCount, parentLoopNum+1);
           fprintf(outputFile, "\n");
           writeTab(tabCount);
           break;
@@ -151,7 +150,7 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
           fprintf(outputFile, "while (");
           codeExp(stmt->val.forStmt.whileExp, stmt->val.forStmt.scope, it, newTabCount);
           fprintf(outputFile, ")");
-          codeStmt(stmt->val.forStmt.body, stmt->val.forStmt.scope, it, newTabCount);
+          codeStmt(stmt->val.forStmt.body, stmt->val.forStmt.scope, it, newTabCount, parentLoopNum+1);
           fprintf(outputFile, "\n");
           writeTab(tabCount);
           break;
@@ -163,25 +162,25 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
           writeTab(newTabCount);
           it = scopeIdentifierTable(it);
           if(stmt->val.forStmt.forClause->init != NULL){
-            codeStmt(stmt->val.forStmt.forClause->init, stmt->val.forStmt.scope, it, newTabCount);
+            codeStmt(stmt->val.forStmt.forClause->init, stmt->val.forStmt.scope, it, newTabCount, parentLoopNum+1);
             fprintf(outputFile,"\n");
             writeTab(newTabCount);
           }
           fprintf(outputFile, "while (");
           codeExp(stmt->val.forStmt.forClause->cond, stmt->val.forStmt.scope, it, newTabCount);
           fprintf(outputFile, ")");
-          codeStmt(stmt->val.forStmt.body, stmt->val.forStmt.scope, it, newTabCount);
+          codeStmt(stmt->val.forStmt.body, stmt->val.forStmt.scope, it, newTabCount, parentLoopNum+1);
           if(stmt->val.forStmt.forClause->post != NULL){
             fprintf(outputFile, "\n");
             writeTab(newTabCount);
-            fprintf(outputFile, "__golite__post_%d:\n", loopNum);
+            fprintf(outputFile, "__golite__post_%d:\n", parentLoopNum+1);
             writeTab(newTabCount);
-            codeStmt(stmt->val.forStmt.forClause->post, stmt->val.forStmt.scope, it, newTabCount);
+            codeStmt(stmt->val.forStmt.forClause->post, stmt->val.forStmt.scope, it, newTabCount, parentLoopNum+1);
           }
           fprintf(outputFile, "\n");
           writeTab(tabCount);
           fprintf(outputFile, "}");
-            break;
+          break;
         }
 
         fprintf(stderr, "Logical Failure: for loop not caught by any loop type.\n");
@@ -192,7 +191,7 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
         break;
       case sk_continue:
         // TODO: fix with control flow
-        fprintf(outputFile, "continue;"); 
+        fprintf(outputFile, "continue;");  
         break;
       case sk_fallthrough:
         fprintf(stderr, "Error: fallthough not supported.\n");
