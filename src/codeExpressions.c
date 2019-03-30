@@ -289,28 +289,28 @@ void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
           fprintf(outputFile, "castUtil.castToInteger(");
           EXP_LIST *exps = exp->val.funcCall.args;
           codeExp(exps->exp, st, it, tabCount);
-          fprintf(outputFile, ");");
+          fprintf(outputFile, ")");
           break;
         }
         if (type1->kind == tk_float || type2->kind == tk_float || type3->kind == tk_float) {  // float64
           fprintf(outputFile, "castUtil.castToDouble(");
           EXP_LIST *exps = exp->val.funcCall.args;
           codeExp(exps->exp, st, it, tabCount);
-          fprintf(outputFile, ");");
+          fprintf(outputFile, ")");
           break;
         }
         if (type1->kind == tk_string || type2->kind == tk_string || type3->kind == tk_string) {  // string
           fprintf(outputFile, "castUtil.castToString(");
           EXP_LIST *exps = exp->val.funcCall.args;
           codeExp(exps->exp, st, it, tabCount);
-          fprintf(outputFile, ");");
+          fprintf(outputFile, ")");
           break;
         }
         if (type1->kind == tk_rune || type2->kind == tk_rune || type3->kind == tk_rune) {  // rune
           fprintf(outputFile, "castUtil.castToCharacter(");
           EXP_LIST *exps = exp->val.funcCall.args;
           codeExp(exps->exp, st, it, tabCount);
-          fprintf(outputFile, ");");
+          fprintf(outputFile, ")");
           break;
         }
         break;
@@ -420,5 +420,5 @@ void codeFunctionCall(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCou
       fprintf(outputFile, ", ");
     }
   }
-  fprintf(outputFile, ");");
+  fprintf(outputFile, ")");
 }
