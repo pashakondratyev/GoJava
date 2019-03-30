@@ -185,7 +185,7 @@ void codeFuncDecl(FUNC_DECL *fd, SymbolTable *st, IdentifierTable *it, int tabCo
   // print args
   fprintf(outputFile, ") ");
   if(DEBUG) printf("Finished converting header\n");
-  codeStmt(fd->body, st, it, tabCount, false, -1, NULL);
+  codeStmt(fd->body, st, it, tabCount, false, NULL);
   if(DEBUG) printf("Finished converting body\n");
   fprintf(outputFile, "\n");
   // TODO: implement
