@@ -14,6 +14,8 @@
 
 #define DEBUG 0 
 
+int breakCount = 0;
+
 void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
   // TODO: implement
   int newTabCount = tabCount == -1 ? -1 : tabCount + 1;
@@ -61,7 +63,7 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
       case sk_print:
         for(EXP_LIST *temp = stmt->val.printExps; temp; temp=temp->next){
           if (temp->exp->type->kind == tk_float) {
-            fprintf(outputFile, "System.out.printf(\"%+7.6e\", ");
+            fprintf(outputFile, "System.out.printf(\"%%+7.6e\", ");
             codeExp(temp->exp, st, it, tabCount);
             fprintf(outputFile, ");");
           } else {
@@ -79,7 +81,7 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
       case sk_println:
         for(EXP_LIST *temp = stmt->val.printExps; temp; temp=temp->next){ 
           if (temp->exp->type->kind == tk_float) {
-            fprintf(outputFile, "System.out.printf(\"%+7.6e\", ");
+            fprintf(outputFile, "System.out.printf(\"%%+7.6e\", ");
             codeExp(temp->exp, st, it, tabCount);
             fprintf(outputFile, ");");
           } else {
