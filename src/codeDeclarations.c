@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 
 #include "codeDeclarations.h"
@@ -184,7 +185,7 @@ void codeFuncDecl(FUNC_DECL *fd, SymbolTable *st, IdentifierTable *it, int tabCo
   // print args
   fprintf(outputFile, ") ");
   if(DEBUG) printf("Finished converting header\n");
-  codeStmt(fd->body, st, it, tabCount, -1);
+  codeStmt(fd->body, st, it, tabCount, false, -1, NULL);
   if(DEBUG) printf("Finished converting body\n");
   fprintf(outputFile, "\n");
   // TODO: implement
