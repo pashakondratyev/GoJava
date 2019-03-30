@@ -19,6 +19,8 @@ int loopCount = 0;
 void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
   // TODO: implement
   int newTabCount = tabCount == -1 ? -1 : tabCount + 1;
+  int loopNum = 0;
+
   if(DEBUG) printf("Code Statement: %d\n", stmt->kind);
   if (stmt != NULL) {
     switch (stmt->kind) {
@@ -134,6 +136,7 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
         // TODO: complete
         break;
       case sk_for:
+        loopNum = ++loopCount;
         // infinite loops
         if (stmt->val.forStmt.whileExp == NULL && stmt->val.forStmt.forClause == NULL) {
           fprintf(outputFile, "while (true) ");
@@ -156,12 +159,31 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
 
         // 3-part loops
         if (stmt->val.forStmt.forClause != NULL) {
-          // TODO: complete
-
+          fprintf(outputFile, "{\n");
+          writeTab(newTabCount);
+          it = scopeIdentifierTable(it);
+          if(stmt->val.forStmt.forClause->init != NULL){
+            codeStmt(stmt->val.forStmt.forClause->init, stmt->val.forStmt.scope, it, newTabCount);
+            fprintf(outputFile,"\n");
+            writeTab(newTabCount);
+          }
+          fprintf(outputFile, "while (");
+          codeExp(stmt->val.forStmt.forClause->cond, stmt->val.forStmt.scope, it, newTabCount);
+          fprintf(outputFile, ")");
+          codeStmt(stmt->val.forStmt.body, stmt->val.forStmt.scope, it, newTabCount);
+          if(stmt->val.forStmt.forClause->post != NULL){
+            fprintf(outputFile, "\n");
+            writeTab(newTabCount);
+            fprintf(outputFile, "__golite__post_%d:\n", loopNum);
+            writeTab(newTabCount);
+            codeStmt(stmt->val.forStmt.forClause->post, stmt->val.forStmt.scope, it, newTabCount);
+          }
           fprintf(outputFile, "\n");
           writeTab(tabCount);
-          break;
+          fprintf(outputFile, "}");
+            break;
         }
+
         fprintf(stderr, "Logical Failure: for loop not caught by any loop type.\n");
         break;
       case sk_break:
