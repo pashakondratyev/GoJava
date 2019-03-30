@@ -64,4 +64,14 @@ class Slice<T> {
             return elementList.get(index);
         }
     }
+
+    // TODO: handle the different cases with appropriate errors
+    public void put (int index, T element){
+        if (index < 0) {
+        } else if (index > cap) {
+        } else if (index > len) {
+        } else {
+            elementList.add(index, element);
+        }
+    }
 }

@@ -39,6 +39,11 @@ func main() {
 	e.f = 1
 	println(f.f)
 
+	var g, h [][]int
+	g = append(g, c);
+	g[0][0] = 2
+	println(g[0][0])
+
 	_ = foo(5)	// evaluate RHS even if result stored in blank id
 
 }

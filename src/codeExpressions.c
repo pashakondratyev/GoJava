@@ -10,6 +10,8 @@
 #include "symbol.h"
 #include "type.h"
 
+#define DEBUG 0
+
 void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
   TYPE *type = NULL;
   TYPE *type1 = NULL;
@@ -17,14 +19,13 @@ void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
   TYPE *type3 = NULL;
   SYMBOL *s = NULL;
   if (exp != NULL) {
+    if(DEBUG) printf("Code Expression Kind : %d\n", exp->kind);
     switch (exp->kind) {
       case ek_id:
         if (strcmp(exp->val.id, "_") == 0) {
           fprintf(outputFile, "%s_%d", prefix("blank"), blankVar);
           break;
         }
-        
-
         if (getSymbol(st, exp->val.id)->kind != dk_func) {
           IDENTIFIER *i = getFromIdentifierTable(exp->val.id, it);
           if (i == NULL) {

@@ -1245,7 +1245,8 @@ int resolvesToTSlice(TYPE *s, TYPE *t, SymbolTable *st) {
   SYMBOL *sym;
   switch (s->kind) {
     case tk_slice:
-      sym = getSymbol(st, s->val.sliceType->val.name);
+      return typeCompare(s->val.sliceType, t, st);
+
       return sym->val.typeDecl.type == t;
     case tk_ref:
       sym = getSymbol(st, s->val.name);
