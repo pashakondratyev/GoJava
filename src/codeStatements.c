@@ -59,12 +59,17 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
         fprintf(outputFile, "--;");
         break;
       case sk_print:
-        // TODO: fix output for doubles
         for(EXP_LIST *temp = stmt->val.printExps; temp; temp=temp->next){
-          fprintf(outputFile, "System.out.print(");
-          if (temp->exp->type->kind == tk_rune) fprintf(outputFile, "(int)");
-          codeExp(temp->exp, st, it, tabCount);
-          fprintf(outputFile, ");");
+          if (temp->exp->type->kind == tk_float) {
+            fprintf(outputFile, "System.out.printf(\"%+7.6e\", ");
+            codeExp(temp->exp, st, it, tabCount);
+            fprintf(outputFile, ");");
+          } else {
+            fprintf(outputFile, "System.out.print(");
+            if (temp->exp->type->kind == tk_rune) fprintf(outputFile, "(int)");
+            codeExp(temp->exp, st, it, tabCount);
+            fprintf(outputFile, ");");
+          }
           if(temp->next != NULL){
             fprintf(outputFile, "\n");
             writeTab(tabCount);
@@ -72,18 +77,26 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
         }
         break;
       case sk_println:
-        // TODO: fix for multiple items
-        // TODO: fix output for doubles
         for(EXP_LIST *temp = stmt->val.printExps; temp; temp=temp->next){ 
-          fprintf(outputFile, "System.out.println(");
-          if (temp->exp->type->kind == tk_rune) fprintf(outputFile, "(int)");
-          codeExp(temp->exp, st, it, tabCount);
-          fprintf(outputFile, ");");
+          if (temp->exp->type->kind == tk_float) {
+            fprintf(outputFile, "System.out.printf(\"%+7.6e\", ");
+            codeExp(temp->exp, st, it, tabCount);
+            fprintf(outputFile, ");");
+          } else {
+            if (temp->exp->type->kind == tk_rune) fprintf(outputFile, "(int)");
+            fprintf(outputFile, "System.out.print(");
+            codeExp(temp->exp, st, it, tabCount);
+            fprintf(outputFile, ");");
+          }
           if(temp->next != NULL){
             fprintf(outputFile, "\n");
             writeTab(tabCount);
+            fprintf(outputFile, "System.out.print(\" \");\n");
+            writeTab(tabCount);
           }
         }
+        fprintf(outputFile, "System.out.println();\n");
+        writeTab(tabCount);
         break;
       case sk_return:
         fprintf(outputFile, "return ");
@@ -109,7 +122,6 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
         fprintf(outputFile, "\n");
         writeTab(tabCount);
         fprintf(outputFile, "}");
-        // TODO: complete
         break;
       case sk_else:
         fprintf(outputFile, "else");
