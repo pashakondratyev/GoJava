@@ -14,7 +14,7 @@
 
 #define DEBUG 0 
 
-int breakCount = 0;
+int loopCount = 0;
 
 void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
   // TODO: implement
@@ -134,7 +134,35 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
         // TODO: complete
         break;
       case sk_for:
-        // TODO: complete
+        // infinite loops
+        if (stmt->val.forStmt.whileExp == NULL && stmt->val.forStmt.forClause == NULL) {
+          fprintf(outputFile, "while (true) ");
+          codeStmt(stmt->val.forStmt.body, stmt->val.forStmt.scope, it, newTabCount);
+          fprintf(outputFile, "\n");
+          writeTab(tabCount);
+          break;
+        }
+
+        // while loops
+        if (stmt->val.forStmt.whileExp != NULL) {
+          fprintf(outputFile, "while (");
+          codeExp(stmt->val.forStmt.whileExp, stmt->val.forStmt.scope, it, newTabCount);
+          fprintf(outputFile, ")");
+          codeStmt(stmt->val.forStmt.body, stmt->val.forStmt.scope, it, newTabCount);
+          fprintf(outputFile, "\n");
+          writeTab(tabCount);
+          break;
+        }
+
+        // 3-part loops
+        if (stmt->val.forStmt.forClause != NULL) {
+          // TODO: complete
+
+          fprintf(outputFile, "\n");
+          writeTab(tabCount);
+          break;
+        }
+        fprintf(stderr, "Logical Failure: for loop not caught by any loop type.\n");
         break;
       case sk_break:
         // TODO: fix with control flow
