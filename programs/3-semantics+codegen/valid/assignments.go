@@ -3,6 +3,7 @@
 //^0
 //^1
 //^0
+//^2
 //^5
 
 // Assignments
@@ -41,8 +42,9 @@ func main() {
 
 	var g, h [][]int
 	g = append(g, c);
+	h = g 
 	g[0][0] = 2
-	println(g[0][0])
+	println(h[0][0])
 
 	_ = foo(5)	// evaluate RHS even if result stored in blank id
 
