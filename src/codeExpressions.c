@@ -25,6 +25,12 @@ void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
         if (strcmp(exp->val.id, "_") == 0) {
           fprintf(outputFile, "%s_%d", prefix("blank"), blankVar);
           break;
+        } else if (strcmp(exp->val.id, "true") == 0) {
+          fprintf(outputFile, "__golite__true");
+          break;
+        } else if (strcmp(exp->val.id, "false") == 0) {
+          fprintf(outputFile, "__golite__false");
+          break;
         }
         if (getSymbol(st, exp->val.id)->kind != dk_func) {
           IDENTIFIER *i = getFromIdentifierTable(exp->val.id, it);
