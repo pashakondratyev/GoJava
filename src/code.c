@@ -89,6 +89,8 @@ void codeProgram(PROG *prog, SymbolTable *st, char *inputFileName) {
 // setup classes and other defaults
 void codeSetup(char *className) {
   // TODO: complete
+  // import for array equality
+  fprintf(outputFile, "import java.util.Arrays;\n\n");  
   // class name must match file name
   fprintf(outputFile, "public class %s {\n", className);
   // define Go boolean variables
