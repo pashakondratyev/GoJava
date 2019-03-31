@@ -51,7 +51,7 @@ void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCou
           i->identifier = " ";
           char identifier[1024];
           sprintf(identifier, "%s_%d", prefix(vs->id), i->scopeCount);
-          fprintf(outputFile,"%s %s_%d = new %s", type, prefix(vs->id), i->scopeCount, constructor);
+          fprintf(outputFile,"%s %s = new %s", type, identifier, constructor);
           i->identifier = vs->id;
         }
         if(typeResolve(vs->type, st)->kind != tk_array){
@@ -66,10 +66,8 @@ void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCou
           fprintf(outputFile,")");
         }
         fprintf(outputFile, ";");
-        if(vs->next != NULL){
-            fprintf(outputFile, "\n");
-            writeTab(tabCount);
-        }
+        fprintf(outputFile, "\n");
+        writeTab(tabCount);
         codeVarDecl(vs->next, st, it, tabCount);
     }
 }
