@@ -95,14 +95,11 @@ void codeShortDecl(SHORT_SPECS *ss, SymbolTable *st, IdentifierTable *it, int ta
     } else{
       i = getFromIdentifierTable(temp->lhs->val.id, it);
     }
-    
-    fprintf(outputFile, "%s %s_temp_%d = %s", type, prefix(temp->lhs->val.id), i->scopeCount, constructor);
+    fprintf(outputFile, "%s %s_temp_%d = ", type, prefix(temp->lhs->val.id), i->scopeCount);
     codeExp(temp->rhs, st, it, tabCount);
-    fprintf(outputFile,";");
-    if(ss->next != NULL){
-        fprintf(outputFile, "\n");
-        writeTab(tabCount);
-    }
+    fprintf(outputFile,";\n");
+    writeTab(tabCount);
+
     if(!temp->declared){
       i->identifier = temp->lhs->val.id;
     }
@@ -122,7 +119,7 @@ void codeShortDecl(SHORT_SPECS *ss, SymbolTable *st, IdentifierTable *it, int ta
     IDENTIFIER *i = getFromIdentifierTable(temp->lhs->val.id, it);
     
     fprintf(outputFile, "%s %s_%d = ", type, prefix(temp->lhs->val.id), i->scopeCount);
-    fprintf(outputFile, "%s %s_temp_%d;", type, prefix(temp->lhs->val.id), i->scopeCount);
+    fprintf(outputFile, "%s_temp_%d;", prefix(temp->lhs->val.id), i->scopeCount);
     if(ss->next != NULL){
         printLine = 1;
     }

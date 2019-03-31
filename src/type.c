@@ -89,6 +89,10 @@ void typeShortDecl(SHORT_SPECS *ss, SymbolTable *st) {
         s->val.type = ss->rhs->type;
       }
 
+      if (ss->lhs->type == NULL) {
+        ss->lhs->type = ss->rhs->type;
+      }
+
       if (ss->rhs->type == NULL) {
         fprintf(stderr, "Error: (line %d) void cannot be used as a value in a short declaration\n", ss->rhs->lineno);
         exit(1);
