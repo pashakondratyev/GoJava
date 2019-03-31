@@ -41,6 +41,8 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
         break;
       case sk_exp:
         codeExp(stmt->val.exp, st, it, tabCount);
+        fprintf(outputFile, ";\n");
+        writeTab(tabCount);
         break;
       case sk_assign:
         codeAssignment(stmt, st, it, tabCount);
@@ -85,8 +87,8 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
             codeExp(temp->exp, st, it, tabCount);
             fprintf(outputFile, ");");
           } else {
-            if (temp->exp->type->kind == tk_rune) fprintf(outputFile, "(int)");
             fprintf(outputFile, "System.out.print(");
+            if (temp->exp->type->kind == tk_rune) fprintf(outputFile, "(int)");
             codeExp(temp->exp, st, it, tabCount);
             fprintf(outputFile, ");");
           }
