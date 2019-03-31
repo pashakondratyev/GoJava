@@ -36,16 +36,12 @@ int indexLastForwardSlash(char *str) {
   return index;
 }
 
-void removeNonAlphaNum(char *str, int startIndex)
-{
+void removeNonAlphaNum(char *str, int startIndex) {
     unsigned long i = startIndex;
     unsigned long j = startIndex;
     char c;
-
-    while ((c = str[i++]) != '\0')
-    {
-        if (isalnum(c))
-        {
+    while ((c = str[i++]) != '\0') {
+        if (isalnum(c)) {
             str[j++] = c;
         }
     }
@@ -70,6 +66,9 @@ void codeProgram(PROG *prog, SymbolTable *st, char *inputFileName) {
 
   // ignore package declaration
 
+  // import for array equality
+  fprintf(outputFile, "import java.util.Arrays;\n\n");  
+
   // set class name as the file name excluding the path
   int index = indexLastForwardSlash(inputFileName);
   identifierTable = initIdentifierTable();
@@ -89,8 +88,6 @@ void codeProgram(PROG *prog, SymbolTable *st, char *inputFileName) {
 // setup classes and other defaults
 void codeSetup(char *className) {
   // TODO: complete
-  // import for array equality
-  fprintf(outputFile, "import java.util.Arrays;\n\n");  
   // class name must match file name
   fprintf(outputFile, "public class %s {\n", className);
   // define Go boolean variables
