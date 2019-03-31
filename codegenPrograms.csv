@@ -1,0 +1,35 @@
+Test,Functional? – March 31st,Problem
+INVALID,,
+Arrays-bound1.go,Yes,
+Arrays-bound2.go,Yes,
+noMain.go,Yes,
+Slices-bounds1.go,Yes,
+Slices-bounds2.go,Yes,
+,,
+VALID,,
+append,Yes,
+arrays,No,New arrays of basic types must be filled with default values
+assignment,No,Unchecked
+blankid,No,Unchecked
+callExprs,No,Unchecked
+capacity,No,Unchecked
+cast,No,Unchecked
+equality,No,Unchecked
+exprs,No,Unchecked
+forLoops,No,Unchecked
+funcDecls,No,Unchecked
+ifStmt,No,Unchecked
+incrdec,No,Unchecked
+javaKeywords,No,Unchecked
+length,No,Unchecked
+orderOfOps,No,Unchecked
+printStmts,No,Unchecked
+returnStmts,No,Unchecked
+reuseAlias,No,Unchecked
+shortDecls,No,Unchecked
+slices,No,Unchecked
+structs,No,Unchecked
+structs2,No,Unchecked
+structsSubmit,No,Unchecked
+switchStmt,No,Unchecked
+varDecls,No,Unchecked
