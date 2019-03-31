@@ -9,6 +9,7 @@
 //^false
 //^hi
 //^hi
+//^hi
 
 // Variable declarations
 package main
@@ -52,6 +53,8 @@ func main() {
 		var hello = hi
 		var hi = hi
 		println(hello)
+		println(hi)
+		hi = hi
 		println(hi)
 	}
 }
