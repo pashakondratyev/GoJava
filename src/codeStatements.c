@@ -302,7 +302,7 @@ void codeAssignment(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCou
       temp->lhs->val.indexExp.objectExp->type != NULL &&
       temp->lhs->val.indexExp.objectExp->type->kind == tk_slice) {
       codeExp(temp->lhs->val.indexExp.objectExp, st, it, tabCount);
-      fprintf(outputFile, ".add(");
+      fprintf(outputFile, ".put(");
       codeExp(temp->lhs->val.indexExp.indexExp, st, it, tabCount);
       fprintf(outputFile, ", ");
       codeExp(temp->rhs, st, it, tabCount);

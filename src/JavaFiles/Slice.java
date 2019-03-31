@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.lang.ArrayIndexOutOfBoundsException;
 
 class Slice<T> {
     public int cap;
@@ -53,23 +54,26 @@ class Slice<T> {
     }
 
     // TODO: handle the different cases with appropriate errors
-    public T get(int index) {
+    public T get(int index) throws ArrayIndexOutOfBoundsException {
         if (index < 0) {
-            return null;
-        } else if (index > cap) {
-            return null;
-        } else if (index > len) {
-            return null;
+            throw new ArrayIndexOutOfBoundsException("Slice index must be non-negative.");
+        } else if (index >= cap) {
+            throw new ArrayIndexOutOfBoundsException("Index must be less than the capacity of the slice.");
+        } else if (index >= len) {
+            throw new ArrayIndexOutOfBoundsException("Index must be less than the length of the slice.");
         } else {
             return elementList.get(index);
         }
     }
 
     // TODO: handle the different cases with appropriate errors
-    public void put (int index, T element){
+    public void put (int index, T element) throws ArrayIndexOutOfBoundsException {
         if (index < 0) {
-        } else if (index > cap) {
-        } else if (index > len) {
+            throw new ArrayIndexOutOfBoundsException("Slice index must be non-negative.");
+        } else if (index >= cap) {
+            throw new ArrayIndexOutOfBoundsException("Index must be less than the capacity of the slice.");
+        } else if (index >= len) {
+            throw new ArrayIndexOutOfBoundsException("Index must be less than the length of the slice.");
         } else {
             elementList.add(index, element);
         }

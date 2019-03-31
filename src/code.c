@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "code.h"
 #include "codeIdentifiers.h"
@@ -35,11 +36,28 @@ int indexLastForwardSlash(char *str) {
   return index;
 }
 
+void removeNonAlphaNum(char *str, int startIndex)
+{
+    unsigned long i = startIndex;
+    unsigned long j = startIndex;
+    char c;
+
+    while ((c = str[i++]) != '\0')
+    {
+        if (isalnum(c))
+        {
+            str[j++] = c;
+        }
+    }
+    str[j] = '\0';
+}
+
 void codeProgram(PROG *prog, SymbolTable *st, char *inputFileName) {
   // create file name and open it
   numInitFunc = 0;
   identifierCount = 0;
   blankVar = 0;
+  removeNonAlphaNum(inputFileName, indexLastForwardSlash(inputFileName)+1);
   char *outputFileName = malloc((strlen(inputFileName) + 6) * sizeof(char));
   strncpy(outputFileName, inputFileName, strlen(inputFileName));
   sprintf(outputFileName, "%s.java", inputFileName);

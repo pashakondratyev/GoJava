@@ -3,6 +3,7 @@
 //^3
 //^4
 //^5
+//^2
 
 // Slices
 package main
@@ -22,4 +23,8 @@ func main() {
 	println(b[3])
 	println(b[4])
 
-}
+	var c []int;
+  c = append(c, 5)
+  c[0]=2;
+  println(c[0])
+}          
