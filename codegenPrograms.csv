@@ -1,36 +1,36 @@
-Test,Functional? – March 31st,Problem
-INVALID,,
-Arrays-bound1.go,Yes,
-Arrays-bound2.go,Yes,
-noMain.go,Yes,
-Slices-bounds1.go,Yes,
-Slices-bounds2.go,Yes,
-,,
-VALID,,
-append,Yes,
-arrays,No,New arrays of basic types must be filled with default values
-assignment,No,Basic types must be filled with default values & fix return to return copy
-blankid,No,Basic types must be filled with default values
-callExprs,No,Pass function parameters in by value (make copies)
-capacity,Yes,
-cast,Yes,
-equality,No,Basic types must be filled with default values & fix equality: slice
-exprs,Yes,
-forLoops,No,Basic types must be filled with default values & fix expressions to be the full reference type (need to fix practically all expressions) **write new test before fixing**
-funcDecls,No,Major Error & Basic types must be filled with default values
-ifStmt,Yes,
-incrdec,Yes,
-javaKeywords,No,Basic types must be filled with default values
-length,Yes,
-orderOfOps,Yes,
-printStmts,No,Handle new line and raw strings
-returnStmts,No,Fix varDecls for when RHS has a value (ex. Integer[] i = foo();) ** make test before fix**
-reuseAlias,No,Basic types must be filled with default values
-shortDecls,No,Basic types must be filled with default values & fix redeclare in shortdecl
-slices,Yes,
-structs,No,Basic types must be filled with default values
-structs2,No,"Basic types must be filled with default values & fix slice array creation, check array array and struct array creation"
-structsSubmit,No,Fix others since combination of other tests
-switchStmt,Yes,
-trueFalse,No,Fix true and false
-varDecls,No,Basic types must be filled with default values & shadow scoping issue
+Test,Functional? – March 31st,Problem,
+INVALID,,,
+Arrays-bound1.go,Yes,,
+Arrays-bound2.go,Yes,,
+noMain.go,Yes,,
+Slices-bounds1.go,Yes,,
+Slices-bounds2.go,Yes,,
+,,,
+VALID,,,
+append,Yes,,
+arrays,No,New arrays of basic types must be filled with default values,
+assignment,No,Basic types must be filled with default values & fix return to return copy,
+blankid,No,Basic types must be filled with default values,
+callExprs,No,Pass function parameters in by value (make copies),
+capacity,Yes,,
+cast,Yes,,
+equality,No,Basic types must be filled with default values & fix equality: slice,
+exprs,Yes,,
+forLoops,No,Basic types must be filled with default values & fix expressions to be the full reference type (need to fix practically all expressions) **write new test before fixing**,
+funcDecls,No,Major Error & Basic types must be filled with default values,
+ifStmt,Yes,,
+incrdec,Yes,,
+javaKeywords,No,Basic types must be filled with default values,
+length,Yes,,
+orderOfOps,Yes,,
+printStmts,No,Handle new line and raw strings,
+returnStmts,No,Fix varDecls for when RHS has a value (ex. Integer[] i = foo(),) ** make test before fix**
+reuseAlias,No,Basic types must be filled with default values,
+shortDecls,No,Basic types must be filled with default values & fix redeclare in shortdecl,
+slices,Yes,,
+structs,No,Basic types must be filled with default values,
+structs2,No,"Basic types must be filled with default values & fix slice array creation, check array array and struct array creation",
+structsSubmit,No,Fix others since combination of other tests,
+switchStmt,Yes,,
+trueFalse,No,Shadow scoping issue,
+varDecls,No,Basic types must be filled with default values & shadow scoping issue,
