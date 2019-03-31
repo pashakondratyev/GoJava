@@ -9,6 +9,5 @@
 void codeDeclarations(DECL *dcl, SymbolTable *st, IdentifierTable *it, int tabCount);
 void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCount);
 void codeShortDecl(SHORT_SPECS *ss, SymbolTable *st, IdentifierTable *it, int tabCount);
-void codeTypeDecl(TYPE_SPECS *ts, SymbolTable *st, IdentifierTable *it, int tabCount);
 void codeFuncDecl(FUNC_DECL *fd, SymbolTable *st, IdentifierTable *it, int tabCount);
 #endif

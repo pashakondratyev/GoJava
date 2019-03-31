@@ -59,6 +59,8 @@ void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCou
         }
         if(vs->exp != NULL){
             codeExp(vs->exp, st, it, tabCount);
+        } else {
+          // TODO: code default values if needed
         }
         if(typeResolve(vs->type, st)->kind != tk_array){
           fprintf(outputFile,")");
@@ -145,11 +147,6 @@ void codeShortDecl(SHORT_SPECS *ss, SymbolTable *st, IdentifierTable *it, int ta
   if(ss != NULL){
     codeShortDecl(ss->next, st, it, tabCount);
   }*/
-  // TODO: implement
-}
-
-void codeTypeDecl(TYPE_SPECS *ts, SymbolTable *st, IdentifierTable *it, int tabCount) {
-  // TODO: implement
 }
 
 void codeFuncDecl(FUNC_DECL *fd, SymbolTable *st, IdentifierTable *it, int tabCount) {
