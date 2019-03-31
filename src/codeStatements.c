@@ -307,6 +307,12 @@ void codeAssignment(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCou
       fprintf(outputFile, ", ");
       codeExp(temp->rhs, st, it, tabCount);
       fprintf(outputFile, ");");
+    } else if (temp->lhs->kind == ek_id && strcmp(temp->lhs->val.id, "_") == 0) {
+      char *type = javaTypeString(temp->rhs->type, st, NULL);
+      fprintf(outputFile, "%s %s_%d = ", type, prefix("blank"), blankVar);
+      blankVar++;
+      codeExp(temp->rhs, st, it, tabCount);
+      fprintf(outputFile, ";");
     } else {
       codeExp(temp->lhs, st, it, tabCount);
       fprintf(outputFile, " = ");
