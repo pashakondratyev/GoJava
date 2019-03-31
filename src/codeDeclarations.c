@@ -28,7 +28,7 @@ void codeDeclarations(DECL *dcl, SymbolTable *st, IdentifierTable *it, int tabCo
         codeShortDecl(dcl->val.shortSpecs, st, it, tabCount);
         break;
       case dk_type:
-        codeTypeDecl(dcl->val.typeSpecs, st, it, tabCount);
+        // ignore type declarations
         break;
       case dk_func:
         codeFuncDecl(dcl->val.funcDecl, st, it, tabCount);
