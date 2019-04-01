@@ -179,6 +179,34 @@ char *javaTypeStringConstructor(TYPE *type, SymbolTable *st, char *name) {
   return "";
 }
 
+char *javaConstructorForBasicTypes(TYPE *type, SymbolTable *st) {
+  char *BUFFER = (char *)(malloc(1024));
+  SYMBOL *symbol;
+  if (type != NULL) {
+    switch (type->kind) {
+      case tk_int:
+        return "new Integer";
+      case tk_float:
+        return "new Double";
+      case tk_rune:
+        return "new Character";
+      case tk_string:
+        return "new String";
+      case tk_boolean:
+        return "new Boolean";
+      case tk_ref:
+        symbol = getSymbol(st, type->val.name);
+        return javaConstructorForBasicTypes(symbol->val.typeDecl.resolvesTo, st);
+      case tk_res:
+        fprintf(stderr, "Encountered tk_res type during code generation");
+        exit(1);
+      default:
+        return "";
+    }
+  }
+  return "";
+}
+
 char *javaTypeStringDefaultConstructor(TYPE *type, SymbolTable *st, char *name) {
   char *BUFFER = (char *)(malloc(1024));
   SYMBOL *symbol;
@@ -189,7 +217,7 @@ char *javaTypeStringDefaultConstructor(TYPE *type, SymbolTable *st, char *name) 
       case tk_float:
         return "Double(0.0)";
       case tk_rune:
-        return "Character('')";
+        return "Character(' ')";
       case tk_string:
         return "String(\"\")";
       case tk_boolean:
