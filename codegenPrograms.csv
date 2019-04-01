@@ -1,4 +1,4 @@
-Test,Functional? – March 31st,Problem
+Test,Functional?,Problem
 INVALID,,
 Arrays-bound1.go,Yes,
 Arrays-bound2.go,Yes,
@@ -9,29 +9,29 @@ Slices-bounds2.go,Yes,
 VALID,,
 append,Yes,
 arrays,No,New arrays of basic types must be filled with default values
-assignment,No,Basic types must be filled with default values & fix return to return copy
-blankid,No,Basic types must be filled with default values
+assignments,No,Fix return statement to return copy
+blankid,Yes,
 callExprs,No,Pass function parameters in by value (make copies)
 capacity,Yes,
 cast,Yes,
 equality,No,Basic types must be filled with default values & fix equality: slice
 exprs,Yes,
-forLoops,No,Basic types must be filled with default values & fix javaReferenceTypes.go
+forLoops,Yes,
 funcDecls,No,Major Error & Basic types must be filled with default values
 ifStmt,No,Scoping of init statements in if statements
 incrdec,Yes,
 javaReferenceTypes,Yes,
-javaKeywords,No,Basic types must be filled with default values
+javaKeywords,Yes,
 length,Yes,
 orderOfOps,Yes,
 printStmts,No,Handle new line and raw strings
 returnStmts,No,Fix varDecls for when RHS has a value (ex. Integer[] i = foo())  ** make test before fix** & pass by value in return statements
-reuseAlias,No,Basic types must be filled with default values
-shortDecls,No,Basic types must be filled with default values & fix redeclare in shortdecl
+reuseAlias,Yes,
+shortDecls,No,Fix redeclare in shortdecl
 slices,Yes,
-structs,No,Basic types must be filled with default values
-structs2,No,"Basic types must be filled with default values & fix slice array creation, check array array and struct array creation"
+structs,Yes,
+structs2,No,"Fix slice array creation, check array array and struct array creation"
 structsSubmit,No,Fix others since combination of other tests
 switchStmt,Yes,
 trueFalse,No,Shadow scoping issue with if block and with true/false default values
-varDecls,No,Basic types must be filled with default values & shadow scoping issue
+varDecls,No,Shadow scoping issue
