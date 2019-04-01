@@ -1287,6 +1287,7 @@ int isLValue(EXP *exp, SymbolTable *st) {
       }
       return 1;
     case ek_structField:
+      //printf("%d\n", exp->val.structField.structExp->kind);
       if (isAddressableStruct(exp->val.structField.structExp, st) == NULL) {
         fprintf(stderr, "Error: (line %d) struct field is not addressable\n", exp->lineno);
         exit(1);
@@ -1352,6 +1353,13 @@ TYPE *isAddressableStruct(EXP *exp, SymbolTable *st) {
       }
     case ek_paren:
       return isAddressableStruct(exp->val.parenExp, st);
+    case ek_indexExp:
+      //printf("%d\n", exp->val.indexExp.objectExp->type->kind);
+      if (exp->val.indexExp.objectExp->type->val.array.elemType->kind == tk_struct) {
+        return exp->val.indexExp.objectExp->type->val.array.elemType;
+      } else if (exp->val.indexExp.objectExp->type->val.array.elemType->kind == tk_ref) {
+        return getSymbol(st, exp->val.indexExp.objectExp->type->val.array.elemType->val.name)->val.typeDecl.resolvesTo;
+      }
     default:
       return NULL;
   }

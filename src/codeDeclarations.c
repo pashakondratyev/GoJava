@@ -56,22 +56,32 @@ void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCou
       i->identifier = " ";
       char identifier[1024];
       sprintf(identifier, "%s_%d", prefix(vs->id), i->scopeCount);
-      fprintf(outputFile, "%s %s_temp_%d = null;\n", type, prefix(vs->id), i->scopeCount);
-      writeTab(tabCount);
+      if(vs->exp != NULL && vs->type->kind == tk_array){
+        fprintf(outputFile, "%s %s_temp_%d = ", type, prefix(vs->id), i->scopeCount);
+        codeExp(vs->exp, st, it, tabCount);
+        fprintf(outputFile, ";\n");
+        writeTab(tabCount);
+      }
       fprintf(outputFile, "%s %s = new %s", type, identifier, constructor);
-      if(vs->type->kind == tk_array){
+      // If the declaration is for a  array, we either zero out an array
+      // Or we copy the source into the target
+      if(vs->type->kind == tk_array && vs->exp == NULL){
         fprintf(outputFile, ";\n");
         writeTab(tabCount);
         codeZeroOutArray(identifier, "", vs->type, st, tabCount);
+      } else if(vs->type->kind == tk_array && vs->exp != NULL){
+        fprintf(outputFile, ";\n");
+        writeTab(tabCount);
+        char source[1024];
+        sprintf(source, "%s_temp_%d", prefix(vs->id), i->scopeCount);
+        codeCopyArray(identifier, source, "", vs->type, st, tabCount);
       }
       i->identifier = vs->id;
     }
     if (vs->exp != NULL) {
-      if (typeResolve(vs->type, st)->kind != tk_array) {
+      if(typeResolve(vs->type, st)->kind != tk_array){
         fprintf(outputFile, "(");
-      }
-      codeExp(vs->exp, st, it, tabCount);
-      if (typeResolve(vs->type, st)->kind != tk_array) {
+        codeExp(vs->exp, st, it, tabCount);
         fprintf(outputFile, ")");
         fprintf(outputFile, ";");
       }
@@ -111,6 +121,7 @@ void codeShortDecl(SHORT_SPECS *ss, SymbolTable *st, IdentifierTable *it, int ta
     }
     // fprintf(outputFile, "%s %s_temp_%d = ", type, prefix(temp->lhs->val.id), i->scopeCount);
     codeExp(temp->rhs, st, it, tabCount);
+
     fprintf(outputFile, ";\n");
     writeTab(tabCount);
 

@@ -138,22 +138,21 @@ public class testGoLite {
 	public static Cast castUtil = new Cast();
 		public static void __golite__main () {
 		
-		Integer[][] __golite__list_temp_1 = null;
-		Integer[][] __golite__list_1 = new Integer[3][4];
-		for(int _golite_iter_i0 = 0; _golite_iter_i0 < 4; _golite_iter_i0++){
-			for(int _golite_iter_i1 = 0; _golite_iter_i1 < 3; _golite_iter_i1++){
-				__golite__list_1[_golite_iter_i1][_golite_iter_i0] = new Integer(0);
-			}
+		Integer[] __golite__a_1 = new Integer[3];
+		for(int _golite_iter_i0 = 0; _golite_iter_i0 < 3; _golite_iter_i0++){
+			__golite__a_1[_golite_iter_i0] = new Integer(0);
 		}
 
 		
-		__golite__list_1[new Integer(1)][new Integer(1)] = new Integer(3);
-		System.out.print(__golite__list_1[new Integer(1)][new Integer(1)]);
-		System.out.println();
+		Integer[] __golite__b_temp_1 = __golite__a_1;
+		Integer[] __golite__b_1 = new Integer[3];
+		for(int _golite_iter_i0 = 0; _golite_iter_i0 < 3; _golite_iter_i0++){
+			__golite__b_1[_golite_iter_i0] = __golite__b_temp_1[_golite_iter_i0];
+		}
+
 		
-		System.out.print(__golite__list_1[new Integer(0)][new Integer(0)]);
-		System.out.println();
-		
+		Integer[] __golite__c_temp_1 = __golite__b_1;
+		Integer[] __golite__c_1 = __golite__c_temp_1;
 	}
 	public static void main(String[] args) {
 		__golite__main();

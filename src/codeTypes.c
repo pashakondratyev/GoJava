@@ -306,6 +306,7 @@ void codeCopyArray(char *target, char *source, char *index, TYPE *type, SymbolTa
     case tk_slice:
     case tk_struct:
       fprintf(outputFile, "%s[_golite_iter_i%d]%s = ", target, iterCount, index);
+      // TODO: for slices and structs, should be slightly different
       fprintf(outputFile, "%s[_golite_iter_i%d]%s", source, iterCount, index);
       fprintf(outputFile, ";\n");
       break;

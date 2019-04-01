@@ -437,3 +437,12 @@ void codeFunctionCall(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCou
   fprintf(outputFile, ")");
 }
 
+char *unrollParen(EXP *exp){
+  if(exp->kind == ek_id){
+    return exp->val.id;
+  } else if(exp->kind == ek_paren){
+    return unrollParen(exp->val.parenExp);
+  } else{
+    return NULL;
+  }
+}
