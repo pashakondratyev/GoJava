@@ -18,7 +18,7 @@ equality,No,Basic types must be filled with default values & fix equality: slice
 exprs,Yes,
 forLoops,No,Basic types must be filled with default values & fix javaReferenceTypes.go
 funcDecls,No,Major Error & Basic types must be filled with default values
-ifStmt,Yes,
+ifStmt,No,Scoping of init statements in if statements
 incrdec,Yes,
 javaReferenceTypes,No,fix expressions to be the full reference type (need to fix practically all expressions)
 javaKeywords,No,Basic types must be filled with default values
