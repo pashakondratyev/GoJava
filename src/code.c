@@ -69,6 +69,31 @@ void codeProgram(PROG *prog, SymbolTable *st, char *inputFileName) {
   // import for array equality
   fprintf(outputFile, "import java.util.Arrays;\n\n");  
 
+  // copy from helper classes over - simplify execute script
+  char *sliceFilePath = "src/JavaFiles/Slice.java";
+  FILE *sliceFile = fopen(sliceFilePath, "r");
+  if (sliceFile != NULL) {
+    char *line = (char*)malloc(400);
+    while (fgets(line, sizeof(line), sliceFile) != NULL) {
+      fputs(line, outputFile);
+    }
+    fclose(sliceFile);
+  } else {
+    printf("Can't open Slice.java\n");
+  }
+  char *castFilePath = "src/JavaFiles/Cast.java";
+  FILE *castFile = fopen(castFilePath, "r");
+  if (castFile != NULL) {
+    char *line = (char*)malloc(400);
+    while (fgets(line, sizeof(line), castFile) != NULL) {
+      fputs(line, outputFile);
+    }
+    fclose(castFile);
+  }else {
+    printf("Can't open Cast.java\n");
+  }
+
+
   // set class name as the file name excluding the path
   int index = indexLastForwardSlash(inputFileName);
   identifierTable = initIdentifierTable();

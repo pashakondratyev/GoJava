@@ -61,8 +61,8 @@ int main(int argc, char *argv[]) {
     inputFileName = argv[2];
     inputFileName[strlen(argv[2])] = '\0';
     codeProgram(root, programSymbolTable, inputFileName);
-
-    printf("\nNeed to complete\n");
+    printf("Need to complete\n");
+    //printf("OK\n");
   } else {
     fprintf(stderr, "Error: invalid argument for compiler mode, valid options are (scan | tokens | parse | pretty | symbol | typecheck)\n");
     return 1;
