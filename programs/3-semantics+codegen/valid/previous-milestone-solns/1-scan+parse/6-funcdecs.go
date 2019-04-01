@@ -40,8 +40,8 @@ func main() {
 	f1()
 	var a = f2()
 	f3(5)
-	f4(5,5)
-	f5(5,5)
-	f6(5,5,true,false)
+	f4(5, 5)
+	f5(5, 5)
+	f6(5, 5, true, false)
 	f7(5)
 }

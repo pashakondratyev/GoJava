@@ -3,7 +3,7 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.lang.ArrayIndexOutOfBoundsException;
 
-class Slice<T> {
+class Slice<T>{
     public int cap;
     public int len;
 
@@ -47,7 +47,7 @@ class Slice<T> {
         }
     }
 
-    public Slice<T> getCopy() {
+    public Slice<T> copy() {
         Slice<T> copy = new Slice<>();
         copy.cap = this.cap;
         copy.len = this.len;
