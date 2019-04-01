@@ -64,6 +64,10 @@ void codeProgram(PROG *prog, SymbolTable *st, char *inputFileName) {
     exit(1);
   }
 
+  initStructTable();
+  // Creates all the structs necessary as java objects that can be reused later
+  makeStructTable(prog->root_decl, st);
+
   // ignore package declaration
 
   // import for array equality
@@ -73,7 +77,8 @@ void codeProgram(PROG *prog, SymbolTable *st, char *inputFileName) {
   char *sliceFilePath = "src/JavaFiles/Slice.java";
   FILE *sliceFile = fopen(sliceFilePath, "r");
   if (sliceFile != NULL) {
-    char *line = (char*)malloc(400);
+    printf("Slice\n");
+    char *line = (char*)malloc(1000);
     while (fgets(line, sizeof(line), sliceFile) != NULL) {
       fputs(line, outputFile);
     }
@@ -84,7 +89,7 @@ void codeProgram(PROG *prog, SymbolTable *st, char *inputFileName) {
   char *castFilePath = "src/JavaFiles/Cast.java";
   FILE *castFile = fopen(castFilePath, "r");
   if (castFile != NULL) {
-    char *line = (char*)malloc(400);
+    char *line = (char*)malloc(1000);
     while (fgets(line, sizeof(line), castFile) != NULL) {
       fputs(line, outputFile);
     }
@@ -94,15 +99,12 @@ void codeProgram(PROG *prog, SymbolTable *st, char *inputFileName) {
   }
 
 
-  // set class name as the file name excluding the path
   int index = indexLastForwardSlash(inputFileName);
   identifierTable = initIdentifierTable();
-  initStructTable();
-  // Creates all the structs necessary as java objects that can be reused later
-  makeStructTable(prog->root_decl, st);
+
   // Outputs the created java objects into the outtput file by traversing
-  //printStructTable();
   codeStructTable();
+
   codeSetup(&inputFileName[index + 1]);
 
   codeDeclarations(prog->root_decl, st, identifierTable, 1);

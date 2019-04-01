@@ -78,7 +78,6 @@ void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCou
 
 void codeShortDecl(SHORT_SPECS *ss, SymbolTable *st, IdentifierTable *it, int tabCount) {
   int temp = identifierCount;
-  printf("test\n");
   // Want to save rhs as temps
   for (SHORT_SPECS *temp = ss; temp; temp = temp->next) {
     char *type = javaTypeString(temp->lhs->type, st, NULL);
