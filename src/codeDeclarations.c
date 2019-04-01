@@ -56,6 +56,8 @@ void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCou
       i->identifier = " ";
       char identifier[1024];
       sprintf(identifier, "%s_%d", prefix(vs->id), i->scopeCount);
+      fprintf(outputFile, "%s %s_temp_%d = null;\n", type, prefix(vs->id), i->scopeCount);
+      writeTab(tabCount);
       fprintf(outputFile, "%s %s = new %s", type, identifier, constructor);
       i->identifier = vs->id;
     }
@@ -84,6 +86,7 @@ void codeShortDecl(SHORT_SPECS *ss, SymbolTable *st, IdentifierTable *it, int ta
     char *constructor = javaTypeStringConstructor(temp->lhs->type, st, NULL);
     IDENTIFIER *i;
     if (strcmp(temp->lhs->val.id, "_") == 0) {
+      type = javaTypeString(temp->rhs->type, st, NULL);
       fprintf(outputFile, "%s %s_%d = %s", type, prefix("blank"), blankVar, constructor);
       blankVar++;
       codeExp(temp->rhs, st, it, tabCount);
@@ -96,10 +99,12 @@ void codeShortDecl(SHORT_SPECS *ss, SymbolTable *st, IdentifierTable *it, int ta
     } else if (!temp->declared) {
       i = addIfNotInTable(temp->lhs->val.id, it);
       i->identifier = " ";
+      fprintf(outputFile, "%s %s_temp_%d = ", type, prefix(temp->lhs->val.id), i->scopeCount);
     } else {
       i = getFromIdentifierTable(temp->lhs->val.id, it);
+      fprintf(outputFile, "%s_temp_%d = ", prefix(temp->lhs->val.id), i->scopeCount);
     }
-    fprintf(outputFile, "%s %s_temp_%d = ", type, prefix(temp->lhs->val.id), i->scopeCount);
+    // fprintf(outputFile, "%s %s_temp_%d = ", type, prefix(temp->lhs->val.id), i->scopeCount);
     codeExp(temp->rhs, st, it, tabCount);
     fprintf(outputFile, ";\n");
     writeTab(tabCount);
@@ -121,9 +126,15 @@ void codeShortDecl(SHORT_SPECS *ss, SymbolTable *st, IdentifierTable *it, int ta
     char *constructor = javaTypeStringConstructor(temp->lhs->type, st, NULL);
 
     IDENTIFIER *i = getFromIdentifierTable(temp->lhs->val.id, it);
-
-    fprintf(outputFile, "%s %s_%d = ", type, prefix(temp->lhs->val.id), i->scopeCount);
-    fprintf(outputFile, "%s_temp_%d;", prefix(temp->lhs->val.id), i->scopeCount);
+    if (!temp->declared) {
+      fprintf(outputFile, "%s %s_%d = ", type, prefix(temp->lhs->val.id), i->scopeCount);
+      fprintf(outputFile, "%s_temp_%d;", prefix(temp->lhs->val.id), i->scopeCount);
+    } else {
+      fprintf(outputFile, "%s_%d = ", prefix(temp->lhs->val.id), i->scopeCount);
+      fprintf(outputFile, "%s_temp_%d;", prefix(temp->lhs->val.id), i->scopeCount);
+    }
+    // fprintf(outputFile, "%s %s_%d = ", type, prefix(temp->lhs->val.id), i->scopeCount);
+    // fprintf(outputFile, "%s_temp_%d;", prefix(temp->lhs->val.id), i->scopeCount);
     if (ss->next != NULL) {
       printLine = 1;
     }

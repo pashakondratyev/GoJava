@@ -27,7 +27,7 @@ orderOfOps,Yes,
 printStmts,No,Handle new line and raw strings
 returnStmts,No,Fix varDecls for when RHS has a value (ex. Integer[] i = foo())  ** make test before fix** & pass by value in return statements
 reuseAlias,Yes,
-shortDecls,No,Fix redeclare in shortdecl
+shortDecls,No,Fix pass by value assignment: structs and arrays
 slices,Yes,
 structs,Yes,
 structs2,No,"Fix slice array creation, check array array and struct array creation"
