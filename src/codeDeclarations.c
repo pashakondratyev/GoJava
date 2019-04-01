@@ -144,26 +144,6 @@ void codeShortDecl(SHORT_SPECS *ss, SymbolTable *st, IdentifierTable *it, int ta
       printLine = 1;
     }
   }
-
-  /*if(ss != NULL && strcmp(ss->lhs->val.id, "_") != 0){
-    char *type = javaTypeString(ss->lhs->type, st, NULL);
-    char *constructor = javaTypeStringConstructor(ss->lhs->type, st, NULL);
-
-    IDENTIFIER *i = addIfNotInTable(ss->lhs->val.id, it);
-    i->identifier = " ";
-
-    fprintf(outputFile,"%s %s_%d = new %s(", type, prefix(ss->lhs->val.id), i->scopeCount, constructor);
-    codeExp(ss->rhs, st, it, tabCount);
-    fprintf(outputFile,");");
-    if(ss->next != NULL){
-        fprintf(outputFile, "\n");
-        writeTab(tabCount);
-    }
-    i->identifier = ss->lhs->val.id;
-  }
-  if(ss != NULL){
-    codeShortDecl(ss->next, st, it, tabCount);
-  }*/
 }
 
 void codeFuncDecl(FUNC_DECL *fd, SymbolTable *st, IdentifierTable *it, int tabCount) {
