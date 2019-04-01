@@ -264,6 +264,8 @@ char *codeStructType(char *BUFFER, FIELD_DECLS *fd, SymbolTable *st, STRUCT *s, 
         needsAnd = 1;
       }
     }
+
+
     sprintf(BUFFER + strlen(BUFFER), ";\n\t}\n");
   }
 

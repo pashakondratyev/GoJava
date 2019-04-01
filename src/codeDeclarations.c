@@ -59,6 +59,11 @@ void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCou
       fprintf(outputFile, "%s %s_temp_%d = null;\n", type, prefix(vs->id), i->scopeCount);
       writeTab(tabCount);
       fprintf(outputFile, "%s %s = new %s", type, identifier, constructor);
+      if(vs->type->kind == tk_array){
+        fprintf(outputFile, ";\n");
+        writeTab(tabCount);
+        codeZeroOutArray(identifier, "", vs->type, st, tabCount);
+      }
       i->identifier = vs->id;
     }
     if (vs->exp != NULL) {
@@ -68,10 +73,10 @@ void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCou
       codeExp(vs->exp, st, it, tabCount);
       if (typeResolve(vs->type, st)->kind != tk_array) {
         fprintf(outputFile, ")");
+        fprintf(outputFile, ";");
       }
     }
 
-    fprintf(outputFile, ";");
     fprintf(outputFile, "\n");
     writeTab(tabCount);
     codeVarDecl(vs->next, st, it, tabCount);

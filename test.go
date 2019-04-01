@@ -1,12 +1,8 @@
 package test
 
-type paul struct {a int;}
-type int struct {c string;}
-type kab struct {a int;}
-
 func main(){
-  var p paul
-  var k kab
-  p.a = 5
-  k.a.c = "kac"
+  var list [4][3]int
+  list[1][1] = 3
+  println(list[1][1])
+  println(list[0][0])
 }

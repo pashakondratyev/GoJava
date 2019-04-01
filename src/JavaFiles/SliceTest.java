@@ -34,7 +34,7 @@ public class SliceTest{
     static public void testAppend3(){
         Slice<Integer> intSlice = new Slice<>();
         intSlice = intSlice.append(1);
-        Slice<Integer> intSlice2 = intSlice.getCopy();
+        Slice<Integer> intSlice2 = intSlice.copy();
         
         intSlice = intSlice.append(2);
         assert(intSlice.elementList.get(1) == 2);

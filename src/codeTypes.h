@@ -11,5 +11,5 @@ char *javaTypeStringDefaultConstructor(TYPE *type, SymbolTable *st, char *name);
 char *javaConstructorForBasicTypes(TYPE *type, SymbolTable *st);
 char *getRecTypeString(char *BUFFER, TYPE *type, SymbolTable *st, char *name);
 char *getRecTypeString(char *BUFFER, TYPE *type, SymbolTable *st, char *name);
-
+void codeZeroOutArray(char *identifier, char *index, TYPE *type, SymbolTable *st, int tabCount);
 #endif
