@@ -1,11 +1,11 @@
-//^true
-//^false
-//^true
-//^false
-//^true
-//^false
-//^true
-//^false
+//~true
+//~false
+//~true
+//~false
+//~true
+//~false
+//~true
+//~false
 
 // Structs
 package main

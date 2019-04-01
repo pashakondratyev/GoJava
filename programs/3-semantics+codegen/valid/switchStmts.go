@@ -1,10 +1,10 @@
-//^hi
-//^hello
-//^yo
-//^hi
-//^yo
-//^hi
-//^hey
+//~hi
+//~hello
+//~yo
+//~hi
+//~yo
+//~hi
+//~hey
 
 // Switch statements
 package main

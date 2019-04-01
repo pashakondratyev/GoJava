@@ -1,19 +1,19 @@
-//^Cap: 0 , len: 0
-//^Cap: 2 , len: 1
-//^Cap: 2 , len: 2
-//^Cap: 4 , len: 3
-//^Cap: 4 , len: 4
-//^Cap: 8 , len: 5
-//^Cap: 8 , len: 6
-//^Cap: 8 , len: 7
-//^Cap: 8 , len: 8
-//^Cap: 16 , len: 9
-//^a: len= 2 , cap= 2
-//^b: len= 1 , cap= 2
-//^aa: len= 2 , cap= 2
-//^bb: len= 2 , cap= 2
-//^1 1
-//^13 0
+//~Cap: 0 , len: 0
+//~Cap: 2 , len: 1
+//~Cap: 2 , len: 2
+//~Cap: 4 , len: 3
+//~Cap: 4 , len: 4
+//~Cap: 8 , len: 5
+//~Cap: 8 , len: 6
+//~Cap: 8 , len: 7
+//~Cap: 8 , len: 8
+//~Cap: 16 , len: 9
+//~a: len= 2 , cap= 2
+//~b: len= 1 , cap= 2
+//~aa: len= 2 , cap= 2
+//~bb: len= 2 , cap= 2
+//~1 1
+//~13 0
 
 // Append
 package main

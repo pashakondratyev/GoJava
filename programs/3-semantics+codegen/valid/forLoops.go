@@ -1,28 +1,28 @@
-//^hi
-//^hey
-//^in loop
-//^goodbye
-//^in loop
-//^hello
-//^in loop
-//^goodbye
-//^in loop
-//^hello
-//^in loop
-//^---
-//^12
-//^11
-//^10
-//^9
-//^7
-//^6
-//^4
-//^10
-//^9
-//^8
-//^6
-//^5
-//^3
+//~hi
+//~hey
+//~in loop
+//~goodbye
+//~in loop
+//~hello
+//~in loop
+//~goodbye
+//~in loop
+//~hello
+//~in loop
+//~---
+//~12
+//~11
+//~10
+//~9
+//~7
+//~6
+//~4
+//~10
+//~9
+//~8
+//~6
+//~5
+//~3
 
 // For Loops
 package main

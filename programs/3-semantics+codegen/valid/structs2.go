@@ -1,5 +1,5 @@
-//^5
-//^kac
+//~5
+//~kac
 
 //Reuse alias
 package test

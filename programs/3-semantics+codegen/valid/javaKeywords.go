@@ -1,6 +1,6 @@
-//^class keyword
-//^25
-//^0
+//~class keyword
+//~25
+//~0
 
 
 // Java keywords

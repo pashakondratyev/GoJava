@@ -1,9 +1,9 @@
-//^hi
-//^hello
-//^hey
-//^yup 15
-//^<=2
-//^is 2
+//~hi
+//~hello
+//~hey
+//~yup 15
+//~<=2
+//~is 2
 //3
 
 // If statements

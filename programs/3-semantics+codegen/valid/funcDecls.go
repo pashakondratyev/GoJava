@@ -1,9 +1,9 @@
-//^12
-//^15
-//^0
-//^"hi"
-//^0
-//^5
+//~12
+//~15
+//~0
+//~"hi"
+//~0
+//~5
 
 // Function declarations
 package main

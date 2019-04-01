@@ -1,11 +1,11 @@
-//^init 1
-//^init 2
-//^init 3
-//^init 4
-//^main
-//^foo
-//^bar
-//^baz
+//~init 1
+//~init 2
+//~init 3
+//~init 4
+//~main
+//~foo
+//~bar
+//~baz
 
 // order of execution - functions
 package main

@@ -1,8 +1,8 @@
-//^1 hi 114 -4.300000e+000
-//^hello
-//^1hi114-4.300000e+000hello
-//^end
-//^hello\n
+//~1 hi 114 -4.300000e+000
+//~hello
+//~1hi114-4.300000e+000hello
+//~end
+//~hello\n
 
 // Print statements
 package main

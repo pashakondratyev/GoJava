@@ -1,8 +1,8 @@
-//^true
-//^false
-//^true
-//^7 2
-//^false
+//~true
+//~false
+//~true
+//~7 2
+//~false
 
 package main
 

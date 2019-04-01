@@ -1,5 +1,5 @@
-//^bar
-//^2
+//~bar
+//~2
 
 // Blank identifiers
 package main
