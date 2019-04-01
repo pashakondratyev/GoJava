@@ -7,6 +7,7 @@
 
 char *javaTypeString(TYPE *type, SymbolTable *st, char *name);
 char *javaTypeStringConstructor(TYPE *type, SymbolTable *st, char *name);
+char *javaTypeStringDefaultConstructor(TYPE *type, SymbolTable *st, char *name);
 char *getRecTypeString(char *BUFFER, TYPE *type, SymbolTable *st, char *name);
 char *getRecTypeString(char *BUFFER, TYPE *type, SymbolTable *st, char *name);
 #endif

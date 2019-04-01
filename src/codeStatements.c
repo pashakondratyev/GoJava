@@ -16,6 +16,7 @@
 #define DEBUG 0
 
 int switchCount = 0;
+int assignCount = 0;
 
 void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bool incompleteBlock, STMT *parentPost) {
   int newTabCount = tabCount == -1 ? -1 : tabCount + 1;
@@ -309,6 +310,7 @@ void codeClauses(STMT_LIST *clauses, SymbolTable *st, IdentifierTable *it, int t
 }
 
 void codeAssignment(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
+  int curAssignCount = assignCount;
   for (ASSIGN *temp = stmt->val.assign; temp; temp = temp->next) {
     if (temp->lhs->kind == ek_indexExp && 
       temp->lhs->val.indexExp.objectExp->type != NULL &&
@@ -326,7 +328,15 @@ void codeAssignment(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCou
       codeExp(temp->rhs, st, it, tabCount);
       fprintf(outputFile, ";");
     } else {
+      if(temp->lhs->kind == ek_id){
+        char *type = javaTypeString(temp->lhs->type, st, NULL);
+        fprintf(outputFile , "%s ", type);
+      }
       codeExp(temp->lhs, st, it, tabCount);
+      if(temp->lhs->kind == ek_id){
+        fprintf(outputFile, "_temp_assign_%d", assignCount);
+        assignCount++;
+      }
       fprintf(outputFile, " = ");
       codeExp(temp->rhs, st, it, tabCount);
       fprintf(outputFile, ";");
@@ -334,6 +344,20 @@ void codeAssignment(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCou
     if (temp->next) {
       fprintf(outputFile, "\n");
       writeTab(tabCount);
+    }
+  }
+  for (ASSIGN *temp = stmt->val.assign; temp; temp = temp->next) {
+    // TODO: check if resolves to identifier for cases like 
+    // (x),(y) = x,y
+    if(temp->lhs->kind == ek_id && strcmp(temp->lhs->val.id, "_") != 0){
+      fprintf(outputFile, "\n");
+      writeTab(tabCount);
+      codeExp(temp->lhs, st, it, tabCount);
+      fprintf(outputFile, " = ");
+      codeExp(temp->lhs, st, it, tabCount);
+      fprintf(outputFile, "_temp_assign_%d", curAssignCount);
+      curAssignCount++;
+      fprintf(outputFile, ";");
     }
   }
 }

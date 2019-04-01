@@ -223,9 +223,9 @@ char *codeStructType(char *BUFFER, FIELD_DECLS *fd, SymbolTable *st, STRUCT *s, 
         sprintf(BUFFER + strlen(BUFFER), "\t%s %s = new Slice<>();\n", typeName, temp->id);
         break;
       default:
-        constructor = javaTypeStringConstructor(type, st, name);
+        constructor = javaTypeStringDefaultConstructor(type, st, name);
         typeName = javaTypeString(type, st, name);
-        sprintf(BUFFER + strlen(BUFFER), "\t%s %s = new %s();\n", typeName, temp->id, constructor);
+        sprintf(BUFFER + strlen(BUFFER), "\t%s %s = new %s;\n", typeName, temp->id, constructor);
         break;
     }
   }
