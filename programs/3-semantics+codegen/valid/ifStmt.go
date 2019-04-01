@@ -4,7 +4,7 @@
 //~yup 15
 //~<=2
 //~is 2
-//3
+//~3
 
 // If statements
 package main
