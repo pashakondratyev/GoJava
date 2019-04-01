@@ -5,6 +5,7 @@
 //~yo
 //~hi
 //~hey
+//~In true
 
 // Switch statements
 package main
@@ -47,6 +48,13 @@ func main() {
 		case 10:
 			println("doesn't print")
 		default:
-				println("hey")
+			println("hey")
+	}
+
+	switch {
+		case true:
+			println("In true")
+		default:
+			println("not called")
 	}
 }
