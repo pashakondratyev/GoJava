@@ -32,7 +32,7 @@ void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
           fprintf(outputFile, "__golite__false");
           break;
         }
-        if (getSymbol(st, exp->val.id)->kind != dk_func) {
+        if (getSymbol(st, exp->val.id)->kind != dk_func) {    // TODO: Solve. getSymbol sometimes returns NULL
           IDENTIFIER *i = getFromIdentifierTable(exp->val.id, it);
           if (i == NULL) {
             i = addToIdentifierTable(exp->val.id, 1, it);
