@@ -178,3 +178,47 @@ char *javaTypeStringConstructor(TYPE *type, SymbolTable *st, char *name) {
   }
   return "";
 }
+
+char *javaTypeStringDefaultConstructor(TYPE *type, SymbolTable *st, char *name) {
+  char *BUFFER = (char *)(malloc(1024));
+  SYMBOL *symbol;
+  if (type != NULL) {
+    switch (type->kind) {
+      case tk_int:
+        return "Integer(0)";
+      case tk_float:
+        return "Double(0.0)";
+      case tk_rune:
+        return "Character('')";
+      case tk_string:
+        return "String(\"\")";
+      case tk_boolean:
+        return "Boolean(false)";
+      case tk_struct:
+        getRecTypeString(BUFFER, type, st, name);
+        STRUCT *s = getFromStructTable(BUFFER);
+        if (s == NULL) {
+          s = addToStructTable(type, NULL, st);
+          if (s == NULL) {
+            fprintf(stderr, "Error! Could not retrieve struct during code generation\n");
+            exit(1);
+          }
+        }
+        sprintf(BUFFER, "%s()", s->className);
+        return strdup(BUFFER);
+      case tk_array:
+        sprintf(BUFFER, "%s[%d]", javaTypeStringConstructor(type->val.array.elemType, st, name), type->val.array.size);
+        return strdup(BUFFER);
+      case tk_slice:
+        sprintf(BUFFER, "Slice<%s>()", javaTypeString(type->val.sliceType, st, name));
+        return strdup(BUFFER);
+      case tk_ref:
+        symbol = getSymbol(st, type->val.name);
+        return javaTypeStringDefaultConstructor(symbol->val.typeDecl.resolvesTo, st, name);
+      case tk_res:
+        fprintf(stderr, "Encountered tk_res type during code generation");
+        exit(1);
+    }
+  }
+  return "";
+}

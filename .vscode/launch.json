@@ -4,8 +4,13 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-
-
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - assignments",
+            "request": "launch",
+            "mainClass": "assignments",
+            "projectName": "2019_group02_56702329"
+        },
         {
             "type": "java",
             "name": "CodeLens (Launch) - SliceTest",

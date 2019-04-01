@@ -49,6 +49,10 @@ fi
 
 RESULTS=()
 
+echo -e "Cleaning codegen outputs"
+rm programs/3-semantics+codegen/valid/*.java
+rm programs/3-semantics+codegen/valid/*.class
+
 for DIR_PHASE in programs/*/
 do
 	PHASE=$(basename $DIR_PHASE)
