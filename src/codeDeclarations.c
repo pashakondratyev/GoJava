@@ -75,6 +75,8 @@ void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCou
         fprintf(outputFile, ")");
         fprintf(outputFile, ";");
       }
+    } else {
+      fprintf(outputFile, ";");
     }
 
     fprintf(outputFile, "\n");
