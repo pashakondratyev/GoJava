@@ -20,8 +20,8 @@
 #   programs/3-semantics+codegen/valid/test.go -> programs/3-semantics+codegen/valid/main/test.java
 
 EXECUTEPATH="$(dirname ${1%.*})"
-JAVAFILEWITHDASHES="$(basename ${1%.*})"
-JAVAFILE="${JAVAFILEWITHDASHES//-}"
+JAVAFILEWITHDASHES="$(basename ${1%.*})GoLite"
+JAVAFILE="${JAVAFILEWITHDASHES//[-0-9]}"
 javac $EXECUTEPATH/$JAVAFILE.java
 
 # You MUST replace the following line with the command to execute your compiled code

@@ -36,12 +36,12 @@ int indexLastForwardSlash(char *str) {
   return index;
 }
 
-void removeNonAlphaNum(char *str, int startIndex) {
+void removeNonAlpha(char *str, int startIndex) {
     unsigned long i = startIndex;
     unsigned long j = startIndex;
     char c;
     while ((c = str[i++]) != '\0') {
-        if (isalnum(c)) {
+        if (isalpha(c)) {
             str[j++] = c;
         }
     }
@@ -53,10 +53,10 @@ void codeProgram(PROG *prog, SymbolTable *st, char *inputFileName) {
   numInitFunc = 0;
   identifierCount = 0;
   blankVar = 0;
-  removeNonAlphaNum(inputFileName, indexLastForwardSlash(inputFileName)+1);
-  char *outputFileName = malloc((strlen(inputFileName) + 6) * sizeof(char));
+  removeNonAlpha(inputFileName, indexLastForwardSlash(inputFileName)+1);
+  char *outputFileName = malloc((strlen(inputFileName) + 12) * sizeof(char));
   strncpy(outputFileName, inputFileName, strlen(inputFileName));
-  sprintf(outputFileName, "%s.java", inputFileName);
+  sprintf(outputFileName, "%sGoLite.java", inputFileName);
   outputFile = fopen(outputFileName, "w");
   free(outputFileName);
   if (outputFile == NULL) {
@@ -115,7 +115,7 @@ void codeProgram(PROG *prog, SymbolTable *st, char *inputFileName) {
 void codeSetup(char *className) {
   // TODO: complete
   // class name must match file name
-  fprintf(outputFile, "public class %s {\n", className);
+  fprintf(outputFile, "public class %sGoLite {\n", className);
   // define Go boolean variables
   fprintf(outputFile, "\tpublic static Boolean __golite__true = Boolean.TRUE;\n");
   fprintf(outputFile, "\tpublic static Boolean __golite__false = Boolean.FALSE;\n\n");
