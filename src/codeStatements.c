@@ -147,11 +147,21 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
         fprintf(outputFile, "while (true) {\n");
         writeTab(newTabCount + 1);
 
-        char *type = javaTypeString(stmt->val.switchStmt.exp->type, st, NULL);
+        
+        char *type;
+        if (stmt->val.switchStmt.exp != NULL) {
+          type = javaTypeString(stmt->val.switchStmt.exp->type, st, NULL);
+        } else {
+          type = "Boolean";
+        }
         char *condId = (char *)malloc(15);
         sprintf(condId, "switchCond_%d", switchCount++);
         fprintf(outputFile, "%s %s = ", type, condId);
-        codeExp(stmt->val.switchStmt.exp, stmt->val.switchStmt.scope, it, newTabCount + 1);
+        if (stmt->val.switchStmt.exp != NULL) {
+          codeExp(stmt->val.switchStmt.exp, stmt->val.switchStmt.scope, it, newTabCount + 1);
+        } else {
+          fprintf(outputFile, "Boolean.TRUE");
+        }
         fprintf(outputFile, ";\n");
         writeTab(newTabCount + 1);
 
