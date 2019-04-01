@@ -19,17 +19,24 @@
 # Note the bash replacement which changes:
 #   programs/3-semantics+codegen/valid/test.go -> programs/3-semantics+codegen/valid/main/test.java
 
-FILENAMEWITHJAVA=${1%.*}.java
-javac $FILENAMEWITHJAVA
+EXECUTEPATH="$(dirname ${1%.*})"
+JAVAFILEWITHDASHES="$(basename ${1%.*})"
+JAVAFILE="${JAVAFILEWITHDASHES//-}"
+javac $EXECUTEPATH/$JAVAFILE.java
 
 # You MUST replace the following line with the command to execute your compiled code
 # Note the bash replacement which changes:
 #   programs/3-semantics+codegen/valid/test.go -> programs/3-semantics+codegen/valid/main/test.java
 
-EXECUTEPATH="$(dirname ${1%.*})"
 cd $EXECUTEPATH
-JAVAFILE="$(basename ${1%.*})"
-java $JAVAFILE
+java $JAVAFILE 
+EXITCODE="${?}"
+
+# clean up directory
+rm *.java *.class  STRUCT*.class Slice.class Cast.class 2> /dev/null
+
 
 # Lastly, we propagate the exit code
-exit $?
+exit $EXITCODE
+
+
