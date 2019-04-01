@@ -12,12 +12,64 @@
 
 #define DEBUG 0
 
+
+char *expandEscapes(char *str) {
+  char *output = (char *) malloc(2 * strlen(str) + 5);
+  char *result = output;
+  char c;
+  while (c = *(str++)) {
+    switch (c) {
+      case '\a': 
+          *(result++) = '\\';
+          *(result++) = 'a';
+          break;
+        case '\b': 
+          *(result++) = '\\';
+          *(result++) = 'b';
+          break;
+        case '\f': 
+          *(result++) = '\\';
+          *(result++) = 'f';
+          break;
+        case '\n': 
+          *(result++) = '\\';
+          *(result++) = 'n';
+          break;
+        case '\r': 
+          *(result++) = '\\';
+          *(result++) = 'r';
+          break;
+        case '\t': 
+          *(result++) = '\\';
+          *(result++) = 't';
+          break;
+        case '\v': 
+          *(result++) = '\\';
+          *(result++) = 'v';
+          break;
+        case '\\': 
+          *(result++) = '\\';
+          *(result++) = '\\';
+          break;
+        case '\"': 
+          *(result++) = '\\';
+          *(result++) = '\"';
+          break;
+        default:
+          *(result++) = c;
+     }
+  }
+  *result = '\0';
+  return output;
+}
+
 void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
   TYPE *type = NULL;
   TYPE *type1 = NULL;
   TYPE *type2 = NULL;
   TYPE *type3 = NULL;
   SYMBOL *s = NULL;
+  char *removedQuotesStr = NULL;
   if (exp != NULL) {
     if(DEBUG) printf("Code Expression Kind : %d\n", exp->kind);
     switch (exp->kind) {
@@ -49,12 +101,23 @@ void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
         fprintf(outputFile, "new Integer(%i)", exp->val.intval);
         break;
       case ek_string:
-        fprintf(outputFile, "%s", exp->val.stringval);
+        // TODO: fix escape characters
+        // TODO: fix raw strings
+        removedQuotesStr = (char*) malloc(strlen(exp->val.stringval));
+        removedQuotesStr = exp->val.stringval;
+        removedQuotesStr++;
+        removedQuotesStr[strlen(removedQuotesStr)-1] = '\0';
+
+        // https://stackoverflow.com/questions/3535023/convert-characters-in-a-c-string-to-their-escape-sequences
+        char *escapedResult = expandEscapes(removedQuotesStr);
+        // printf("%s\n", escapedResult);
+        fprintf(outputFile, "\"%s\"", escapedResult);
         break;
       case ek_boolean:
         fprintf(outputFile, "new Boolean(%s)", exp->val.booleanval ? "__golite__true" : "__golite__false");
         break;
       case ek_rune:
+        // TODO: fix escape characters
         fprintf(outputFile, "new Character('%c')", exp->val.runeval);
         break;
       case ek_plus:
