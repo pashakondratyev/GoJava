@@ -77,7 +77,6 @@ void codeProgram(PROG *prog, SymbolTable *st, char *inputFileName) {
   char *sliceFilePath = "src/JavaFiles/Slice.java";
   FILE *sliceFile = fopen(sliceFilePath, "r");
   if (sliceFile != NULL) {
-    printf("Slice\n");
     char *line = (char*)malloc(1000);
     while (fgets(line, sizeof(line), sliceFile) != NULL) {
       fputs(line, outputFile);
