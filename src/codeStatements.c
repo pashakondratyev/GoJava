@@ -329,7 +329,12 @@ void codeAssignment(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCou
       }
       fprintf(outputFile, " = ");
       codeExp(temp->rhs, st, it, tabCount);
+      if(temp->rhs->type->kind == tk_array){
+        //TODO: deep copy
+        //fprintf(outputFile, ".clone()");
+      }
       fprintf(outputFile, ";");
+
     }
     if (temp->next) {
       fprintf(outputFile, "\n");

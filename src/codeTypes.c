@@ -11,6 +11,8 @@
 
 #define DEBUG 0
 
+int iterCount = 0;
+
 // Types - Recursively gets the string representations of types
 char *getRecTypeString(char *BUFFER, TYPE *type, SymbolTable *st, char *name) {
   FIELD_DECLS *d;
@@ -221,4 +223,41 @@ char *javaTypeStringDefaultConstructor(TYPE *type, SymbolTable *st, char *name) 
     }
   }
   return "";
+}
+
+void codeZeroOutArray(char *identifier, char *index, TYPE *type, SymbolTable *st, int tabCount){
+  fprintf(outputFile, "for(int _golite_iter_i%1$d = 0; _golite_iter_i%1$d < %2$d; _golite_iter_i%1$d++){\n", 
+    iterCount, type->val.array.size);
+  writeTab(tabCount + 1);
+  TYPE *elemType = type->val.array.elemType;
+  char *defaultConstructor;
+  char newIndex[1024];
+  switch(type->val.array.elemType->kind){
+    case tk_ref:
+      elemType = getSymbol(st, elemType->val.name)->val.typeDecl.resolvesTo;
+    case tk_int:
+    case tk_string:
+    case tk_float:
+    case tk_boolean:
+    case tk_rune:
+    case tk_slice:
+    case tk_struct:
+      fprintf(outputFile, "%s[_golite_iter_i%d]%s = new ", identifier, iterCount, index);
+      defaultConstructor = javaTypeStringDefaultConstructor(elemType, st, NULL);
+      fprintf(outputFile, "%s", defaultConstructor);
+      fprintf(outputFile, ";\n");
+      break;
+    case tk_array:
+      sprintf(newIndex, "[_golite_iter_i%d]%s", iterCount, index);
+      iterCount++;
+      codeZeroOutArray(identifier, strdup(newIndex), elemType, st, tabCount + 1);
+      break;
+    case tk_res:
+      fprintf(stderr, "Uh oh, encountered a tk_res");
+      exit(1);   
+  }
+  writeTab(tabCount);
+  fprintf(outputFile, "}\n");
+  // 
+
 }
