@@ -147,7 +147,7 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
         }
         fprintf(outputFile, "while (true) {\n");
         writeTab(newTabCount + 1);
-
+        it = scopeIdentifierTable(it);
         
         char *type;
         if (stmt->val.switchStmt.exp != NULL) {
@@ -180,6 +180,7 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
                                 parentPost);
                 fprintf(outputFile, ") {\n");
                 writeTab(newTabCount + 1);
+                it = scopeIdentifierTable(it);
                 codeClauses(clauseList->clause->val.caseClause.clauses, st, it, newTabCount + 1, false, parentPost);
                 fprintf(outputFile, "} ");
               } else {
@@ -187,6 +188,7 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
                 codeClauseCases(condId, clauseList->clause->val.caseClause.cases, st, it, newTabCount + 1, false,
                                 parentPost);
                 fprintf(outputFile, ") {\n");
+                it = scopeIdentifierTable(it);
                 writeTab(newTabCount + 1);
                 codeClauses(clauseList->clause->val.caseClause.clauses, st, it, newTabCount + 1, false, parentPost);
                 fprintf(outputFile, "} ");
@@ -198,6 +200,7 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
         if (defaultClause != NULL) {
           fprintf(outputFile, "else { \n");
           writeTab(newTabCount + 1);
+          it = scopeIdentifierTable(it);
           codeClauses(defaultClause->val.defaultClauses, st, it, newTabCount + 1, false, parentPost);
           fprintf(outputFile, "}\n");
           writeTab(newTabCount);
