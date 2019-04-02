@@ -21,7 +21,7 @@
 
 EXECUTEPATH="$(dirname ${1%.*})"
 JAVAFILEWITHDASHES="$(basename ${1%.*})GoLite"
-JAVAFILE="${JAVAFILEWITHDASHES//[-0-9]}"
+JAVAFILE="${JAVAFILEWITHDASHES//[-0-9_]}"
 javac $EXECUTEPATH/$JAVAFILE.java
 
 # You MUST replace the following line with the command to execute your compiled code
