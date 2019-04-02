@@ -9,7 +9,7 @@ func scan_runes() {
 
 	c = 'L'
 	println(c)
-	c = '"'
+	// c = '"'
 	c = '\a'
 	println(c)
 	c = '\b'

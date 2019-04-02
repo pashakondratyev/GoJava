@@ -13,9 +13,7 @@
 #define DEBUG 0
 
 
-char *expandEscapesChar(char c) {
-  char *output = (char *) malloc(7);
-  char *result = output;
+void expandEscapesChar(char c, char *result) {
   switch (c) {
      case '\a': 
          *(result++) = '\\';
@@ -45,7 +43,11 @@ char *expandEscapesChar(char c) {
          break;
        case '\v': 
          *(result++) = '\\';
-         *(result++) = 'v';
+         *(result++) = 'u';
+         *(result++) = '0';
+         *(result++) = '0';
+         *(result++) = '0';
+         *(result++) = 'B';
          break;
        case '\\': 
          *(result++) = '\\';
@@ -58,17 +60,14 @@ char *expandEscapesChar(char c) {
       default:
          *(result++) = c;
     }
-  
   *result = '\0';
-  return output;
 }
 
 
-char *expandEscapesString(char *str) {
-  char *output = (char *) malloc(2 * strlen(str) + 5);
-  char *result = output;
+void expandEscapesString(char *str, char *result) {
   char c;
-  while (c == *(str++)) {
+  for (int i = 0; i < strlen(str); i++){
+    c = str[i];
     switch (c) {
       case '\a': 
           *(result++) = '\\';
@@ -97,8 +96,12 @@ char *expandEscapesString(char *str) {
           *(result++) = 't';
           break;
         case '\v': 
-          *(result++) = '\\';
-          *(result++) = 'v';
+         *(result++) = '\\';
+         *(result++) = 'u';
+         *(result++) = '0';
+         *(result++) = '0';
+         *(result++) = '0';
+         *(result++) = 'B';
           break;
         case '\\': 
           *(result++) = '\\';
@@ -110,10 +113,10 @@ char *expandEscapesString(char *str) {
           break;
         default:
           *(result++) = c;
+
      }
   }
   *result = '\0';
-  return output;
 }
 
 void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
@@ -158,23 +161,21 @@ void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
         fprintf(outputFile, "new Integer(%i)", exp->val.intval);
         break;
       case ek_string:
-        // removedQuotesStr = (char*) malloc(strlen(exp->val.stringval));
-        // removedQuotesStr = exp->val.stringval;
-        // removedQuotesStr++;
-        // removedQuotesStr[strlen(removedQuotesStr)-1] = '\0';
-
-        // char *escapeString = expandEscapesString(removedQuotesStr);
-        // fprintf(outputFile, "\"%s\"", escapeString);
-        fprintf(outputFile, "%s", exp->val.stringval);
+        removedQuotesStr = (char*) malloc(strlen(exp->val.stringval));
+        removedQuotesStr = exp->val.stringval;
+        removedQuotesStr++;
+        removedQuotesStr[strlen(removedQuotesStr)-1] = '\0';
+        char *escapeString = (char *) malloc(6 * strlen(removedQuotesStr) + 1);
+        expandEscapesString(removedQuotesStr, escapeString);
+        fprintf(outputFile, "\"%s\"", escapeString);
         break;
       case ek_boolean:
         fprintf(outputFile, "new Boolean(%s)", exp->val.booleanval ? "__golite__true" : "__golite__false");
         break;
       case ek_rune:
-        escapeRune = (char*) malloc(7);
-        escapeRune = expandEscapesChar(exp->val.runeval);
+        escapeRune = (char*) malloc(9);
+        expandEscapesChar(exp->val.runeval, escapeRune);
         fprintf(outputFile, "new Character('%s')", escapeRune);
-      // fprintf(outputFile, "new Character('%c')", exp->val.runeval);
         break;
       case ek_plus:
         type = typeResolve(exp->val.binary.lhs->type, st);
