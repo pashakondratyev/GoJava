@@ -2,14 +2,15 @@
 //~0
 //~2
 //~0
-//~+1.200000e+00
-//~+2.600000e+00
-//~+2.600000e+00
-//~+1.200000e+00
-//~+1.200000e+00
-//~+2.600000e+00
+//~+1.200000e+000
+//~+2.600000e+000
+//~+2.600000e+000
+//~+1.200000e+000
+//~+1.200000e+000
+//~+2.600000e+000
 
-package test
+
+package main
 
 func main(){
 	type point struct {x float64; y float64;}
@@ -23,7 +24,7 @@ func main(){
 	var shapeList [1]shape
 
 	intList[0] = 9
-	intList2D[1][4] = 2
+	intList2D[4][1] = 2
 	pointList[0].x = 1.2
 	pointList[0].y = 2.6
 	pointList[1].x = pointList[0].y
@@ -34,11 +35,12 @@ func main(){
 
   println(intList[0])
   println(intList[1])
-  println(intList2D[1][4])
+  println(intList2D[4][1])
   println(intList2D[0][0])
   println(pointList[0].x)
 	println(pointList[0].y)
   println(lineList[0].points[1].x)
 	println(lineList[0].points[1].y)
-  println(shapeList[0].vertices[0])
+  println(shapeList[0].vertices[0].x)
+ 	println(shapeList[0].vertices[0].y)
 }
