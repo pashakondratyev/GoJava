@@ -29,16 +29,17 @@ orderOfOps,Yes,
 printStmts,Kinda,"Working properly only when run separately, ie. Not when using test.sh"
 returnStmts,No,Slices need to be able to take another slice as input: ie. Create copy constructor
 reuseAlias,Yes,
-shortDecls,No,Scope of variables is off
+shortDecls,Yes,
 slices,Yes,
 structs,Yes,
 structs2,No,"Fix slice array creation, check array array and struct array creation"
 structsSubmit,No,See equality.go
 switchStmt,Yes,
-switchStmt2,No,Scope of variables is off
+switchStmt2,Yes,
 trueFalse,No,Temp variable undeclared before used
 varDecls,Yes,
 ,,
 ,,
 Previous Milestones: Scanner,,
-8-13-breakcontinuestmts,No,Switch statement with only default resulting in only else (with no matching if)
+8-13-breakcontinuestmts,Yes,
+8-5-decstmts,Yes,

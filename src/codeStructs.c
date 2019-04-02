@@ -239,7 +239,9 @@ char *codeStructType(char *BUFFER, FIELD_DECLS *fd, SymbolTable *st, STRUCT *s, 
   // Equality method, note it should not be generated if there is an incomparable type
   if (s->comparable) {
     sprintf(BUFFER + strlen(BUFFER), "\tpublic Boolean equals(%s other){\n\t\treturn ", s->className);
-
+    if (fd == NULL) { // empty struct
+      sprintf(BUFFER + strlen(BUFFER), "Boolean.TRUE");
+    }
     int needsAnd = 0;
     for (FIELD_DECLS *temp = fd; temp; temp = temp->next) {
       if (strcmp(temp->id, "_") == 0) {
