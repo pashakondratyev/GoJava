@@ -346,6 +346,8 @@ void codeAssignment(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCou
       if(temp->rhs->type->kind == tk_array){
         //TODO: deep copy
         //fprintf(outputFile, ".clone()");
+      } else if(temp->rhs->type->kind == tk_struct){
+        fprintf(outputFile, ".copy()");
       }
       fprintf(outputFile, ";");
 
