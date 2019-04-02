@@ -181,9 +181,11 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
                 codeClauseCases(condId, clauseList->clause->val.caseClause.cases, st, it, newTabCount + 1, false,
                                 parentPost);
                 fprintf(outputFile, ") {\n");
-                writeTab(newTabCount + 1);
+                writeTab(newTabCount + 2);
                 it = scopeIdentifierTable(it);
                 codeClauses(clauseList->clause->val.caseClause.clauses, st, it, newTabCount + 1, false, parentPost);
+                fprintf(outputFile, "\n");
+                writeTab(newTabCount + 1);
                 fprintf(outputFile, "} ");
               } else {
                 fprintf(outputFile, "else if (");
@@ -191,8 +193,10 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
                                 parentPost);
                 fprintf(outputFile, ") {\n");
                 it = scopeIdentifierTable(it);
-                writeTab(newTabCount + 1);
+                writeTab(newTabCount + 2);
                 codeClauses(clauseList->clause->val.caseClause.clauses, st, it, newTabCount + 1, false, parentPost);
+                fprintf(outputFile, "\n");
+                writeTab(newTabCount + 1);
                 fprintf(outputFile, "} ");
               }
             }
@@ -205,11 +209,15 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
           } else {
             fprintf(outputFile, "if (true) { \n");
           }
-          writeTab(newTabCount + 1);
+          writeTab(newTabCount + 2);
           it = scopeIdentifierTable(it);
           codeClauses(defaultClause->val.defaultClauses, st, it, newTabCount + 1, false, parentPost);
-          fprintf(outputFile, "}\n");
-          writeTab(newTabCount);
+          fprintf(outputFile, "\n");
+          writeTab(newTabCount + 1);
+          fprintf(outputFile, "} \n");
+          writeTab(newTabCount + 1);
+        } else {
+          writeTab(newTabCount + 1);
         }
 
         fprintf(outputFile, "break;\n");
