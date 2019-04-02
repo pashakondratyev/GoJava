@@ -68,7 +68,7 @@ void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCou
       fprintf(outputFile, "%s %s = new %s", type, identifier, constructor);
       // If the declaration is for a  array, we either zero out an array
       // Or we copy the source into the target
-      if (vs->type->kind == tk_array && vs->exp == NULL) {
+      if (vs->type->kind == tk_array && vs->exp == NULL && tabCount>1) {
         fprintf(outputFile, ";\n");
         writeTab(tabCount);
         codeZeroOutArray(identifier, "", vs->type, st, tabCount);

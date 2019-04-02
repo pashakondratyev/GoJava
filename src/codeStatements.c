@@ -153,7 +153,7 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
         if (stmt->val.switchStmt.exp != NULL) {
           type = javaTypeString(stmt->val.switchStmt.exp->type, st, NULL);
         } else {
-          type = "Boolean";
+          type = (char *)"Boolean";
         }
         char *condId = (char *)malloc(15);
         sprintf(condId, "switchCond_%d", switchCount++);
@@ -175,6 +175,7 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
               defaultClause = clauseList->clause;
             } else {
               if (!ifStmtUsed) {
+                ifStmtUsed = true;
                 fprintf(outputFile, "if (");
                 codeClauseCases(condId, clauseList->clause->val.caseClause.cases, st, it, newTabCount + 1, false,
                                 parentPost);
