@@ -53,7 +53,7 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
         break;
       case sk_decl:
       case sk_shortDecl:
-        codeDeclarations(stmt->val.decl, st, it, newTabCount);
+        codeDeclarations(stmt->val.decl, st, it, tabCount);
         break;
       case sk_incr:
         codeExp(stmt->val.exp, st, it, tabCount);
