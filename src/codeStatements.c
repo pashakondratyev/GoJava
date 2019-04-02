@@ -231,7 +231,10 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
         // while loops
         if (stmt->val.forStmt.whileExp != NULL) {
           fprintf(outputFile, "while (");
-          codeExp(stmt->val.forStmt.whileExp, stmt->val.forStmt.scope, it, newTabCount);
+          if (stmt->val.forStmt.whileExp != NULL)
+            codeExp(stmt->val.forStmt.whileExp, stmt->val.forStmt.scope, it, newTabCount);
+          else
+            fprintf(outputFile, "true");
           fprintf(outputFile, ")");
           codeStmt(stmt->val.forStmt.body, stmt->val.forStmt.scope, it, newTabCount, false, NULL);
           fprintf(outputFile, "\n");
@@ -250,7 +253,10 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
             writeTab(newTabCount);
           }
           fprintf(outputFile, "while (");
-          codeExp(stmt->val.forStmt.forClause->cond, stmt->val.forStmt.scope, it, newTabCount);
+          if (stmt->val.forStmt.forClause->cond != NULL)
+            codeExp(stmt->val.forStmt.forClause->cond, stmt->val.forStmt.scope, it, newTabCount);
+          else
+              fprintf(outputFile, "true");
           fprintf(outputFile, ")");
           codeStmt(stmt->val.forStmt.body, stmt->val.forStmt.scope, it, newTabCount, true,
                    stmt->val.forStmt.forClause->post);
