@@ -12,6 +12,7 @@ int identifierCount;
 FILE *outputFile;
 
 void writeTab(int tabCount);
+void writeTabBuffer(char *BUFFER, int tabCount);
 char* prefix(char* str);
 
 int indexLastForwardSlash(char *str);

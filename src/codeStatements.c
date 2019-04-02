@@ -344,8 +344,8 @@ void codeAssignment(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCou
       fprintf(outputFile, " = ");
       codeExp(temp->rhs, st, it, tabCount);
       if(temp->rhs->type->kind == tk_array){
-        //TODO: deep copy
-        //fprintf(outputFile, ".clone()");
+        // TODO: currently arrays are being assigned in the second half of this method,
+        // Maybe we'll need to move this back
       } else if(temp->rhs->type->kind == tk_struct){
         fprintf(outputFile, ".copy()");
       }

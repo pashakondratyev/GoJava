@@ -20,6 +20,12 @@ void writeTab(int tabCount) {
   }
 }
 
+void writeTabBuffer(char *BUFFER, int tabCount){
+  for(int i = 0; i < tabCount; i++){
+    sprintf(BUFFER + strlen(BUFFER), "\t");
+  }
+}
+
 // prefix all identifiers
 char *prefix(char *str) {
   char *prefix = "__golite__";

@@ -197,9 +197,13 @@ void printStructTable() {
 // Puts the java representation of a struct into buffer
 char *codeStructType(char *BUFFER, FIELD_DECLS *fd, SymbolTable *st, STRUCT *s, char *name) {
   sprintf(BUFFER + strlen(BUFFER), "class %s {\n", s->className);
+  char constructorMethodBuffer[2048];
   char *constructor;
   char *typeName;
   // put all the public parameters
+
+  sprintf(constructorMethodBuffer, "\tpublic %s() {\n", s->className);
+
   for (FIELD_DECLS *temp = fd; temp; temp = temp->next) {
     if (strcmp(temp->id, "_") == 0) {
       continue;
@@ -217,10 +221,11 @@ char *codeStructType(char *BUFFER, FIELD_DECLS *fd, SymbolTable *st, STRUCT *s, 
         constructor = javaTypeStringConstructor(type, st, name);
         typeName = javaTypeString(type, st, name);
         sprintf(BUFFER + strlen(BUFFER), "\t%s %s = new %s;\n", typeName, temp->id, constructor);
+        codeZeroOutArrayBuffer(constructorMethodBuffer + strlen(constructorMethodBuffer), temp->id, "", temp->type, st, 2);
         break;
       case tk_slice:
         typeName = javaTypeString(type, st, name);
-        sprintf(BUFFER + strlen(BUFFER), "\t%s %s = new Slice<>();\n", typeName, temp->id);
+        sprintf(BUFFER + strlen(BUFFER), "\t%s %s = new %s();\n", typeName, temp->id, typeName);
         break;
       default:
         constructor = javaTypeStringDefaultConstructor(type, st, name);
@@ -229,6 +234,8 @@ char *codeStructType(char *BUFFER, FIELD_DECLS *fd, SymbolTable *st, STRUCT *s, 
         break;
     }
   }
+  sprintf(constructorMethodBuffer + strlen(constructorMethodBuffer), "\n\t}\n");
+  sprintf(BUFFER + strlen(BUFFER), "%s", constructorMethodBuffer);
   // Equality method, note it should not be generated if there is an incomparable type
   if (s->comparable) {
     sprintf(BUFFER + strlen(BUFFER), "\tpublic Boolean equals(%s other){\n\t\treturn ", s->className);
@@ -289,7 +296,7 @@ char *codeStructType(char *BUFFER, FIELD_DECLS *fd, SymbolTable *st, STRUCT *s, 
       case tk_array:
         sprintf(source, "structCopy.%s", temp->id);
         sprintf(target, "this.%s", temp->id);
-        sprintf(BUFFER + strlen(BUFFER), "structCopy.%1$s = new %2$s;\n\t\t", temp->id, constructor);
+        sprintf(BUFFER + strlen(BUFFER), "structCopy.%1$s = new %2$s;\n", temp->id, constructor);
         codeCopyArrayBuffer(BUFFER + strlen(BUFFER), source, target, "", temp->type, st, 2);
         break;
       case tk_slice:
