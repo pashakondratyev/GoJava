@@ -131,25 +131,64 @@ class Cast {
   return c;
  }
 }
-public class funcdeclGoLite {
+class STRUCT0 {
+	Integer a = new Integer(0);
+	public Boolean equals(STRUCT0 other){
+		return this.a.equals(other.a);
+	}
+}
+public class assignstmtsGoLite {
 	public static Boolean __golite__true = Boolean.TRUE;
 	public static Boolean __golite__false = Boolean.FALSE;
 
 	public static Cast castUtil = new Cast();
-		public static void __golite__f1 () {
+		public static void __golite__assign_stmts () {
+		
+		Integer __golite__a_1 = new Integer(0)
+		Integer __golite__b_1 = new Integer(0)
+		
+		Integer[] __golite__c_1 = new Integer[5];
+		for(int _golite_iter_i0 = 0; _golite_iter_i0 < 5; _golite_iter_i0++){
+			__golite__c_1[_golite_iter_i0] = new Integer(0);
+		}
+
+		
+		STRUCT0 __golite__d_1 = new STRUCT0()
+		
+		Integer __golite__a_1_temp_assign_0 = new Integer(0);
+		__golite__a_1 = __golite__a_1_temp_assign_0;
+		Integer __golite__a_1_temp_assign_1 = new Integer(0);
+		Integer __golite__b_1_temp_assign_2 = new Integer(1);
+		__golite__a_1 = __golite__a_1_temp_assign_1;
+		__golite__b_1 = __golite__b_1_temp_assign_2;
+		Integer __golite__a_1_temp_assign_3 = new Integer(0);
+		Integer __golite__blank_0 = new Integer(1);
+		__golite__a_1 = __golite__a_1_temp_assign_3;
+		(__golite__a_1) = new Integer(0);
+		(__golite__a_1) = new Integer(0);
+		(__golite__b_1) = new Integer(1);
+		__golite__a_1 += new Integer(1);
+		__golite__a_1 -= new Integer(1);
+		__golite__a_1 *= new Integer(1);
+		__golite__a_1 /= new Integer(1);
+		__golite__a_1 %= new Integer(1);
+		__golite__a_1 &= new Integer(1);
+		__golite__a_1 |= new Integer(1);
+		__golite__a_1 ^= new Integer(1);
+		__golite__a_1 &= ~(new Integer(1));new Integer(1);
+		__golite__a_1 <<= new Integer(1);
+		__golite__a_1 >>= new Integer(1);
+		__golite__c_1[new Integer(0)] = new Integer(1);
+		__golite__c_1[new Integer(0)] += new Integer(1);
+		__golite__d_1.a = new Integer(1);
+		__golite__d_1.a += new Integer(1);
+	}
+	public static void __golite__main () {
+		
+		__golite__assign_stmts();
 		
 	}
-	public static void __golite__init_0 () {
-		
+	public static void main(String[] args) {
+		__golite__main();
 	}
-	public static void __golite__init_1 () {
-		
-	}
-	public static Integer __golite__f2 () {
-		
-		return new Integer(0);
-	}
-	public static void __golite__f3 (Integer __golite__a_1, Integer __golite__b_1) {
-		
-	}
-	public static Integer __golite__f4 (
+}

@@ -131,25 +131,56 @@ class Cast {
   return c;
  }
 }
-public class funcdeclGoLite {
+public class unaryexprsGoLite {
 	public static Boolean __golite__true = Boolean.TRUE;
 	public static Boolean __golite__false = Boolean.FALSE;
 
 	public static Cast castUtil = new Cast();
-		public static void __golite__f1 () {
+		public static void __golite__unary_exprs () {
+		
+		Integer __golite__x_1 = new Integer(0)
+		
+		Integer __golite__y_1 = new Integer(0)
+		
+		Boolean __golite__b_1 = new Boolean(false)
+		
+		Boolean __golite__c_1 = new Boolean(false)
+		
+		Integer __golite__y_1_temp_assign_0 = new Integer(-__golite__x_1);
+		__golite__y_1 = __golite__y_1_temp_assign_0;
+		Integer __golite__y_1_temp_assign_1 = new Integer(+__golite__x_1);
+		__golite__y_1 = __golite__y_1_temp_assign_1;
+		Boolean __golite__c_1_temp_assign_2 = new Boolean(!__golite__b_1);
+		__golite__c_1 = __golite__c_1_temp_assign_2;
+		Integer __golite__y_1_temp_assign_3 = new Integer(~__golite__x_1);
+		__golite__y_1 = __golite__y_1_temp_assign_3;
+		Integer __golite__y_1_temp_assign_4 = new Integer(-new Integer(-__golite__x_1));
+		__golite__y_1 = __golite__y_1_temp_assign_4;
+		System.out.print(__golite__y_1);
+		System.out.println();
+		
+		Integer __golite__y_1_temp_assign_5 = new Integer(+new Integer(+__golite__x_1));
+		__golite__y_1 = __golite__y_1_temp_assign_5;
+		System.out.print(__golite__y_1);
+		System.out.println();
+		
+		Boolean __golite__c_1_temp_assign_6 = new Boolean(!new Boolean(!__golite__c_1));
+		__golite__c_1 = __golite__c_1_temp_assign_6;
+		System.out.print(__golite__c_1);
+		System.out.println();
+		
+		Integer __golite__y_1_temp_assign_7 = new Integer(~new Integer(~__golite__x_1));
+		__golite__y_1 = __golite__y_1_temp_assign_7;
+		System.out.print(__golite__y_1);
+		System.out.println();
 		
 	}
-	public static void __golite__init_0 () {
+	public static void __golite__main () {
+		
+		__golite__unary_exprs();
 		
 	}
-	public static void __golite__init_1 () {
-		
+	public static void main(String[] args) {
+		__golite__main();
 	}
-	public static Integer __golite__f2 () {
-		
-		return new Integer(0);
-	}
-	public static void __golite__f3 (Integer __golite__a_1, Integer __golite__b_1) {
-		
-	}
-	public static Integer __golite__f4 (
+}

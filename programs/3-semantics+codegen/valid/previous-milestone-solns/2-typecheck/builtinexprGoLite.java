@@ -131,25 +131,39 @@ class Cast {
   return c;
  }
 }
-public class funcdeclGoLite {
+public class builtinexprGoLite {
 	public static Boolean __golite__true = Boolean.TRUE;
 	public static Boolean __golite__false = Boolean.FALSE;
 
 	public static Cast castUtil = new Cast();
-		public static void __golite__f1 () {
+		public static void __golite__main () {
 		
-	}
-	public static void __golite__init_0 () {
+		String __golite__a_1 = new String("string");
 		
-	}
-	public static void __golite__init_1 () {
+		Slice<Integer> __golite__b_1 = new Slice<Integer>()
 		
-	}
-	public static Integer __golite__f2 () {
+		Slice<Integer> __golite__b_1_temp_assign_0 = __golite__b_1.append(new Integer(0));
+		__golite__b_1 = __golite__b_1_temp_assign_0;
+		Integer[] __golite__c_1 = new Integer[5];
+		for(int _golite_iter_i0 = 0; _golite_iter_i0 < 5; _golite_iter_i0++){
+			__golite__c_1[_golite_iter_i0] = new Integer(0);
+		}
+
 		
-		return new Integer(0);
-	}
-	public static void __golite__f3 (Integer __golite__a_1, Integer __golite__b_1) {
+		Integer __golite__r_1 = new Integer(0)
 		
+		Integer __golite__r_1_temp_assign_1 = __golite__a_1.length();
+		__golite__r_1 = __golite__r_1_temp_assign_1;
+		Integer __golite__r_1_temp_assign_2 = __golite__b_1.len;
+		__golite__r_1 = __golite__r_1_temp_assign_2;
+		Integer __golite__r_1_temp_assign_3 = __golite__b_1.cap;
+		__golite__r_1 = __golite__r_1_temp_assign_3;
+		Integer __golite__r_1_temp_assign_4 = __golite__c_1.length;
+		__golite__r_1 = __golite__r_1_temp_assign_4;
+		Integer __golite__r_1_temp_assign_5 = __golite__c_1.length;
+		__golite__r_1 = __golite__r_1_temp_assign_5;
 	}
-	public static Integer __golite__f4 (
+	public static void main(String[] args) {
+		__golite__main();
+	}
+}

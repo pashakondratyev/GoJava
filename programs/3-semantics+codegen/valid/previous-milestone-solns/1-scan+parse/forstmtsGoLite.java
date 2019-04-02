@@ -131,25 +131,72 @@ class Cast {
   return c;
  }
 }
-public class funcdeclGoLite {
+public class forstmtsGoLite {
 	public static Boolean __golite__true = Boolean.TRUE;
 	public static Boolean __golite__false = Boolean.FALSE;
 
 	public static Cast castUtil = new Cast();
-		public static void __golite__f1 () {
+		public static void __golite__for_stmts () {
+		
+		Integer __golite__a_1 = new Integer(0)
+		
+		while (true) {
+			}
+		
+		while (((__golite__a_1.compareTo(new Integer(10)) < 0) ? Boolean.TRUE : Boolean.FALSE)){
+			}
+		
+		{
+			
+			while (){
+			}
+		}
+		{
+			Integer __golite__a_temp_2 = new Integer(0);
+			Integer __golite__a_2 = __golite__a_temp_2;
+			while (){
+			}
+		}
+		{
+			
+			while (((__golite__a_1.compareTo(new Integer(10)) < 0) ? Boolean.TRUE : Boolean.FALSE)){
+			}
+		}
+		{
+			
+			while (){
+			__golite__a_1++;}
+		}
+		{
+			Integer __golite__a_temp_2 = new Integer(0);
+			Integer __golite__a_2 = __golite__a_temp_2;
+			while (((__golite__a_2.compareTo(new Integer(10)) < 0) ? Boolean.TRUE : Boolean.FALSE)){
+			}
+		}
+		{
+			Integer __golite__a_temp_2 = new Integer(10);
+			Integer __golite__a_2 = __golite__a_temp_2;
+			while (){
+			__golite__a_2++;}
+		}
+		{
+			
+			while (((__golite__a_1.compareTo(new Integer(10)) < 0) ? Boolean.TRUE : Boolean.FALSE)){
+			__golite__a_1++;}
+		}
+		{
+			Integer __golite__a_temp_2 = new Integer(0);
+			Integer __golite__a_2 = __golite__a_temp_2;
+			while (((__golite__a_2.compareTo(new Integer(10)) < 0) ? Boolean.TRUE : Boolean.FALSE)){
+			__golite__a_2++;}
+		}
+	}
+	public static void __golite__main () {
+		
+		__golite__for_stmts();
 		
 	}
-	public static void __golite__init_0 () {
-		
+	public static void main(String[] args) {
+		__golite__main();
 	}
-	public static void __golite__init_1 () {
-		
-	}
-	public static Integer __golite__f2 () {
-		
-		return new Integer(0);
-	}
-	public static void __golite__f3 (Integer __golite__a_1, Integer __golite__b_1) {
-		
-	}
-	public static Integer __golite__f4 (
+}

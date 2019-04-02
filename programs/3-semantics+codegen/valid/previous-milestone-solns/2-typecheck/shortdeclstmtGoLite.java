@@ -131,25 +131,58 @@ class Cast {
   return c;
  }
 }
-public class funcdeclGoLite {
+public class shortdeclstmtGoLite {
 	public static Boolean __golite__true = Boolean.TRUE;
 	public static Boolean __golite__false = Boolean.FALSE;
 
 	public static Cast castUtil = new Cast();
-		public static void __golite__f1 () {
+		public static void __golite__main () {
 		
-	}
-	public static void __golite__init_0 () {
+		Integer __golite__a_temp_1 = new Integer(1);
+		Integer __golite__a_1 = __golite__a_temp_1;
+		System.out.print(__golite__a_1);
+		System.out.println();
 		
-	}
-	public static void __golite__init_1 () {
+		Integer __golite__b_temp_1 = new Integer(2);
+		Integer __golite__c_temp_1 = new Integer(3);
+		Integer __golite__b_1 = __golite__b_temp_1;
+		Integer __golite__c_1 = __golite__c_temp_1;
+		System.out.print(__golite__b_1);
+		System.out.print(" ");
+		System.out.print(__golite__c_1);
+		System.out.println();
 		
-	}
-	public static Integer __golite__f2 () {
+		__golite__b_temp_1 = new Integer(4);
+		Integer __golite__d_temp_1 = new Integer(5);
+		__golite__b_1 = __golite__b_temp_1;
+		Integer __golite__d_1 = __golite__d_temp_1;
+		System.out.print(__golite__b_1);
+		System.out.print(" ");
+		System.out.print(__golite__d_1);
+		System.out.println();
 		
-		return new Integer(0);
-	}
-	public static void __golite__f3 (Integer __golite__a_1, Integer __golite__b_1) {
+		{
+			Integer __golite__a_temp_2 = new Integer(0);
+			Integer __golite__a_2 = __golite__a_temp_2;
+		}
+		Integer __golite__e_1 = new Integer(0)
 		
+		Double __golite__f_1 = new Double(0.0)
+		
+		__golite__e_temp_1 = new Integer(1);
+		__golite__f_temp_1 = new Double(2.000000);
+		Integer __golite__g_temp_1 = new Integer(3);
+		__golite__e_1 = __golite__e_temp_1;
+		__golite__f_1 = __golite__f_temp_1;
+		Integer __golite__g_1 = __golite__g_temp_1;
+		Integer __golite__h_temp_1 = new Integer(0);
+		Double __golite__blank_0 = new Double(0.000000);
+		Integer __golite__h_1 = __golite__h_temp_1;
+		Double __golite__i_temp_1 = new Double(0.000000);
+		Integer __golite__blank_1 = new Integer(0);
+		Double __golite__i_1 = __golite__i_temp_1;
 	}
-	public static Integer __golite__f4 (
+	public static void main(String[] args) {
+		__golite__main();
+	}
+}

@@ -131,25 +131,46 @@ class Cast {
   return c;
  }
 }
-public class funcdeclGoLite {
+class STRUCT0 {
+	Integer id = new Integer(0);
+	String name = new String("");
+	Character sex = new Character(' ');
+	Double wage = new Double(0.0);
+	public Boolean equals(STRUCT0 other){
+		return this.id.equals(other.id) && this.name.equals(other.name) && this.sex.equals(other.sex) && this.wage.equals(other.wage);
+	}
+}
+public class printstmtGoLite {
 	public static Boolean __golite__true = Boolean.TRUE;
 	public static Boolean __golite__false = Boolean.FALSE;
 
 	public static Cast castUtil = new Cast();
-		public static void __golite__f1 () {
+		public static void __golite__main () {
+		
+		System.out.print(new Integer(3));
+		System.out.print(" ");
+		System.out.printf("%+7.6e", new Double(3.141592));
+		System.out.print(" ");
+		System.out.print("hello");
+		System.out.print(" ");
+		System.out.print((int)new Character('c'));
+		System.out.print(" ");
+		System.out.print(__golite__true);
+		System.out.println();
+		
+		STRUCT0 __golite__e_1 = new STRUCT0()
+		
+		System.out.print(__golite__e_1.id);
+		System.out.print(" ");
+		System.out.print(__golite__e_1.name);
+		System.out.print(" ");
+		System.out.print((int)__golite__e_1.sex);
+		System.out.print(" ");
+		System.out.print(__golite__e_1.wage);
+		System.out.println();
 		
 	}
-	public static void __golite__init_0 () {
-		
+	public static void main(String[] args) {
+		__golite__main();
 	}
-	public static void __golite__init_1 () {
-		
-	}
-	public static Integer __golite__f2 () {
-		
-		return new Integer(0);
-	}
-	public static void __golite__f3 (Integer __golite__a_1, Integer __golite__b_1) {
-		
-	}
-	public static Integer __golite__f4 (
+}

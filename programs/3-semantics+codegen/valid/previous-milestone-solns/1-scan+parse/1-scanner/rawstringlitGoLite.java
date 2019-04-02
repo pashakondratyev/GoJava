@@ -131,25 +131,37 @@ class Cast {
   return c;
  }
 }
-public class funcdeclGoLite {
+public class rawstringlitGoLite {
 	public static Boolean __golite__true = Boolean.TRUE;
 	public static Boolean __golite__false = Boolean.FALSE;
 
 	public static Cast castUtil = new Cast();
-		public static void __golite__f1 () {
+		public static void __golite__scan_rawstring () {
+		
+		String __golite__r_1 = new String("")
+		
+		String __golite__r_1_temp_assign_0 = ``;
+		__golite__r_1 = __golite__r_1_temp_assign_0;
+		System.out.print(__golite__r_1);
+		System.out.println();
+		
+		String __golite__r_1_temp_assign_1 = `compilers!`;
+		__golite__r_1 = __golite__r_1_temp_assign_1;
+		System.out.print(__golite__r_1);
+		System.out.println();
+		
+		String __golite__r_1_temp_assign_2 = `\a \b \f \n \r \t \v \\ \"`;
+		__golite__r_1 = __golite__r_1_temp_assign_2;
+		System.out.print(__golite__r_1);
+		System.out.println();
 		
 	}
-	public static void __golite__init_0 () {
+	public static void __golite__main () {
+		
+		__golite__scan_rawstring();
 		
 	}
-	public static void __golite__init_1 () {
-		
+	public static void main(String[] args) {
+		__golite__main();
 	}
-	public static Integer __golite__f2 () {
-		
-		return new Integer(0);
-	}
-	public static void __golite__f3 (Integer __golite__a_1, Integer __golite__b_1) {
-		
-	}
-	public static Integer __golite__f4 (
+}

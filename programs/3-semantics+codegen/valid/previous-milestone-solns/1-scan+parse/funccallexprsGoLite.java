@@ -131,25 +131,55 @@ class Cast {
   return c;
  }
 }
-public class funcdeclGoLite {
+public class funccallexprsGoLite {
 	public static Boolean __golite__true = Boolean.TRUE;
 	public static Boolean __golite__false = Boolean.FALSE;
 
 	public static Cast castUtil = new Cast();
-		public static void __golite__f1 () {
+		public static void __golite__f () {
 		
 	}
-	public static void __golite__init_0 () {
+	public static void __golite__g (Integer __golite__l_1, Integer __golite__a_1, Integer __golite__b_1, Integer __golite__c_1) {
 		
 	}
-	public static void __golite__init_1 () {
+	public static Slice<Integer> __golite__h () {
+		
+		Slice<Integer> __golite__a_2 = new Slice<Integer>()
+		
+		Slice<Integer> __golite__a_2_temp_assign_0 = __golite__a_2.append(new Integer(0));
+		__golite__a_2 = __golite__a_2_temp_assign_0;
+		return __golite__a_2;
+	}
+	public static void __golite__funccall_exprs () {
+		
+		Integer __golite__a_2 = new Integer(0)
+		Integer __golite__b_2 = new Integer(0)
+		Integer __golite__c_2 = new Integer(0)
+		
+		Integer[] __golite__d_1 = new Integer[1];
+		for(int _golite_iter_i0 = 0; _golite_iter_i0 < 1; _golite_iter_i0++){
+			__golite__d_1[_golite_iter_i0] = new Integer(0);
+		}
+
+		
+		__golite__f();
+		
+		__golite__g(new Integer(0), __golite__a_2, new Integer(__golite__b_2 + __golite__c_2), __golite__d_1[new Integer(0)]);
+		
+		__golite__f();
+		
+		__golite__g(new Integer(0), __golite__a_2, new Integer(__golite__b_2 + __golite__c_2), __golite__d_1[new Integer(0)]);
+		
+		__golite__h().put(new Integer(0), new Integer(0));
+		Integer __golite__a_2_temp_assign_1 = __golite__h().get(new Integer(0));
+		__golite__a_2 = __golite__a_2_temp_assign_1;
+	}
+	public static void __golite__main () {
+		
+		__golite__funccall_exprs();
 		
 	}
-	public static Integer __golite__f2 () {
-		
-		return new Integer(0);
+	public static void main(String[] args) {
+		__golite__main();
 	}
-	public static void __golite__f3 (Integer __golite__a_1, Integer __golite__b_1) {
-		
-	}
-	public static Integer __golite__f4 (
+}

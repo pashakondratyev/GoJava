@@ -131,25 +131,41 @@ class Cast {
   return c;
  }
 }
-public class funcdeclGoLite {
+class STRUCT0 {
+	Double x = new Double(0.0);
+	Double y = new Double(0.0);
+	Double z = new Double(0.0);
+	public Boolean equals(STRUCT0 other){
+		return this.x.equals(other.x) && this.y.equals(other.y) && this.z.equals(other.z);
+	}
+}
+class STRUCT1 {
+	Double k = new Double(0.0);
+	STRUCT2 n = new STRUCT2();
+	public Boolean equals(STRUCT1 other){
+		return this.k.equals(other.k) && this.n.equals(other.n);
+	}
+}
+class STRUCT2 {
+	Integer a = new Integer(0);
+	public Boolean equals(STRUCT2 other){
+		return this.a.equals(other.a);
+	}
+}
+class STRUCT3 {
+	public Boolean equals(STRUCT3 other){
+		return ;
+	}
+}
+public class typedecsGoLite {
 	public static Boolean __golite__true = Boolean.TRUE;
 	public static Boolean __golite__false = Boolean.FALSE;
 
 	public static Cast castUtil = new Cast();
-		public static void __golite__f1 () {
+		public static void __golite__main () {
 		
 	}
-	public static void __golite__init_0 () {
-		
+	public static void main(String[] args) {
+		__golite__main();
 	}
-	public static void __golite__init_1 () {
-		
-	}
-	public static Integer __golite__f2 () {
-		
-		return new Integer(0);
-	}
-	public static void __golite__f3 (Integer __golite__a_1, Integer __golite__b_1) {
-		
-	}
-	public static Integer __golite__f4 (
+}

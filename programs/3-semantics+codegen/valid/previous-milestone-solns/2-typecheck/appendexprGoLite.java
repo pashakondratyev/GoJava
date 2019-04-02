@@ -131,25 +131,35 @@ class Cast {
   return c;
  }
 }
-public class funcdeclGoLite {
+public class appendexprGoLite {
 	public static Boolean __golite__true = Boolean.TRUE;
 	public static Boolean __golite__false = Boolean.FALSE;
 
 	public static Cast castUtil = new Cast();
-		public static void __golite__f1 () {
+		public static void __golite__main () {
 		
-	}
-	public static void __golite__init_0 () {
+		Slice<Integer> __golite__ws_1 = new Slice<Integer>()
 		
-	}
-	public static void __golite__init_1 () {
+		Slice<Integer> __golite__xs_1 = new Slice<Integer>()
 		
-	}
-	public static Integer __golite__f2 () {
+		Slice<Integer> __golite__ys_1 = new Slice<Integer>()
 		
-		return new Integer(0);
-	}
-	public static void __golite__f3 (Integer __golite__a_1, Integer __golite__b_1) {
+		Slice<Integer> __golite__zs_1 = new Slice<Integer>()
 		
+		Integer __golite__x_1 = new Integer(0)
+		
+		Integer __golite__y_1 = new Integer(0)
+		
+		Slice<Integer> __golite__ws_1_temp_assign_0 = __golite__ws_1.append(__golite__y_1);
+		__golite__ws_1 = __golite__ws_1_temp_assign_0;
+		Slice<Integer> __golite__xs_1_temp_assign_1 = __golite__xs_1.append(__golite__y_1);
+		__golite__xs_1 = __golite__xs_1_temp_assign_1;
+		Slice<Integer> __golite__ys_1_temp_assign_2 = __golite__ys_1.append(__golite__y_1);
+		__golite__ys_1 = __golite__ys_1_temp_assign_2;
+		Slice<Integer> __golite__zs_1_temp_assign_3 = __golite__zs_1.append(__golite__x_1);
+		__golite__zs_1 = __golite__zs_1_temp_assign_3;
 	}
-	public static Integer __golite__f4 (
+	public static void main(String[] args) {
+		__golite__main();
+	}
+}

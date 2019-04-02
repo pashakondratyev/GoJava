@@ -131,25 +131,57 @@ class Cast {
   return c;
  }
 }
-public class funcdeclGoLite {
+public class slicesGoLite {
 	public static Boolean __golite__true = Boolean.TRUE;
 	public static Boolean __golite__false = Boolean.FALSE;
 
 	public static Cast castUtil = new Cast();
-		public static void __golite__f1 () {
+		public static void __golite__main () {
 		
-	}
-	public static void __golite__init_0 () {
+		Slice<Integer> __golite__x_1 = new Slice<Integer>()
 		
-	}
-	public static void __golite__init_1 () {
+		Integer __golite__m_1 = new Integer(0)
+		Integer __golite__n_1 = new Integer(0)
 		
-	}
-	public static Integer __golite__f2 () {
+		Slice<Integer> __golite__x_1_temp_assign_0 = __golite__x_1.append(new Integer(1));
+		__golite__x_1 = __golite__x_1_temp_assign_0;
+		Slice<Integer> __golite__x_1_temp_assign_1 = __golite__x_1.append(new Integer(2));
+		__golite__x_1 = __golite__x_1_temp_assign_1;
+		Slice<Integer> __golite__x_1_temp_assign_2 = __golite__x_1.append(new Integer(3));
+		__golite__x_1 = __golite__x_1_temp_assign_2;
+		Integer __golite__y1_1 = new Integer(0)
+		Integer __golite__y2_1 = new Integer(0)
+		Integer __golite__y3_1 = new Integer(0)
+		Integer __golite__y4_1 = new Integer(0)
+		Integer __golite__y5_1 = new Integer(0)
 		
-		return new Integer(0);
-	}
-	public static void __golite__f3 (Integer __golite__a_1, Integer __golite__b_1) {
+		Integer __golite__y1_1_temp_assign_3 = __golite__x_1.get(new Integer(0));
+		__golite__y1_1 = __golite__y1_1_temp_assign_3;
+		Integer __golite__y2_1_temp_assign_4 = __golite__x_1.get(new Integer(1));
+		__golite__y2_1 = __golite__y2_1_temp_assign_4;
+		Integer __golite__y3_1_temp_assign_5 = __golite__x_1.get(new Integer(2));
+		__golite__y3_1 = __golite__y3_1_temp_assign_5;
+		Integer __golite__y4_1_temp_assign_6 = __golite__x_1.get(__golite__m_1);
+		__golite__y4_1 = __golite__y4_1_temp_assign_6;
+		Integer __golite__y5_1_temp_assign_7 = __golite__x_1.get(new Integer(__golite__m_1 + new Integer(1)));
+		__golite__y5_1 = __golite__y5_1_temp_assign_7;
+		Slice<Slice<Double>> __golite__a_1 = new Slice<Slice<Double>>()
 		
+		__golite__a_1.put(new Integer(0), __golite__a_1.get(new Integer(0)).append(new Double(1.000000)));
+		__golite__a_1.put(new Integer(0), __golite__a_1.get(new Integer(0)).append(new Double(2.000000)));
+		__golite__a_1.put(new Integer(0), __golite__a_1.get(__golite__m_1).append(new Double(2.000000)));
+		Double __golite__b1_1 = new Double(0.0)
+		Double __golite__b2_1 = new Double(0.0)
+		Double __golite__b3_1 = new Double(0.0)
+		
+		Double __golite__b1_1_temp_assign_8 = __golite__a_1.get(new Integer(0)).get(new Integer(0));
+		__golite__b1_1 = __golite__b1_1_temp_assign_8;
+		Double __golite__b2_1_temp_assign_9 = __golite__a_1.get(new Integer(0)).get(new Integer(1));
+		__golite__b2_1 = __golite__b2_1_temp_assign_9;
+		Double __golite__b3_1_temp_assign_10 = __golite__a_1.get(__golite__m_1).get(__golite__n_1);
+		__golite__b3_1 = __golite__b3_1_temp_assign_10;
 	}
-	public static Integer __golite__f4 (
+	public static void main(String[] args) {
+		__golite__main();
+	}
+}

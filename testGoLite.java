@@ -152,7 +152,11 @@ public class testGoLite {
 
 		
 		Integer[] __golite__c_temp_1 = __golite__b_1;
-		Integer[] __golite__c_1 = __golite__c_temp_1;
+		Integer[] __golite__c_1 = new Integer[3];
+		for(int _golite_iter_i0 = 0; _golite_iter_i0 < 3; _golite_iter_i0++){
+			__golite__c_1[_golite_iter_i0] = __golite__c_temp_1[_golite_iter_i0];
+		}
+
 	}
 	public static void main(String[] args) {
 		__golite__main();

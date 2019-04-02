@@ -131,25 +131,70 @@ class Cast {
   return c;
  }
 }
-public class funcdeclGoLite {
+public class binexprsGoLite {
 	public static Boolean __golite__true = Boolean.TRUE;
 	public static Boolean __golite__false = Boolean.FALSE;
 
 	public static Cast castUtil = new Cast();
-		public static void __golite__f1 () {
+		public static void __golite__bin_exprs () {
+		
+		Integer __golite__x_1 = new Integer(0)
+		
+		Integer __golite__y_1 = new Integer(0)
+		
+		Integer __golite__r_1 = new Integer(0)
+		
+		Boolean __golite__b_1 = new Boolean(false)
+		
+		Boolean __golite__c_1 = new Boolean(false)
+		
+		Integer __golite__r_1_temp_assign_0 = new Integer(__golite__x_1 + new Integer(1));
+		__golite__r_1 = __golite__r_1_temp_assign_0;
+		Integer __golite__r_1_temp_assign_1 = new Integer(__golite__x_1 - new Integer(1));
+		__golite__r_1 = __golite__r_1_temp_assign_1;
+		Integer __golite__r_1_temp_assign_2 = new Integer(__golite__x_1 * new Integer(1));
+		__golite__r_1 = __golite__r_1_temp_assign_2;
+		Integer __golite__r_1_temp_assign_3 = new Integer(__golite__x_1 / new Integer(1));
+		__golite__r_1 = __golite__r_1_temp_assign_3;
+		Integer __golite__r_1_temp_assign_4 = new Integer(__golite__x_1 % new Integer(1));
+		__golite__r_1 = __golite__r_1_temp_assign_4;
+		Integer __golite__r_1_temp_assign_5 = new Integer(__golite__x_1 & new Integer(1));
+		__golite__r_1 = __golite__r_1_temp_assign_5;
+		Integer __golite__r_1_temp_assign_6 = new Integer(__golite__x_1 | new Integer(1));
+		__golite__r_1 = __golite__r_1_temp_assign_6;
+		Integer __golite__r_1_temp_assign_7 = new Integer(__golite__x_1 ^ new Integer(1));
+		__golite__r_1 = __golite__r_1_temp_assign_7;
+		Integer __golite__r_1_temp_assign_8 = new Integer(__golite__x_1 & (~ new Integer(1)));
+		__golite__r_1 = __golite__r_1_temp_assign_8;
+		Integer __golite__r_1_temp_assign_9 = new Integer(__golite__x_1 << new Integer(1));
+		__golite__r_1 = __golite__r_1_temp_assign_9;
+		Integer __golite__r_1_temp_assign_10 = new Integer(__golite__x_1 >> new Integer(1));
+		__golite__r_1 = __golite__r_1_temp_assign_10;
+		Boolean __golite__c_1_temp_assign_11 = new Boolean(__golite__b_1 && __golite__b_1);
+		__golite__c_1 = __golite__c_1_temp_assign_11;
+		Boolean __golite__c_1_temp_assign_12 = new Boolean(__golite__b_1 || __golite__b_1);
+		__golite__c_1 = __golite__c_1_temp_assign_12;
+		Boolean __golite__c_1_temp_assign_13 = ((__golite__x_1.compareTo(__golite__y_1) < 0) ? Boolean.TRUE : Boolean.FALSE);
+		__golite__c_1 = __golite__c_1_temp_assign_13;
+		Boolean __golite__c_1_temp_assign_14 = ((__golite__x_1.compareTo(__golite__y_1) <= 0) ? Boolean.TRUE : Boolean.FALSE);
+		__golite__c_1 = __golite__c_1_temp_assign_14;
+		Boolean __golite__c_1_temp_assign_15 = new Boolean(__golite__x_1.equals(__golite__y_1));
+		__golite__c_1 = __golite__c_1_temp_assign_15;
+		Boolean __golite__c_1_temp_assign_16 = new Boolean(!__golite__x_1.equals(__golite__y_1));
+		__golite__c_1 = __golite__c_1_temp_assign_16;
+		Boolean __golite__c_1_temp_assign_17 = ((__golite__x_1.compareTo(__golite__y_1) >= 0) ? Boolean.TRUE : Boolean.FALSE);
+		__golite__c_1 = __golite__c_1_temp_assign_17;
+		Boolean __golite__c_1_temp_assign_18 = ((__golite__x_1.compareTo(__golite__y_1) > 0) ? Boolean.TRUE : Boolean.FALSE);
+		__golite__c_1 = __golite__c_1_temp_assign_18;
+		Integer __golite__r_1_temp_assign_19 = new Integer(__golite__x_1 + __golite__y_1);
+		__golite__r_1 = __golite__r_1_temp_assign_19;
+	}
+	public static void __golite__main () {
+		
+		__golite__bin_exprs();
 		
 	}
-	public static void __golite__init_0 () {
-		
+	public static void main(String[] args) {
+		__golite__main();
 	}
-	public static void __golite__init_1 () {
-		
-	}
-	public static Integer __golite__f2 () {
-		
-		return new Integer(0);
-	}
-	public static void __golite__f3 (Integer __golite__a_1, Integer __golite__b_1) {
-		
-	}
-	public static Integer __golite__f4 (
+}
