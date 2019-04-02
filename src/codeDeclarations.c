@@ -41,19 +41,24 @@ void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCou
   if (vs != NULL && vs->declared != -1) {
     char *type = javaTypeString(vs->type, st, NULL);
     char *constructor;
-    int putSemiColon = 1;
     if (vs->exp != NULL) {
       constructor = javaTypeStringConstructor(vs->type, st, NULL);
     } else {
       constructor = javaTypeStringDefaultConstructor(vs->type, st, NULL);
     }
     //writeTab(tabCount);
-    if (tabCount==1){
-      fprintf(outputFile, "public static ");
-    }
+    if (tabCount==1) fprintf(outputFile, "public static ");
+
     if (strcmp(vs->id, "_") == 0) {
-      fprintf(outputFile, "%s %s_%d = new %s", javaTypeString(vs->type, st, NULL), prefix("blank"), blankVar,
-              constructor);
+      fprintf(outputFile, "%s %s_%d = new %s", type, prefix("blank"), blankVar, constructor);
+      if(vs->exp == NULL){
+        fprintf(outputFile, ";");
+      } else {
+        fprintf(outputFile, "(");
+        codeExp(vs->exp, st, it, tabCount);
+        fprintf(outputFile, ")");
+        fprintf(outputFile, ";"); 
+      }
       blankVar++;
     } else {
       IDENTIFIER *i = addIfNotInTable(vs->id, it);
@@ -67,39 +72,30 @@ void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCou
         writeTab(tabCount);
       }
       fprintf(outputFile, "%s %s = new %s", type, identifier, constructor);
-      // If the declaration is for a  array, we either zero out an array
-      // Or we copy the source into the target
-      if (vs->type->kind == tk_array && vs->exp == NULL && tabCount>1) {
+      if (vs->type->kind == tk_array && tabCount == 1) { //Declaring array in top level
+        //TODO: 
+      } else if (vs->type->kind == tk_array && vs->exp == NULL) { //Declaring empty arrau
         fprintf(outputFile, ";\n");
         writeTab(tabCount);
         codeZeroOutArray(identifier, "", vs->type, st, tabCount);
-        putSemiColon = 0;
-      } else if (vs->type->kind == tk_array && vs->exp != NULL) {
+      } else if (vs->type->kind == tk_array && vs->exp != NULL) { //Declaring new array(pass by value)
         fprintf(outputFile, ";\n");
         writeTab(tabCount);
         char source[1024];
         sprintf(source, "%s_temp_%d", prefix(vs->id), i->scopeCount);
         codeCopyArray(identifier, source, "", vs->type, st, tabCount);
-      } else if(vs->exp == NULL){
+      } else if(vs->exp == NULL){ //Declaring without expression
         fprintf(outputFile, ";");
-        putSemiColon = 0;
-      }
-      i->identifier = vs->id;
-    }
-    if (vs->exp != NULL) {
-      if (typeResolve(vs->type, st)->kind != tk_array) {
+      } else {
         fprintf(outputFile, "(");
         codeExp(vs->exp, st, it, tabCount);
         fprintf(outputFile, ")");
-        fprintf(outputFile, ";");
+        fprintf(outputFile, ";"); 
       }
-    } else if(putSemiColon) {
-      fprintf(outputFile, ";");
+      i->identifier = vs->id;
     }
     fprintf(outputFile, "\n");
-    if(vs->next){
-      writeTab(tabCount - 1);
-    }
+    if(vs->next) writeTab(tabCount - 1);
     codeVarDecl(vs->next, st, it, tabCount);
   }
 }
