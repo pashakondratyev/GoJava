@@ -140,8 +140,9 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
         fprintf(outputFile, "{\n");
         writeTab(newTabCount);
         it = scopeIdentifierTable(it);
+        st = stmt->val.switchStmt.scope;
         if (stmt->val.switchStmt.simpleStmt != NULL) {
-          codeStmt(stmt->val.switchStmt.simpleStmt, stmt->val.switchStmt.scope, it, newTabCount, false, parentPost);
+          codeStmt(stmt->val.switchStmt.simpleStmt, st, it, newTabCount, false, parentPost);
           fprintf(outputFile, "\n");
           writeTab(newTabCount);
         }
@@ -159,7 +160,7 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
         sprintf(condId, "switchCond_%d", switchCount++);
         fprintf(outputFile, "%s %s = ", type, condId);
         if (stmt->val.switchStmt.exp != NULL) {
-          codeExp(stmt->val.switchStmt.exp, stmt->val.switchStmt.scope, it, newTabCount + 1);
+          codeExp(stmt->val.switchStmt.exp, st, it, newTabCount + 1);
         } else {
           fprintf(outputFile, "Boolean.TRUE");
         }
