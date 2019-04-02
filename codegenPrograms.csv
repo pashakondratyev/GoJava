@@ -8,13 +8,14 @@ Slices-bounds2.go,Yes,
 ,,
 VALID,,
 append,Yes,
-arrays,No,New arrays of basic types must be filled with default values
-assignments,No,Fix return statement to return copy
+arrays,Yes,
+assignments,Yes,
+assignments2,Yes,
 blankid,Yes,
 callExprs,No,Pass function parameters in by value (make copies)
 capacity,Yes,
 cast,Yes,
-equality,No,Fix equality: slice
+equality,No,"Fix equality: arrays, structs. Could stem from not passing the value when creating a new variable"
 exprs,Yes,
 forLoops,Yes,
 funcDecls,No,Major Error
@@ -23,15 +24,17 @@ incrdec,Yes,
 javaReferenceTypes,Yes,
 javaKeywords,Yes,
 length,Yes,
+multiDimensionalArrays,No,2D array indices are swapped
 orderOfOps,Yes,
 printStmts,Kinda,"Working properly only when run separately, ie. Not when using test.sh"
-returnStmts,No,Fix varDecls for when RHS has a value (ex. Integer[] i = foo())  ** make test before fix** & pass by value in return statements
+returnStmts,No,Slices need to be able to take another slice as input: ie. Create copy constructor
 reuseAlias,Yes,
-shortDecls,No,Fix pass by value assignment: structs and arrays
+shortDecls,No,Scope of variables is off
 slices,Yes,
 structs,Yes,
 structs2,No,"Fix slice array creation, check array array and struct array creation"
-structsSubmit,No,Fix others since combination of other tests
+structsSubmit,No,See equality.go
 switchStmt,Yes,
-trueFalse,No,Shadow scoping issue with true/false default values
+switchStmt2,No,Scope of variables is off
+trueFalse,No,Temp variable undeclared before used
 varDecls,No,Shadow scoping issue
