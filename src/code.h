@@ -9,6 +9,8 @@
 int numInitFunc;
 int blankVar;
 int identifierCount;
+
+char initArraysBuffer[10000];
 FILE *outputFile;
 
 void writeTab(int tabCount);

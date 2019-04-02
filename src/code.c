@@ -132,7 +132,11 @@ void codeSetup(char *className) {
 // complete class definition
 void codeComplete() {
   // TODO: complete
+  fprintf(outputFile, "\n\tpublic static void __golite__init_arrays(){\n");
+  fprintf(outputFile, "%s", initArraysBuffer);
+  fprintf(outputFile, "\t}\n");
   fprintf(outputFile, "\n\tpublic static void main(String[] args) {\n");
+  fprintf(outputFile, "\t\t__golite__init_arrays();\n");
   for (int i = 0; i < numInitFunc; i++) {
     fprintf(outputFile, "\t\t__golite__init_%d();\n", i);
   }
