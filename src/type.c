@@ -381,7 +381,6 @@ ReturnStatus typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
                 sl = ccl->clause->val.caseClause.clauses;
                 while (sl != NULL) {
                   ReturnStatus temp = typeStmt(sl->stmt, st, returnType);
-
                   if (temp == Breaks) {
                     clauseReturns = Breaks;
                   } else if (clauseReturns != Breaks) {
