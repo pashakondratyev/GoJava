@@ -37,4 +37,4 @@ structsSubmit,No,See equality.go
 switchStmt,Yes,
 switchStmt2,No,Scope of variables is off
 trueFalse,No,Temp variable undeclared before used
-varDecls,No,Shadow scoping issue
+varDecls,Yes,
