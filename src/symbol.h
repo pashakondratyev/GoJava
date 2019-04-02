@@ -38,6 +38,9 @@ int Hash(char *str);
 SymbolTable *initSymbolTable();
 SymbolTable *scopeSymbolTable(SymbolTable *s);
 
+void printScope(SymbolTable *s);
+void printAllParentScopes(SymbolTable *s);
+
 void symProgram(PROG *prog, SymbolTableMode m);
 void symTypesStatements(STMT *stmt, SymbolTable *st);
 void symTypesExpressions(EXP *exp, SymbolTable *st);

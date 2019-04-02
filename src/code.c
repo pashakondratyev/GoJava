@@ -112,7 +112,6 @@ void codeProgram(PROG *prog, SymbolTable *st, char *inputFileName) {
   codeStructTable();
 
   codeSetup(&inputFileName[index + 1]);
-
   codeDeclarations(prog->root_decl, st, identifierTable, 1);
   codeComplete();
   fclose(outputFile);
@@ -133,7 +132,7 @@ void codeSetup(char *className) {
 // complete class definition
 void codeComplete() {
   // TODO: complete
-  fprintf(outputFile, "\tpublic static void main(String[] args) {\n");
+  fprintf(outputFile, "\n\tpublic static void main(String[] args) {\n");
   for (int i = 0; i < numInitFunc; i++) {
     fprintf(outputFile, "\t\t__golite__init_%d();\n", i);
   }
