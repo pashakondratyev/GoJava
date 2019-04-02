@@ -200,7 +200,11 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
           clauseList = clauseList->next;
         }
         if (defaultClause != NULL) {
-          fprintf(outputFile, "else { \n");
+          if (ifStmtUsed == true) {
+            fprintf(outputFile, "else { \n");
+          } else {
+            fprintf(outputFile, "if (true) { \n");
+          }
           writeTab(newTabCount + 1);
           it = scopeIdentifierTable(it);
           codeClauses(defaultClause->val.defaultClauses, st, it, newTabCount + 1, false, parentPost);
