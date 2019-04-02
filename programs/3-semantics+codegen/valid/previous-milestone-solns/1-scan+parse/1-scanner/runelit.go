@@ -8,7 +8,7 @@ func scan_runes() {
 
 	c = 'L'
 	println(c)
-	// c = '"'
+	c = '"'
 	// c = '\a'
 	c = '\b'
 	c = '\f'
