@@ -4,8 +4,7 @@
 
 ### Java ###
 *.class
-programs/3-semantics+codegen/invalid/*.java
-programs/3-semantics+codegen/valid/*.java
+programs/**/*.java
 ### C ###
 # Prerequisites
 *.d

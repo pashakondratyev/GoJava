@@ -278,7 +278,7 @@ void codeStructTable() {
   for (int i = 0; i < HashSize; i++) {
     STRUCT *s = structTable->table[i];
     while (s != NULL) {
-      fprintf(outputFile, "%s", s->javaClass);
+      fprintf(outputFile, "%s\n", s->javaClass);
       s = s->next;
     }
   }
