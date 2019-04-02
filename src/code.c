@@ -93,6 +93,7 @@ void codeProgram(PROG *prog, SymbolTable *st, char *inputFileName) {
       fputs(line, outputFile);
     }
     fclose(castFile);
+    fprintf(outputFile, "\n");
   }else {
     printf("Can't open Cast.java\n");
   }
@@ -121,7 +122,6 @@ void codeSetup(char *className) {
   fprintf(outputFile, "\tpublic static Boolean __golite__false = Boolean.FALSE;\n\n");
   // utility class to handle casts/type conversions
   fprintf(outputFile, "\tpublic static Cast castUtil = new Cast();\n");
-  writeTab(1);
 }
 
 // complete class definition
