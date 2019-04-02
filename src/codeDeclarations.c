@@ -41,12 +41,13 @@ void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCou
   if (vs != NULL && vs->declared != -1) {
     char *type = javaTypeString(vs->type, st, NULL);
     char *constructor;
+    int putSemiColon = 1;
     if (vs->exp != NULL) {
       constructor = javaTypeStringConstructor(vs->type, st, NULL);
     } else {
       constructor = javaTypeStringDefaultConstructor(vs->type, st, NULL);
     }
-    writeTab(tabCount);
+    //writeTab(tabCount);
     if (tabCount==1){
       fprintf(outputFile, "public static ");
     }
@@ -72,6 +73,7 @@ void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCou
         fprintf(outputFile, ";\n");
         writeTab(tabCount);
         codeZeroOutArray(identifier, "", vs->type, st, tabCount);
+        putSemiColon = 0;
       } else if (vs->type->kind == tk_array && vs->exp != NULL) {
         fprintf(outputFile, ";\n");
         writeTab(tabCount);
@@ -80,6 +82,7 @@ void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCou
         codeCopyArray(identifier, source, "", vs->type, st, tabCount);
       } else if(vs->exp == NULL){
         fprintf(outputFile, ";");
+        putSemiColon = 0;
       }
       i->identifier = vs->id;
     }
@@ -90,11 +93,13 @@ void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCou
         fprintf(outputFile, ")");
         fprintf(outputFile, ";");
       }
-    } else {
+    } else if(putSemiColon) {
       fprintf(outputFile, ";");
     }
-
     fprintf(outputFile, "\n");
+    if(vs->next){
+      writeTab(tabCount - 1);
+    }
     codeVarDecl(vs->next, st, it, tabCount);
   }
 }
