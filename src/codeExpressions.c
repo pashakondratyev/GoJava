@@ -150,21 +150,23 @@ void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
         fprintf(outputFile, "new Integer(%i)", exp->val.intval);
         break;
       case ek_string:
-        removedQuotesStr = (char*) malloc(strlen(exp->val.stringval));
-        removedQuotesStr = exp->val.stringval;
-        removedQuotesStr++;
-        removedQuotesStr[strlen(removedQuotesStr)-1] = '\0';
+        // removedQuotesStr = (char*) malloc(strlen(exp->val.stringval));
+        // removedQuotesStr = exp->val.stringval;
+        // removedQuotesStr++;
+        // removedQuotesStr[strlen(removedQuotesStr)-1] = '\0';
 
-        char *escapeString = expandEscapesString(removedQuotesStr);
-        fprintf(outputFile, "\"%s\"", escapeString);
+        // char *escapeString = expandEscapesString(removedQuotesStr);
+        // fprintf(outputFile, "\"%s\"", escapeString);
+        fprintf(outputFile, "%s", exp->val.stringval);
         break;
       case ek_boolean:
         fprintf(outputFile, "new Boolean(%s)", exp->val.booleanval ? "__golite__true" : "__golite__false");
         break;
       case ek_rune:
-        escapeRune = (char*) malloc(7);
-        escapeRune = expandEscapesChar(exp->val.runeval);
-        fprintf(outputFile, "new Character('%s')", escapeRune);
+        // escapeRune = (char*) malloc(7);
+        // escapeRune = expandEscapesChar(exp->val.runeval);
+        // fprintf(outputFile, "new Character('%s')", escapeRune);
+      fprintf(outputFile, "new Character('%c')", exp->val.runeval);
         break;
       case ek_plus:
         type = typeResolve(exp->val.binary.lhs->type, st);
