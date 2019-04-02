@@ -112,7 +112,7 @@ void codeProgram(PROG *prog, SymbolTable *st, char *inputFileName) {
   codeStructTable();
 
   codeSetup(&inputFileName[index + 1]);
-
+  writeTab(1);
   codeDeclarations(prog->root_decl, st, identifierTable, 1);
   codeComplete();
   fclose(outputFile);

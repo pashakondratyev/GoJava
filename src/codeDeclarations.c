@@ -46,7 +46,9 @@ void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCou
     } else {
       constructor = javaTypeStringDefaultConstructor(vs->type, st, NULL);
     }
-
+    if (tabCount==1){
+      fprintf(outputFile, "public static ");
+    }
     if (strcmp(vs->id, "_") == 0) {
       fprintf(outputFile, "%s %s_%d = new %s", javaTypeString(vs->type, st, NULL), prefix("blank"), blankVar,
               constructor);
