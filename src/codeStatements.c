@@ -359,13 +359,19 @@ void codeAssignment(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCou
     // (x),(y) = x,y
     if(temp->lhs->kind == ek_id && strcmp(temp->lhs->val.id, "_") != 0){
       fprintf(outputFile, "\n");
-      writeTab(tabCount);
-      codeExp(temp->lhs, st, it, tabCount);
-      fprintf(outputFile, " = ");
-      codeExp(temp->lhs, st, it, tabCount);
-      fprintf(outputFile, "_temp_assign_%d", curAssignCount);
+      char source[1024];
+      char target[1024];
+      IDENTIFIER *i = getFromIdentifierTable(temp->lhs->val.id, it);
+      sprintf(target, "%s_%d", prefix(temp->lhs->val.id), i->scopeCount);
+      sprintf(source, "%s_temp_assign_%d", prefix(temp->lhs->val.id), curAssignCount);
       curAssignCount++;
-      fprintf(outputFile, ";");
+      writeTab(tabCount);
+      if(temp->lhs->type->kind == tk_array){
+        codeCopyArray(target, source, "", temp->lhs->type, st, tabCount);
+      } else{
+        codeExp(temp->lhs, st, it, tabCount);
+        fprintf(outputFile, " = %s;", source);
+      }
     }
   }
 }
