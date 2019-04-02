@@ -131,25 +131,33 @@ class Cast {
   return c;
  }
 }
-public class funcdeclGoLite {
+public class returnstmtsGoLite {
 	public static Boolean __golite__true = Boolean.TRUE;
 	public static Boolean __golite__false = Boolean.FALSE;
 
 	public static Cast castUtil = new Cast();
-		public static void __golite__f1 () {
+		public static Integer __golite__return_stmts_lit () {
 		
+		return new Integer(17);
 	}
-	public static void __golite__init_0 () {
+	public static void __golite__return_stmts_empty () {
 		
+		return ;
 	}
-	public static void __golite__init_1 () {
+	public static Integer __golite__return_stmts_expr () {
 		
+		return __golite__return_stmts_lit();
 	}
-	public static Integer __golite__f2 () {
+	public static void __golite__main () {
 		
-		return new Integer(0);
-	}
-	public static void __golite__f3 (Integer __golite__a_1, Integer __golite__b_1) {
+		Integer __golite__i_1 = new Integer(__golite__return_stmts_lit());
 		
+		__golite__return_stmts_empty();
+		
+		Integer __golite__i_1_temp_assign_0 = __golite__return_stmts_expr();
+		__golite__i_1 = __golite__i_1_temp_assign_0;
 	}
-	public static Integer __golite__f4 (
+	public static void main(String[] args) {
+		__golite__main();
+	}
+}

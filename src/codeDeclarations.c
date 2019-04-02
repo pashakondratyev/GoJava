@@ -56,7 +56,7 @@ void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCou
       i->identifier = " ";
       char identifier[1024];
       sprintf(identifier, "%s_%d", prefix(vs->id), i->scopeCount);
-      if(vs->exp != NULL && vs->type->kind == tk_array){
+      if (vs->exp != NULL && vs->type->kind == tk_array) {
         fprintf(outputFile, "%s %s_temp_%d = ", type, prefix(vs->id), i->scopeCount);
         codeExp(vs->exp, st, it, tabCount);
         fprintf(outputFile, ";\n");
@@ -65,11 +65,11 @@ void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCou
       fprintf(outputFile, "%s %s = new %s", type, identifier, constructor);
       // If the declaration is for a  array, we either zero out an array
       // Or we copy the source into the target
-      if(vs->type->kind == tk_array && vs->exp == NULL){
+      if (vs->type->kind == tk_array && vs->exp == NULL) {
         fprintf(outputFile, ";\n");
         writeTab(tabCount);
         codeZeroOutArray(identifier, "", vs->type, st, tabCount);
-      } else if(vs->type->kind == tk_array && vs->exp != NULL){
+      } else if (vs->type->kind == tk_array && vs->exp != NULL) {
         fprintf(outputFile, ";\n");
         writeTab(tabCount);
         char source[1024];
@@ -79,7 +79,7 @@ void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCou
       i->identifier = vs->id;
     }
     if (vs->exp != NULL) {
-      if(typeResolve(vs->type, st)->kind != tk_array){
+      if (typeResolve(vs->type, st)->kind != tk_array) {
         fprintf(outputFile, "(");
         codeExp(vs->exp, st, it, tabCount);
         fprintf(outputFile, ")");
@@ -142,12 +142,20 @@ void codeShortDecl(SHORT_SPECS *ss, SymbolTable *st, IdentifierTable *it, int ta
     char *constructor = javaTypeStringConstructor(temp->lhs->type, st, NULL);
 
     IDENTIFIER *i = getFromIdentifierTable(temp->lhs->val.id, it);
-    if (!temp->declared) {
-      fprintf(outputFile, "%s %s_%d = ", type, prefix(temp->lhs->val.id), i->scopeCount);
-      fprintf(outputFile, "%s_temp_%d;", prefix(temp->lhs->val.id), i->scopeCount);
-    } else {
-      fprintf(outputFile, "%s_%d = ", prefix(temp->lhs->val.id), i->scopeCount);
-      fprintf(outputFile, "%s_temp_%d;", prefix(temp->lhs->val.id), i->scopeCount);
+    char source[1024];
+    char target[1024];
+    sprintf(target, "%s_%d", prefix(temp->lhs->val.id), i->scopeCount);
+    sprintf(source, "%s_temp_%d", prefix(temp->lhs->val.id), i->scopeCount);
+    if(!temp->declared){
+      fprintf(outputFile, "%s ", type);
+    }
+    fprintf(outputFile, "%s = ", target);
+    if(temp->lhs->type->kind == tk_array){
+      fprintf(outputFile, "new %s;\n", constructor);
+      writeTab(tabCount);
+      codeCopyArray(target, source, "", temp->lhs->type, st, tabCount);
+    } else{
+      fprintf(outputFile, "%s;", source);
     }
     // fprintf(outputFile, "%s %s_%d = ", type, prefix(temp->lhs->val.id), i->scopeCount);
     // fprintf(outputFile, "%s_temp_%d;", prefix(temp->lhs->val.id), i->scopeCount);

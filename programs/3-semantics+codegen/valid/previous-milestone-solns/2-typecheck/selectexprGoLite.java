@@ -131,25 +131,94 @@ class Cast {
   return c;
  }
 }
-public class funcdeclGoLite {
+class STRUCT1 {
+	STRUCT0 i = new STRUCT0();
+	STRUCT0 j = new STRUCT0();
+	public Boolean equals(STRUCT1 other){
+		return this.i.equals(other.i) && this.j.equals(other.j);
+	}
+}
+class STRUCT0 {
+	Double x = new Double(0.0);
+	Double y = new Double(0.0);
+	Double z = new Double(0.0);
+	public Boolean equals(STRUCT0 other){
+		return this.x.equals(other.x) && this.y.equals(other.y) && this.z.equals(other.z);
+	}
+}
+class STRUCT2 {
+	Boolean a = new Boolean(false);
+	Integer b = new Integer(0);
+	String c = new String("");
+	public Boolean equals(STRUCT2 other){
+		return this.a.equals(other.a) && this.b.equals(other.b) && this.c.equals(other.c);
+	}
+}
+public class selectexprGoLite {
 	public static Boolean __golite__true = Boolean.TRUE;
 	public static Boolean __golite__false = Boolean.FALSE;
 
 	public static Cast castUtil = new Cast();
-		public static void __golite__f1 () {
+		public static void __golite__main () {
 		
-	}
-	public static void __golite__init_0 () {
+		Boolean __golite__a_1 = new Boolean(false)
 		
-	}
-	public static void __golite__init_1 () {
+		Integer __golite__b_1 = new Integer(0)
 		
-	}
-	public static Integer __golite__f2 () {
+		String __golite__c_1 = new String("")
 		
-		return new Integer(0);
-	}
-	public static void __golite__f3 (Integer __golite__a_1, Integer __golite__b_1) {
+		STRUCT2 __golite__s_1 = new STRUCT2()
 		
+		__golite__s_1.a = __golite__true;
+		__golite__s_1.b = new Integer(42);
+		__golite__s_1.c = "struct";
+		Boolean __golite__a_1_temp_assign_0 = __golite__s_1.a;
+		__golite__a_1 = __golite__a_1_temp_assign_0;
+		Integer __golite__b_1_temp_assign_1 = __golite__s_1.b;
+		__golite__b_1 = __golite__b_1_temp_assign_1;
+		String __golite__c_1_temp_assign_2 = __golite__s_1.c;
+		__golite__c_1 = __golite__c_1_temp_assign_2;
+		Double __golite__x_1 = new Double(0.0)
+		Double __golite__y_1 = new Double(0.0)
+		Double __golite__z_1 = new Double(0.0)
+		
+		STRUCT0 __golite__p_1 = new STRUCT0()
+		
+		__golite__p_1.x = new Double(0.000000);
+		__golite__p_1.y = new Double(-new Double(1.000000));
+		__golite__p_1.z = new Double(1.000000);
+		Double __golite__x_1_temp_assign_3 = __golite__p_1.x;
+		__golite__x_1 = __golite__x_1_temp_assign_3;
+		Double __golite__y_1_temp_assign_4 = __golite__p_1.y;
+		__golite__y_1 = __golite__y_1_temp_assign_4;
+		Double __golite__x_1_temp_assign_5 = __golite__p_1.z;
+		__golite__x_1 = __golite__x_1_temp_assign_5;
+		STRUCT0 __golite__q_1 = new STRUCT0()
+		
+		__golite__q_1.x = new Double(0.000000);
+		__golite__q_1.y = new Double(-new Double(1.000000));
+		__golite__q_1.z = new Double(1.000000);
+		Double __golite__x_1_temp_assign_6 = __golite__q_1.x;
+		__golite__x_1 = __golite__x_1_temp_assign_6;
+		Double __golite__y_1_temp_assign_7 = __golite__q_1.y;
+		__golite__y_1 = __golite__y_1_temp_assign_7;
+		Double __golite__z_1_temp_assign_8 = __golite__q_1.z;
+		__golite__z_1 = __golite__z_1_temp_assign_8;
+		STRUCT1 __golite__v_1 = new STRUCT1()
+		
+		__golite__v_1.i = __golite__q_1;
+		__golite__v_1.j = __golite__q_1;
+		__golite__v_1.i.x = new Double(2.000000);
+		__golite__v_1.i.y = new Double(3.000000);
+		__golite__v_1.i.z = new Double(4.000000);
+		Double __golite__x_1_temp_assign_9 = __golite__v_1.i.x;
+		__golite__x_1 = __golite__x_1_temp_assign_9;
+		Double __golite__y_1_temp_assign_10 = __golite__v_1.i.y;
+		__golite__y_1 = __golite__y_1_temp_assign_10;
+		Double __golite__z_1_temp_assign_11 = __golite__v_1.i.z;
+		__golite__z_1 = __golite__z_1_temp_assign_11;
 	}
-	public static Integer __golite__f4 (
+	public static void main(String[] args) {
+		__golite__main();
+	}
+}

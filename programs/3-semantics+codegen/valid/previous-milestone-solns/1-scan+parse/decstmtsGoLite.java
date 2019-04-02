@@ -131,25 +131,75 @@ class Cast {
   return c;
  }
 }
-public class funcdeclGoLite {
+class STRUCT0 {
+	Double x = new Double(0.0);
+	Double y = new Double(0.0);
+	Double z = new Double(0.0);
+	public Boolean equals(STRUCT0 other){
+		return this.x.equals(other.x) && this.y.equals(other.y) && this.z.equals(other.z);
+	}
+}
+class STRUCT1 {
+	Double k = new Double(0.0);
+	STRUCT2 n = new STRUCT2();
+	public Boolean equals(STRUCT1 other){
+		return this.k.equals(other.k) && this.n.equals(other.n);
+	}
+}
+class STRUCT2 {
+	Integer a = new Integer(0);
+	public Boolean equals(STRUCT2 other){
+		return this.a.equals(other.a);
+	}
+}
+class STRUCT3 {
+	public Boolean equals(STRUCT3 other){
+		return ;
+	}
+}
+public class decstmtsGoLite {
 	public static Boolean __golite__true = Boolean.TRUE;
 	public static Boolean __golite__false = Boolean.FALSE;
 
 	public static Cast castUtil = new Cast();
-		public static void __golite__f1 () {
+		public static void __golite__dec_stmts () {
+		
+		Integer __golite__a1_1 = new Integer(0)
+		
+		Double __golite__a2_1 = new Double(new Double(0.000000));
+		
+		Double __golite__a3_1 = new Double(new Double(0.000000));
+		
+		String __golite__a4_1 = new String("")
+		String __golite__a5_1 = new String("")
+		
+		String __golite__a6_1 = new String("a");
+		String __golite__a7_1 = new String(`b`);
+		
+		Character __golite__a8_1 = new Character(new Character('a'));
+		Integer __golite__a9_1 = new Integer(new Integer(0));
+		
+		Integer __golite__blank_0 = new Integer(0)
+		
+		Integer __golite__b1_1 = new Integer(0)
+		Double __golite__b2_1 = new Double(new Double(0.000000));
+		Double __golite__b3_1 = new Double(new Double(0.000000));
+		String __golite__b4_1 = new String("")
+		String __golite__b5_1 = new String("")
+		String __golite__b6_1 = new String("a");
+		String __golite__b7_1 = new String(`b`);
+		Character __golite__b8_1 = new Character(new Character('a'));
+		Integer __golite__b9_1 = new Integer(new Integer(0));
+		Integer __golite__blank_1 = new Integer(0)
+		
 		
 	}
-	public static void __golite__init_0 () {
+	public static void __golite__main () {
+		
+		__golite__dec_stmts();
 		
 	}
-	public static void __golite__init_1 () {
-		
+	public static void main(String[] args) {
+		__golite__main();
 	}
-	public static Integer __golite__f2 () {
-		
-		return new Integer(0);
-	}
-	public static void __golite__f3 (Integer __golite__a_1, Integer __golite__b_1) {
-		
-	}
-	public static Integer __golite__f4 (
+}

@@ -131,25 +131,38 @@ class Cast {
   return c;
  }
 }
-public class funcdeclGoLite {
+public class funccallexprGoLite {
 	public static Boolean __golite__true = Boolean.TRUE;
 	public static Boolean __golite__false = Boolean.FALSE;
 
 	public static Cast castUtil = new Cast();
-		public static void __golite__f1 () {
+		public static Integer __golite__fib (Integer __golite__n_1) {
+		
+		{
+			if (((__golite__n_1.compareTo(new Integer(2)) < 0) ? Boolean.TRUE : Boolean.FALSE)){
+					return __golite__n_1;
+				}else{
+						return new Integer(__golite__fib(new Integer(__golite__n_1 - new Integer(1))) + __golite__fib(new Integer(__golite__n_1 - new Integer(2))));
+					}				
+		}
 		
 	}
-	public static void __golite__init_0 () {
+	public static Integer __golite__id (Integer __golite__x_1) {
+		
+		return __golite__x_1;
+	}
+	public static void __golite__f (Integer __golite__a_1) {
 		
 	}
-	public static void __golite__init_1 () {
+	public static void __golite__main () {
+		
+		System.out.print(__golite__id(new Integer(3)));
+		System.out.println();
+		
+		__golite__f(castUtil.castToInteger(new Integer(5)));
 		
 	}
-	public static Integer __golite__f2 () {
-		
-		return new Integer(0);
+	public static void main(String[] args) {
+		__golite__main();
 	}
-	public static void __golite__f3 (Integer __golite__a_1, Integer __golite__b_1) {
-		
-	}
-	public static Integer __golite__f4 (
+}

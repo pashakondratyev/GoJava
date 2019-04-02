@@ -131,25 +131,81 @@ class Cast {
   return c;
  }
 }
-public class funcdeclGoLite {
+public class ifstmtsGoLite {
 	public static Boolean __golite__true = Boolean.TRUE;
 	public static Boolean __golite__false = Boolean.FALSE;
 
 	public static Cast castUtil = new Cast();
-		public static void __golite__f1 () {
+		public static void __golite__if_stmts () {
+		
+		Integer __golite__x_1 = new Integer(0)
+		
+		{
+			if (__golite__true){
+				}
+		}
+		
+		{
+			
+			if (__golite__true){
+				}
+		}
+		
+		{
+			Integer __golite__x_temp_2 = new Integer(0);
+			Integer __golite__x_2 = __golite__x_temp_2;
+			if (new Boolean(__golite__x_2.equals(new Integer(0)))){
+				}
+		}
+		
+		{
+			if (__golite__false){
+				}else{
+					}				
+		}
+		
+		{
+			
+			if (__golite__true){
+				}else{
+					}				
+		}
+		
+		{
+			__golite__x_1++;
+			if (__golite__true){
+				}else{
+					}				
+		}
+		
+		{
+			if (__golite__false){
+				}else{
+						if (__golite__false){
+							}else{
+								}							
+					}
+									
+		}
+		
+		{
+			if (__golite__false){
+				}else{
+						__golite__x_1++;
+						if (__golite__false){
+							}else{
+								}							
+					}
+									
+		}
 		
 	}
-	public static void __golite__init_0 () {
+	public static void __golite__main () {
+		
+		__golite__if_stmts();
 		
 	}
-	public static void __golite__init_1 () {
-		
+	public static void main(String[] args) {
+		__golite__main();
 	}
-	public static Integer __golite__f2 () {
-		
-		return new Integer(0);
-	}
-	public static void __golite__f3 (Integer __golite__a_1, Integer __golite__b_1) {
-		
-	}
-	public static Integer __golite__f4 (
+}

@@ -131,25 +131,82 @@ class Cast {
   return c;
  }
 }
-public class funcdeclGoLite {
+class STRUCT0 {
+	Double x = new Double(0.0);
+	Double y = new Double(0.0);
+	Double z = new Double(0.0);
+	public Boolean equals(STRUCT0 other){
+		return this.x.equals(other.x) && this.y.equals(other.y) && this.z.equals(other.z);
+	}
+}
+public class returnstmtGoLite {
 	public static Boolean __golite__true = Boolean.TRUE;
 	public static Boolean __golite__false = Boolean.FALSE;
 
 	public static Cast castUtil = new Cast();
-		public static void __golite__f1 () {
+		public static Double __golite__incr (Double __golite__x_1) {
+		
+		return new Double(__golite__x_1 + new Double(1.000000));
+	}
+	public static STRUCT0 __golite__new_point () {
+		
+		STRUCT0 __golite__p_1 = new STRUCT0()
+		
+		__golite__p_1.x = __golite__incr(new Double(-new Double(1.000000)));
+		__golite__p_1.y = new Double(0.000000);
+		__golite__p_1.z = new Double(0.000000);
+		return __golite__p_1;
+	}
+	public static void __golite__main () {
+		
+		return ;
+	}
+	public static Integer __golite__ret_loop_3part () {
+		
+		{
+			
+			while (){
+				System.out.print(new Integer(0));
+			}
+		}
+	}
+	public static Integer __golite__ret_loop_inf () {
+		
+		while (true) {
+				System.out.print(new Integer(0));
+			}
 		
 	}
-	public static void __golite__init_0 () {
+	public static Integer __golite__ret_if () {
+		
+		{
+			if (__golite__true){
+					return new Integer(0);
+				}else{
+						if (__golite__false){
+								return new Integer(1);
+							}else{
+									return new Integer(2);
+								}							
+					}
+									
+		}
 		
 	}
-	public static void __golite__init_1 () {
+	public static Integer __golite__ret_switch () {
 		
+		{
+			while (true) {
+				Boolean switchCond_0 = Boolean.TRUE;
+				if (switchCond_0.equals(__golite__true)) {
+				return new Integer(0);} if (switchCond_0.equals(__golite__false)) {
+				return new Integer(1);} else { 
+				return new Integer(2);}
+			break;
+			}
+		}
 	}
-	public static Integer __golite__f2 () {
-		
-		return new Integer(0);
+	public static void main(String[] args) {
+		__golite__main();
 	}
-	public static void __golite__f3 (Integer __golite__a_1, Integer __golite__b_1) {
-		
-	}
-	public static Integer __golite__f4 (
+}

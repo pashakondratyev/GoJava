@@ -131,25 +131,68 @@ class Cast {
   return c;
  }
 }
-public class funcdeclGoLite {
+class STRUCT1 {
+	STRUCT0 n = new STRUCT0();
+	public Boolean equals(STRUCT1 other){
+		return this.n.equals(other.n);
+	}
+}
+class STRUCT0 {
+	Integer x = new Integer(0);
+	Integer y = new Integer(0);
+	Integer z = new Integer(0);
+	public Boolean equals(STRUCT0 other){
+		return this.x.equals(other.x) && this.y.equals(other.y) && this.z.equals(other.z);
+	}
+}
+public class structsGoLite {
 	public static Boolean __golite__true = Boolean.TRUE;
 	public static Boolean __golite__false = Boolean.FALSE;
 
 	public static Cast castUtil = new Cast();
-		public static void __golite__f1 () {
+		public static void __golite__main () {
 		
-	}
-	public static void __golite__init_0 () {
+		STRUCT0 __golite__p_1 = new STRUCT0()
 		
-	}
-	public static void __golite__init_1 () {
+		__golite__p_1.x = new Integer(1);
+		__golite__p_1.y = new Integer(2);
+		__golite__p_1.z = new Integer(3);
+		Integer __golite__x1_1 = new Integer(0)
+		Integer __golite__y1_1 = new Integer(0)
+		Integer __golite__z1_1 = new Integer(0)
 		
-	}
-	public static Integer __golite__f2 () {
+		Integer __golite__x1_1_temp_assign_0 = __golite__p_1.x;
+		__golite__x1_1 = __golite__x1_1_temp_assign_0;
+		Integer __golite__y1_1_temp_assign_1 = __golite__p_1.y;
+		__golite__y1_1 = __golite__y1_1_temp_assign_1;
+		Integer __golite__z1_1_temp_assign_2 = __golite__p_1.z;
+		__golite__z1_1 = __golite__z1_1_temp_assign_2;
+		STRUCT1 __golite__q_1 = new STRUCT1()
 		
-		return new Integer(0);
-	}
-	public static void __golite__f3 (Integer __golite__a_1, Integer __golite__b_1) {
+		__golite__q_1.n.x = new Integer(1);
+		__golite__q_1.n.y = new Integer(2);
+		__golite__q_1.n.z = new Integer(3);
+		Integer __golite__x2_1 = new Integer(0)
+		Integer __golite__y2_1 = new Integer(0)
+		Integer __golite__z2_1 = new Integer(0)
 		
+		Integer __golite__x2_1_temp_assign_3 = __golite__q_1.n.x;
+		__golite__x2_1 = __golite__x2_1_temp_assign_3;
+		Integer __golite__y2_1_temp_assign_4 = __golite__q_1.n.y;
+		__golite__y2_1 = __golite__y2_1_temp_assign_4;
+		Integer __golite__z2_1_temp_assign_5 = __golite__q_1.n.z;
+		__golite__z2_1 = __golite__z2_1_temp_assign_5;
+		STRUCT0[] __golite__t_1 = new STRUCT0[3];
+		for(int _golite_iter_i0 = 0; _golite_iter_i0 < 3; _golite_iter_i0++){
+			__golite__t_1[_golite_iter_i0] = new STRUCT0();
+		}
+
+		
+		__golite__t_1[new Integer(0)].x = new Integer(1);
+		__golite__t_1[new Integer(0)].y = new Integer(2);
+		__golite__t_1[new Integer(0)].z = new Integer(3);
 	}
-	public static Integer __golite__f4 (
+	public static void main(String[] args) {
+		__golite__main();
+	}
+}

@@ -131,25 +131,91 @@ class Cast {
   return c;
  }
 }
-public class funcdeclGoLite {
+public class unaryexprGoLite {
 	public static Boolean __golite__true = Boolean.TRUE;
 	public static Boolean __golite__false = Boolean.FALSE;
 
 	public static Cast castUtil = new Cast();
-		public static void __golite__f1 () {
+		public static void __golite__base_types () {
+		
+		Integer __golite__a_1 = new Integer(0)
+		Double __golite__b_1 = new Double(0.0)
+		Character __golite__c_1 = new Character(' ')
+		String __golite__d_1 = new String("")
+		Boolean __golite__e_1 = new Boolean(false)
+		
+		System.out.print(new Integer(+__golite__a_1));
+		System.out.println();
+		
+		System.out.printf("%+7.6e", new Double(+__golite__b_1));
+		System.out.println();
+		
+		System.out.print((int)new Character((char)(+__golite__c_1)));
+		System.out.println();
+		
+		System.out.print(new Integer(-__golite__a_1));
+		System.out.println();
+		
+		System.out.printf("%+7.6e", new Double(-__golite__b_1));
+		System.out.println();
+		
+		System.out.print((int)new Character((char)(-__golite__c_1)));
+		System.out.println();
+		
+		System.out.print(new Integer(~__golite__a_1));
+		System.out.println();
+		
+		System.out.print((int)new Character((char)(~__golite__c_1)));
+		System.out.println();
+		
+		System.out.print(new Boolean(!__golite__e_1));
+		System.out.println();
 		
 	}
-	public static void __golite__init_0 () {
+	public static void __golite__type_aliases () {
+		
+		Integer __golite__a_1 = new Integer(0)
+		Double __golite__b_1 = new Double(0.0)
+		Character __golite__c_1 = new Character(' ')
+		String __golite__d_1 = new String("")
+		Boolean __golite__e_1 = new Boolean(false)
+		
+		System.out.print(new Integer(+__golite__a_1));
+		System.out.println();
+		
+		System.out.print(new Double(+__golite__b_1));
+		System.out.println();
+		
+		System.out.print(new Character((char)(+__golite__c_1)));
+		System.out.println();
+		
+		System.out.print(new Integer(-__golite__a_1));
+		System.out.println();
+		
+		System.out.print(new Double(-__golite__b_1));
+		System.out.println();
+		
+		System.out.print(new Character((char)(-__golite__c_1)));
+		System.out.println();
+		
+		System.out.print(new Integer(~__golite__a_1));
+		System.out.println();
+		
+		System.out.print(new Character((char)(~__golite__c_1)));
+		System.out.println();
+		
+		System.out.print(new Boolean(!__golite__e_1));
+		System.out.println();
 		
 	}
-	public static void __golite__init_1 () {
+	public static void __golite__main () {
+		
+		__golite__type_aliases();
+		
+		__golite__base_types();
 		
 	}
-	public static Integer __golite__f2 () {
-		
-		return new Integer(0);
+	public static void main(String[] args) {
+		__golite__main();
 	}
-	public static void __golite__f3 (Integer __golite__a_1, Integer __golite__b_1) {
-		
-	}
-	public static Integer __golite__f4 (
+}

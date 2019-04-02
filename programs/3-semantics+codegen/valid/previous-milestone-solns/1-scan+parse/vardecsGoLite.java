@@ -131,25 +131,37 @@ class Cast {
   return c;
  }
 }
-public class funcdeclGoLite {
+public class vardecsGoLite {
 	public static Boolean __golite__true = Boolean.TRUE;
 	public static Boolean __golite__false = Boolean.FALSE;
 
 	public static Cast castUtil = new Cast();
-		public static void __golite__f1 () {
+	Integer __golite__a1_1 = new Integer(0)
+	Double __golite__a2_1 = new Double(new Double(0.000000));
+	Double __golite__a3_1 = new Double(new Double(0.000000));
+	String __golite__a4_1 = new String("")
+	String __golite__a5_1 = new String("")
+	String __golite__a6_1 = new String("a");
+	String __golite__a7_1 = new String(`b`);
+	Character __golite__a8_1 = new Character(new Character('a'));
+	Integer __golite__a9_1 = new Integer(new Integer(0));
+	String __golite__a10_1 = new String("")
+	String __golite__a11_1 = new String("a");
+	Integer __golite__blank_0 = new Integer(0)
+	Integer __golite__b1_1 = new Integer(0)
+	Double __golite__b2_1 = new Double(new Double(0.000000));
+	Double __golite__b3_1 = new Double(new Double(0.000000));
+	String __golite__b4_1 = new String("")
+	String __golite__b5_1 = new String("")
+	String __golite__b6_1 = new String("a");
+	String __golite__b7_1 = new String(`b`);
+	Character __golite__b8_1 = new Character(new Character('a'));
+	Integer __golite__b9_1 = new Integer(new Integer(0));
+	Integer __golite__blank_1 = new Integer(0)
+		public static void __golite__main () {
 		
 	}
-	public static void __golite__init_0 () {
-		
+	public static void main(String[] args) {
+		__golite__main();
 	}
-	public static void __golite__init_1 () {
-		
-	}
-	public static Integer __golite__f2 () {
-		
-		return new Integer(0);
-	}
-	public static void __golite__f3 (Integer __golite__a_1, Integer __golite__b_1) {
-		
-	}
-	public static Integer __golite__f4 (
+}

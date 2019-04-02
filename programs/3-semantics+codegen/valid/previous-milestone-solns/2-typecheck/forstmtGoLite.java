@@ -131,25 +131,58 @@ class Cast {
   return c;
  }
 }
-public class funcdeclGoLite {
+public class forstmtGoLite {
 	public static Boolean __golite__true = Boolean.TRUE;
 	public static Boolean __golite__false = Boolean.FALSE;
 
 	public static Cast castUtil = new Cast();
-		public static void __golite__f1 () {
+		public static void __golite__main () {
 		
-	}
-	public static void __golite__init_0 () {
+		Boolean __golite__my_bool_1 = new Boolean(false)
 		
-	}
-	public static void __golite__init_1 () {
+		Boolean __golite__my_t_1 = new Boolean(false)
 		
-	}
-	public static Integer __golite__f2 () {
+		while (true) {
+				break;
+			}
 		
-		return new Integer(0);
-	}
-	public static void __golite__f3 (Integer __golite__a_1, Integer __golite__b_1) {
+		while (__golite__my_bool_1){
+				break;
+			}
 		
+		while (__golite__my_t_1){
+				break;
+			}
+		
+		{
+			
+			while (__golite__my_bool_1){
+				break;
+			}
+		}
+		{
+			
+			while (__golite__my_t_1){
+				break;
+			}
+		}
+		{
+			Integer __golite__x_temp_1 = new Integer(0);
+			Integer __golite__x_1 = __golite__x_temp_1;
+			while (){
+				__golite__x_1++;
+			}
+		}
+		{
+			Integer __golite__x_temp_1 = new Integer(0);
+			Integer __golite__x_1 = __golite__x_temp_1;
+			while (){
+				Integer __golite__x_2 = new Integer(0)
+				
+			}
+		}
 	}
-	public static Integer __golite__f4 (
+	public static void main(String[] args) {
+		__golite__main();
+	}
+}

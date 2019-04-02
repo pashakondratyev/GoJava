@@ -131,25 +131,47 @@ class Cast {
   return c;
  }
 }
-public class funcdeclGoLite {
+public class runelitGoLite {
 	public static Boolean __golite__true = Boolean.TRUE;
 	public static Boolean __golite__false = Boolean.FALSE;
 
 	public static Cast castUtil = new Cast();
-		public static void __golite__f1 () {
+		public static void __golite__scan_runes () {
+		
+		Character __golite__c_1 = new Character(' ')
+		
+		Character __golite__c_1_temp_assign_0 = new Character('L');
+		__golite__c_1 = __golite__c_1_temp_assign_0;
+		Character __golite__c_1_temp_assign_1 = new Character('\');
+		__golite__c_1 = __golite__c_1_temp_assign_1;
+		Character __golite__c_1_temp_assign_2 = new Character(''');
+		__golite__c_1 = __golite__c_1_temp_assign_2;
+		Character __golite__c_1_temp_assign_3 = new Character('');
+		__golite__c_1 = __golite__c_1_temp_assign_3;
+		Character __golite__c_1_temp_assign_4 = new Character('');
+		__golite__c_1 = __golite__c_1_temp_assign_4;
+		Character __golite__c_1_temp_assign_5 = new Character('');
+		__golite__c_1 = __golite__c_1_temp_assign_5;
+		Character __golite__c_1_temp_assign_6 = new Character('
+');
+		__golite__c_1 = __golite__c_1_temp_assign_6;
+		Character __golite__c_1_temp_assign_7 = new Character('');
+		__golite__c_1 = __golite__c_1_temp_assign_7;
+		Character __golite__c_1_temp_assign_8 = new Character('	');
+		__golite__c_1 = __golite__c_1_temp_assign_8;
+		Character __golite__c_1_temp_assign_9 = new Character('');
+		__golite__c_1 = __golite__c_1_temp_assign_9;
+		Character __golite__c_1_temp_assign_10 = new Character('\');
+		__golite__c_1 = __golite__c_1_temp_assign_10;
+		Character __golite__c_1_temp_assign_11 = new Character(''');
+		__golite__c_1 = __golite__c_1_temp_assign_11;
+	}
+	public static void __golite__main () {
+		
+		__golite__scan_runes();
 		
 	}
-	public static void __golite__init_0 () {
-		
+	public static void main(String[] args) {
+		__golite__main();
 	}
-	public static void __golite__init_1 () {
-		
-	}
-	public static Integer __golite__f2 () {
-		
-		return new Integer(0);
-	}
-	public static void __golite__f3 (Integer __golite__a_1, Integer __golite__b_1) {
-		
-	}
-	public static Integer __golite__f4 (
+}

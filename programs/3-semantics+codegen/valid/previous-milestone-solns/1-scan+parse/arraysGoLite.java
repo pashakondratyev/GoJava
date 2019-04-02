@@ -131,25 +131,66 @@ class Cast {
   return c;
  }
 }
-public class funcdeclGoLite {
+public class arraysGoLite {
 	public static Boolean __golite__true = Boolean.TRUE;
 	public static Boolean __golite__false = Boolean.FALSE;
 
 	public static Cast castUtil = new Cast();
-		public static void __golite__f1 () {
+		public static void __golite__main () {
 		
-	}
-	public static void __golite__init_0 () {
+		Integer[] __golite__x_1 = new Integer[3];
+		for(int _golite_iter_i0 = 0; _golite_iter_i0 < 3; _golite_iter_i0++){
+			__golite__x_1[_golite_iter_i0] = new Integer(0);
+		}
+
 		
-	}
-	public static void __golite__init_1 () {
+		Integer __golite__m_1 = new Integer(0)
+		Integer __golite__n_1 = new Integer(0)
 		
-	}
-	public static Integer __golite__f2 () {
+		__golite__x_1[new Integer(0)] = new Integer(1);
+		__golite__x_1[new Integer(1)] = new Integer(2);
+		__golite__x_1[new Integer(2)] = new Integer(3);
+		__golite__x_1[__golite__m_1] = new Integer(4);
+		__golite__x_1[new Integer(__golite__m_1 + new Integer(1))] = new Integer(5);
+		Integer __golite__y1_1 = new Integer(0)
+		Integer __golite__y2_1 = new Integer(0)
+		Integer __golite__y3_1 = new Integer(0)
+		Integer __golite__y4_1 = new Integer(0)
+		Integer __golite__y5_1 = new Integer(0)
 		
-		return new Integer(0);
-	}
-	public static void __golite__f3 (Integer __golite__a_1, Integer __golite__b_1) {
+		Integer __golite__y1_1_temp_assign_0 = __golite__x_1[new Integer(0)];
+		__golite__y1_1 = __golite__y1_1_temp_assign_0;
+		Integer __golite__y2_1_temp_assign_1 = __golite__x_1[new Integer(1)];
+		__golite__y2_1 = __golite__y2_1_temp_assign_1;
+		Integer __golite__y3_1_temp_assign_2 = __golite__x_1[new Integer(2)];
+		__golite__y3_1 = __golite__y3_1_temp_assign_2;
+		Integer __golite__y4_1_temp_assign_3 = __golite__x_1[__golite__m_1];
+		__golite__y4_1 = __golite__y4_1_temp_assign_3;
+		Integer __golite__y5_1_temp_assign_4 = __golite__x_1[new Integer(__golite__m_1 + new Integer(1))];
+		__golite__y5_1 = __golite__y5_1_temp_assign_4;
+		Double[][] __golite__a_1 = new Double[2][1];
+		for(int _golite_iter_i0 = 0; _golite_iter_i0 < 1; _golite_iter_i0++){
+			for(int _golite_iter_i1 = 0; _golite_iter_i1 < 2; _golite_iter_i1++){
+				__golite__a_1[_golite_iter_i1][_golite_iter_i0] = new Double(0.0);
+			}
+		}
+
 		
+		__golite__a_1[new Integer(0)][new Integer(0)] = new Double(0.000000);
+		__golite__a_1[new Integer(0)][new Integer(1)] = new Double(0.000000);
+		__golite__a_1[__golite__m_1][__golite__n_1] = new Double(0.000000);
+		Double __golite__b1_1 = new Double(0.0)
+		Double __golite__b2_1 = new Double(0.0)
+		Double __golite__b3_1 = new Double(0.0)
+		
+		Double __golite__b1_1_temp_assign_5 = __golite__a_1[new Integer(0)][new Integer(0)];
+		__golite__b1_1 = __golite__b1_1_temp_assign_5;
+		Double __golite__b2_1_temp_assign_6 = __golite__a_1[new Integer(0)][new Integer(1)];
+		__golite__b2_1 = __golite__b2_1_temp_assign_6;
+		Double __golite__b3_1_temp_assign_7 = __golite__a_1[__golite__m_1][__golite__n_1];
+		__golite__b3_1 = __golite__b3_1_temp_assign_7;
 	}
-	public static Integer __golite__f4 (
+	public static void main(String[] args) {
+		__golite__main();
+	}
+}

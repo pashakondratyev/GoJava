@@ -131,25 +131,121 @@ class Cast {
   return c;
  }
 }
-public class funcdeclGoLite {
+public class opassignstmtGoLite {
 	public static Boolean __golite__true = Boolean.TRUE;
 	public static Boolean __golite__false = Boolean.FALSE;
 
 	public static Cast castUtil = new Cast();
-		public static void __golite__f1 () {
+		public static void __golite__op_string () {
+		
+		String __golite__s1_1 = new String("")
+		
+		String __golite__s2_1 = new String("")
+		
+		__golite__s1_1 += __golite__s2_1;
+		String __golite__s3_1 = new String("")
+		
+		String __golite__s4_1 = new String("")
+		
+		__golite__s3_1 += __golite__s4_1;
+	}
+	public static void __golite__op_float64 () {
+		
+		Double __golite__f1_1 = new Double(0.0)
+		
+		Double __golite__f2_1 = new Double(0.0)
+		
+		__golite__f1_1 += __golite__f2_1;
+		__golite__f1_1 -= __golite__f2_1;
+		__golite__f1_1 *= __golite__f2_1;
+		__golite__f1_1 /= __golite__f2_1;
+		Double __golite__f3_1 = new Double(0.0)
+		
+		Double __golite__f4_1 = new Double(0.0)
+		
+		__golite__f3_1 += __golite__f4_1;
+		__golite__f3_1 -= __golite__f4_1;
+		__golite__f3_1 *= __golite__f4_1;
+		__golite__f3_1 /= __golite__f4_1;
+	}
+	public static void __golite__op_int () {
+		
+		Integer __golite__i1_1 = new Integer(0)
+		
+		Integer __golite__i2_1 = new Integer(0)
+		
+		__golite__i1_1 += __golite__i2_1;
+		__golite__i1_1 -= __golite__i2_1;
+		__golite__i1_1 *= __golite__i2_1;
+		__golite__i1_1 /= __golite__i2_1;
+		__golite__i1_1 %= __golite__i2_1;
+		__golite__i1_1 |= __golite__i2_1;
+		__golite__i1_1 &= __golite__i2_1;
+		__golite__i1_1 <<= __golite__i2_1;
+		__golite__i1_1 >>= __golite__i2_1;
+		__golite__i1_1 &= ~(__golite__i2_1);__golite__i2_1;
+		__golite__i1_1 ^= __golite__i2_1;
+		Integer __golite__i3_1 = new Integer(0)
+		
+		Integer __golite__i4_1 = new Integer(0)
+		
+		__golite__i3_1 += __golite__i4_1;
+		__golite__i3_1 -= __golite__i4_1;
+		__golite__i3_1 *= __golite__i4_1;
+		__golite__i3_1 /= __golite__i4_1;
+		__golite__i3_1 %= __golite__i4_1;
+		__golite__i3_1 |= __golite__i4_1;
+		__golite__i3_1 &= __golite__i4_1;
+		__golite__i3_1 <<= __golite__i4_1;
+		__golite__i3_1 >>= __golite__i4_1;
+		__golite__i3_1 &= ~(__golite__i4_1);__golite__i4_1;
+		__golite__i3_1 ^= __golite__i4_1;
+	}
+	public static void __golite__op_rune () {
+		
+		Character __golite__r1_1 = new Character(' ')
+		
+		Character __golite__r2_1 = new Character(' ')
+		
+		__golite__r1_1 += __golite__r2_1;
+		__golite__r1_1 -= __golite__r2_1;
+		__golite__r1_1 *= __golite__r2_1;
+		__golite__r1_1 /= __golite__r2_1;
+		__golite__r1_1 %= __golite__r2_1;
+		__golite__r1_1 |= __golite__r2_1;
+		__golite__r1_1 &= __golite__r2_1;
+		__golite__r1_1 <<= __golite__r2_1;
+		__golite__r1_1 >>= __golite__r2_1;
+		__golite__r1_1 &= ~(__golite__r2_1);__golite__r2_1;
+		__golite__r1_1 ^= __golite__r2_1;
+		Character __golite__r3_1 = new Character(' ')
+		
+		Character __golite__r4_1 = new Character(' ')
+		
+		__golite__r3_1 += __golite__r4_1;
+		__golite__r3_1 -= __golite__r4_1;
+		__golite__r3_1 *= __golite__r4_1;
+		__golite__r3_1 /= __golite__r4_1;
+		__golite__r3_1 %= __golite__r4_1;
+		__golite__r3_1 |= __golite__r4_1;
+		__golite__r3_1 &= __golite__r4_1;
+		__golite__r3_1 <<= __golite__r4_1;
+		__golite__r3_1 >>= __golite__r4_1;
+		__golite__r3_1 &= ~(__golite__r4_1);__golite__r4_1;
+		__golite__r3_1 ^= __golite__r4_1;
+	}
+	public static void __golite__main () {
+		
+		__golite__op_rune();
+		
+		__golite__op_int();
+		
+		__golite__op_float64();
+		
+		__golite__op_string();
 		
 	}
-	public static void __golite__init_0 () {
-		
+	public static void main(String[] args) {
+		__golite__main();
 	}
-	public static void __golite__init_1 () {
-		
-	}
-	public static Integer __golite__f2 () {
-		
-		return new Integer(0);
-	}
-	public static void __golite__f3 (Integer __golite__a_1, Integer __golite__b_1) {
-		
-	}
-	public static Integer __golite__f4 (
+}
