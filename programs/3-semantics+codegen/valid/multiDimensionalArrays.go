@@ -38,7 +38,7 @@ func main(){
   println(intList2D[0][0])
   println(pointList[0].x)
 	println(pointList[0].y)
-  println(lineList[0].points[1].x
+  println(lineList[0].points[1].x)
 	println(lineList[0].points[1].y)
   println(shapeList[0].vertices[0])
 }
