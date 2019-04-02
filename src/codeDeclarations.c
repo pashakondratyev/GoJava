@@ -75,6 +75,8 @@ void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCou
         char source[1024];
         sprintf(source, "%s_temp_%d", prefix(vs->id), i->scopeCount);
         codeCopyArray(identifier, source, "", vs->type, st, tabCount);
+      } else if(vs->exp == NULL){
+        fprintf(outputFile, ";");
       }
       i->identifier = vs->id;
     }
@@ -85,6 +87,8 @@ void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCou
         fprintf(outputFile, ")");
         fprintf(outputFile, ";");
       }
+    } else {
+      fprintf(outputFile, ";");
     }
 
     fprintf(outputFile, "\n");

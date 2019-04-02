@@ -1,12 +1,15 @@
+//~76
+//~39
+
 package main
 
 func scan_runes() {
 	var c rune
 
 	c = 'L'
-	c = '\\'
-	c = '\''
-	c = '\a'
+	println(c)
+	c = '"'
+	// c = '\a'
 	c = '\b'
 	c = '\f'
 	c = '\n'
@@ -15,6 +18,7 @@ func scan_runes() {
 	c = '\r'
 	c = '\\'
 	c = '\''
+	println(c)
 } 
 
 func main() {

@@ -12,12 +12,113 @@
 
 #define DEBUG 0
 
+
+char *expandEscapesChar(char c) {
+  char *output = (char *) malloc(7);
+  char *result = output;
+  switch (c) {
+     case '\a': 
+         *(result++) = 'a';
+         break;
+       case '\b': 
+         *(result++) = '\\';
+         *(result++) = 'b';
+         break;
+       case '\f': 
+         *(result++) = '\\';
+         *(result++) = 'f';
+         break;
+       case '\n': 
+         *(result++) = '\\';
+         *(result++) = 'n';
+         break;
+       case '\r': 
+         *(result++) = '\\';
+         *(result++) = 'r';
+         break;
+       case '\t': 
+         *(result++) = '\\';
+         *(result++) = 't';
+         break;
+       case '\v': 
+         *(result++) = '\\';
+         *(result++) = 'v';
+         break;
+       case '\\': 
+         *(result++) = '\\';
+         *(result++) = '\\';
+         break;
+       case '\'': 
+         *(result++) = '\\';
+         *(result++) = '\'';
+         break;
+      default:
+         *(result++) = c;
+    }
+  
+  *result = '\0';
+  return output;
+}
+
+
+char *expandEscapesString(char *str) {
+  char *output = (char *) malloc(2 * strlen(str) + 5);
+  char *result = output;
+  char c;
+  while (c = *(str++)) {
+    switch (c) {
+      case '\a': 
+          *(result++) = '\\';
+          *(result++) = 'a';
+          break;
+        case '\b': 
+          *(result++) = '\\';
+          *(result++) = 'b';
+          break;
+        case '\f': 
+          *(result++) = '\\';
+          *(result++) = 'f';
+          break;
+        case '\n': 
+          *(result++) = '\\';
+          *(result++) = 'n';
+          break;
+        case '\r': 
+          *(result++) = '\\';
+          *(result++) = 'r';
+          break;
+        case '\t': 
+          *(result++) = '\\';
+          *(result++) = 't';
+          break;
+        case '\v': 
+          *(result++) = '\\';
+          *(result++) = 'v';
+          break;
+        case '\\': 
+          *(result++) = '\\';
+          *(result++) = '\\';
+          break;
+        case '\"': 
+          *(result++) = '\\';
+          *(result++) = '\"';
+          break;
+        default:
+          *(result++) = c;
+     }
+  }
+  *result = '\0';
+  return output;
+}
+
 void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
   TYPE *type = NULL;
   TYPE *type1 = NULL;
   TYPE *type2 = NULL;
   TYPE *type3 = NULL;
   SYMBOL *s = NULL;
+  char *removedQuotesStr = NULL;
+  char *escapeRune = NULL;
   if (exp != NULL) {
     if(DEBUG) printf("Code Expression Kind : %d\n", exp->kind);
     switch (exp->kind) {
@@ -49,13 +150,21 @@ void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
         fprintf(outputFile, "new Integer(%i)", exp->val.intval);
         break;
       case ek_string:
-        fprintf(outputFile, "%s", exp->val.stringval);
+        removedQuotesStr = (char*) malloc(strlen(exp->val.stringval));
+        removedQuotesStr = exp->val.stringval;
+        removedQuotesStr++;
+        removedQuotesStr[strlen(removedQuotesStr)-1] = '\0';
+
+        char *escapeString = expandEscapesString(removedQuotesStr);
+        fprintf(outputFile, "\"%s\"", escapeString);
         break;
       case ek_boolean:
         fprintf(outputFile, "new Boolean(%s)", exp->val.booleanval ? "__golite__true" : "__golite__false");
         break;
       case ek_rune:
-        fprintf(outputFile, "new Character('%c')", exp->val.runeval);
+        escapeRune = (char*) malloc(7);
+        escapeRune = expandEscapesChar(exp->val.runeval);
+        fprintf(outputFile, "new Character('%s')", escapeRune);
         break;
       case ek_plus:
         type = typeResolve(exp->val.binary.lhs->type, st);
