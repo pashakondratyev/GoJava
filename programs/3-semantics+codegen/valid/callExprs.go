@@ -14,7 +14,7 @@ func foo(a [5]int, b []int , c struct{ f int ; }) {
 
 func main () {
 	var a [5]int
-	var b [] int 
+	var b []int
 	b = append (b , 0)
 	var c struct { f int ; }
 	foo (a, b, c)
