@@ -65,7 +65,7 @@ char *expandEscapesString(char *str) {
   char *output = (char *) malloc(2 * strlen(str) + 5);
   char *result = output;
   char c;
-  while (c = *(str++)) {
+  while (c == *(str++)) {
     switch (c) {
       case '\a': 
           *(result++) = '\\';

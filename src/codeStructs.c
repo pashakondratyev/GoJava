@@ -238,7 +238,7 @@ char *codeStructType(char *BUFFER, FIELD_DECLS *fd, SymbolTable *st, STRUCT *s, 
       if (strcmp(temp->id, "_") == 0) {
         continue;
       }
-      if(needsAnd){
+      if (needsAnd) {
         sprintf(BUFFER + strlen(BUFFER), " && ");
       }
       TYPE *type;
@@ -264,10 +264,45 @@ char *codeStructType(char *BUFFER, FIELD_DECLS *fd, SymbolTable *st, STRUCT *s, 
         needsAnd = 1;
       }
     }
-
-
     sprintf(BUFFER + strlen(BUFFER), ";\n\t}\n");
   }
+
+  // Create clone method
+  sprintf(BUFFER + strlen(BUFFER), "\tpublic %s copy(){\n\t\t", s->className);
+  sprintf(BUFFER + strlen(BUFFER), "%1$s structCopy = new %1$s();", s->className);
+  for (FIELD_DECLS *temp = fd; temp; temp = temp->next) {
+    if (strcmp(temp->id, "_") == 0) {
+      continue;
+    }
+    sprintf(BUFFER + strlen(BUFFER), "\n\t\t");
+    TYPE *type;
+    if (temp->type->kind == tk_ref) {
+      SYMBOL *s = getSymbol(st, temp->type->val.name);
+      type = s->val.typeDecl.resolvesTo;
+    } else {
+      type = temp->type;
+    }
+    char *constructor = javaTypeStringConstructor(temp->type, st, NULL);
+    char source[1024];
+    char target[1024];
+    switch (type->kind){
+      case tk_array:
+        sprintf(source, "structCopy.%s", temp->id);
+        sprintf(target, "this.%s", temp->id);
+        sprintf(BUFFER + strlen(BUFFER), "structCopy.%1$s = new %2$s;\n\t\t", temp->id, constructor);
+        codeCopyArrayBuffer(BUFFER + strlen(BUFFER), source, target, "", temp->type, st, 2);
+        break;
+      case tk_slice:
+      case tk_struct:
+        sprintf(BUFFER + strlen(BUFFER), "structCopy.%1$s = this.%1$s.copy();", temp->id);
+        break;
+      default:
+        sprintf(BUFFER + strlen(BUFFER), "structCopy.%1$s = this.%1$s;", temp->id);
+        break;
+    }
+  }
+  sprintf(BUFFER + strlen(BUFFER), "\n\t\treturn structCopy;");
+  sprintf(BUFFER + strlen(BUFFER), "\n\t}\n");
 
   sprintf(BUFFER + strlen(BUFFER), "}\n");
   return BUFFER;

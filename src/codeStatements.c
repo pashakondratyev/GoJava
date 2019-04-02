@@ -335,10 +335,11 @@ void codeAssignment(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCou
         char *type = javaTypeString(temp->lhs->type, st, NULL);
         fprintf(outputFile , "%s ", type);
       }
-      codeExp(temp->lhs, st, it, tabCount);
       if(temp->lhs->kind == ek_id){
-        fprintf(outputFile, "_temp_assign_%d", assignCount);
+        fprintf(outputFile, "%s_temp_assign_%d", prefix(temp->lhs->val.id), assignCount);
         assignCount++;
+      } else {
+        codeExp(temp->lhs, st, it, tabCount);
       }
       fprintf(outputFile, " = ");
       codeExp(temp->rhs, st, it, tabCount);

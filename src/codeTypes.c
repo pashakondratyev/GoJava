@@ -322,3 +322,38 @@ void codeCopyArray(char *target, char *source, char *index, TYPE *type, SymbolTa
   writeTab(tabCount);
   fprintf(outputFile, "}\n");
 }
+
+void codeCopyArrayBuffer(char *BUFFER, char *target, char *source, char *index, TYPE *type, SymbolTable *st, int tabCount){
+  sprintf(BUFFER + strlen(BUFFER), "for(int _golite_iter_i%1$d = 0; _golite_iter_i%1$d < %2$d; _golite_iter_i%1$d++){\n", 
+    iterCount, type->val.array.size);
+  writeTab(tabCount + 1);
+  TYPE *elemType = type->val.array.elemType;
+  char *defaultConstructor;
+  char newIndex[1024];
+  switch(type->val.array.elemType->kind){
+    case tk_ref:
+      elemType = getSymbol(st, elemType->val.name)->val.typeDecl.resolvesTo;
+    case tk_int:
+    case tk_string:
+    case tk_float:
+    case tk_boolean:
+    case tk_rune:
+    case tk_slice:
+    case tk_struct:
+      sprintf(BUFFER + strlen(BUFFER), "%s[_golite_iter_i%d]%s = ", target, iterCount, index);
+      // TODO: for slices and structs, should be slightly different
+      sprintf(BUFFER + strlen(BUFFER), "%s[_golite_iter_i%d]%s", source, iterCount, index);
+      sprintf(BUFFER + strlen(BUFFER), ";\n");
+      break;
+    case tk_array:
+      sprintf(newIndex, "[_golite_iter_i%d]%s", iterCount, index);
+      iterCount++;
+      codeCopyArrayBuffer(BUFFER + strlen(BUFFER), target, source, strdup(newIndex), elemType, st, tabCount + 1);
+      break;
+    case tk_res:
+      fprintf(stderr, "Uh oh, encountered a tk_res");
+      exit(1);   
+  }
+  writeTab(tabCount);
+  sprintf(BUFFER + strlen(BUFFER), "}\n");
+}
