@@ -29,12 +29,12 @@ orderOfOps,Yes,
 printStmts,Kinda,"Working properly only when run separately, ie. Not when using test.sh"
 returnStmts,No,Slices need to be able to take another slice as input: ie. Create copy constructor
 reuseAlias,Yes,
-shortDecls,No,Scope of variables is off
+shortDecls,Tes,
 slices,Yes,
 structs,Yes,
 structs2,No,"Fix slice array creation, check array array and struct array creation"
 structsSubmit,No,See equality.go
 switchStmt,Yes,
-switchStmt2,No,Scope of variables is off
+switchStmt2,Yes,
 trueFalse,No,Temp variable undeclared before used
-varDecls,No,Shadow scoping issue
+varDecls,No,Printing issue

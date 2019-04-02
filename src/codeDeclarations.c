@@ -123,6 +123,9 @@ void codeShortDecl(SHORT_SPECS *ss, SymbolTable *st, IdentifierTable *it, int ta
     }
     // fprintf(outputFile, "%s %s_temp_%d = ", type, prefix(temp->lhs->val.id), i->scopeCount);
     codeExp(temp->rhs, st, it, tabCount);
+    if(temp->rhs->type->kind == tk_struct){
+      fprintf(outputFile, ".copy()");
+    }
     fprintf(outputFile, ";\n");
     if (ss->next != NULL) {
       writeTab(tabCount);
