@@ -1,4 +1,5 @@
 //~76
+//~7
 //~39
 
 package main
@@ -9,7 +10,8 @@ func scan_runes() {
 	c = 'L'
 	println(c)
 	c = '"'
-	// c = '\a'
+	c = '\a'
+	println(c)
 	c = '\b'
 	c = '\f'
 	c = '\n'

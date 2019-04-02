@@ -18,7 +18,10 @@ char *expandEscapesChar(char c) {
   char *result = output;
   switch (c) {
      case '\a': 
-         *(result++) = 'a';
+         *(result++) = '\\';
+         *(result++) = '0';
+         *(result++) = '0';
+         *(result++) = '7';
          break;
        case '\b': 
          *(result++) = '\\';
@@ -69,7 +72,9 @@ char *expandEscapesString(char *str) {
     switch (c) {
       case '\a': 
           *(result++) = '\\';
-          *(result++) = 'a';
+          *(result++) = '0';
+          *(result++) = '0';
+          *(result++) = '7';
           break;
         case '\b': 
           *(result++) = '\\';
@@ -133,6 +138,9 @@ void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
           fprintf(outputFile, "__golite__false");
           break;
         }
+        if (getSymbol(st, exp->val.id) == NULL) {
+          fprintf(stderr, "Logical error! Identifier %s should be in the symbol table.", exp->val.id);
+        }
         if (getSymbol(st, exp->val.id)->kind != dk_func) {    // TODO: Solve. getSymbol sometimes returns NULL
           IDENTIFIER *i = getFromIdentifierTable(exp->val.id, it);
           if (i == NULL) {
@@ -163,10 +171,10 @@ void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
         fprintf(outputFile, "new Boolean(%s)", exp->val.booleanval ? "__golite__true" : "__golite__false");
         break;
       case ek_rune:
-        // escapeRune = (char*) malloc(7);
-        // escapeRune = expandEscapesChar(exp->val.runeval);
-        // fprintf(outputFile, "new Character('%s')", escapeRune);
-      fprintf(outputFile, "new Character('%c')", exp->val.runeval);
+        escapeRune = (char*) malloc(7);
+        escapeRune = expandEscapesChar(exp->val.runeval);
+        fprintf(outputFile, "new Character('%s')", escapeRune);
+      // fprintf(outputFile, "new Character('%c')", exp->val.runeval);
         break;
       case ek_plus:
         type = typeResolve(exp->val.binary.lhs->type, st);
