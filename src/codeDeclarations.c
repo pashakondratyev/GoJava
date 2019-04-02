@@ -46,6 +46,7 @@ void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCou
     } else {
       constructor = javaTypeStringDefaultConstructor(vs->type, st, NULL);
     }
+    writeTab(tabCount);
     if (tabCount==1){
       fprintf(outputFile, "public static ");
     }
@@ -92,7 +93,6 @@ void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCou
     }
 
     fprintf(outputFile, "\n");
-    writeTab(tabCount);
     codeVarDecl(vs->next, st, it, tabCount);
   }
 }
@@ -178,11 +178,11 @@ void codeFuncDecl(FUNC_DECL *fd, SymbolTable *st, IdentifierTable *it, int tabCo
     if (DEBUG) printf("Blank function\n");
     return;
   } else if (strcmp(fd->name, "init") == 0) {
-    fprintf(outputFile, "\tpublic static void %s_%d (", prefix(fd->name), numInitFunc);
+    fprintf(outputFile, "\n\tpublic static void %s_%d (", prefix(fd->name), numInitFunc);
     numInitFunc++;
   } else {
     char *returnTypeString = fd->returnType == NULL ? "void" : javaTypeString(fd->returnType, st, NULL);
-    fprintf(outputFile, "\tpublic static %s %s (", returnTypeString, prefix(fd->name));
+    fprintf(outputFile, "\n\tpublic static %s %s (", returnTypeString, prefix(fd->name));
     for (PARAM_LIST *temp = fd->params; temp; temp = temp->next) {
       if (strcmp(temp->id, "_") == 0) {
         fprintf(outputFile, "%s %s_%d", javaTypeString(temp->type, st, NULL), prefix("blank"), blankVar);
