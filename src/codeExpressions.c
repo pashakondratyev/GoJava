@@ -447,6 +447,11 @@ void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
           fprintf(outputFile, ")");
           break;
         }
+        if (type1->kind == tk_boolean || type2->kind == tk_boolean || type3->kind == tk_boolean) {  // boolean
+          EXP_LIST *exps = exp->val.funcCall.args;
+          codeExp(exps->exp, st, it, tabCount);
+          break;
+        }
         break;
       case ek_append:
         codeExp(exp->val.append.sliceExp, st, it, tabCount);
@@ -536,6 +541,11 @@ void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
           EXP_LIST *exps = exp->val.funcCall.args;
           codeExp(exps->exp, st, it, tabCount);
           fprintf(outputFile, ")");
+          break;
+        }
+        if (type1->kind == tk_boolean || type2->kind == tk_boolean || type3->kind == tk_boolean) {  // boolean
+          EXP_LIST *exps = exp->val.funcCall.args;
+          codeExp(exps->exp, st, it, tabCount);
           break;
         }
         break;
