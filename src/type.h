@@ -4,12 +4,6 @@
 #include "tree.h"
 #include "symbol.h"
 
-typedef enum {
-  NoReturn,
-  Returns,
-  Breaks
-} ReturnStatus; 
-
 void typeProgram(PROG *prog, SymbolTable *st);
 void typeDeclarations(DECL *dcl, SymbolTable *st);
 

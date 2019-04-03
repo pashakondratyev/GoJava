@@ -533,6 +533,10 @@ ReturnStatus typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
         break;
     }
   }
+  
+  if (stmt->kind == sk_switch) {
+    stmt->val.switchStmt.returnStatus = returns;
+  }
   return returns;
 }
 

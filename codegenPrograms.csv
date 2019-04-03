@@ -27,7 +27,7 @@ length,Yes,
 multiDimensionalArrays,No,2D array indices are swapped
 orderOfOps,Yes,
 printStmts,Kinda,"Working properly only when run separately, ie. Not when using test.sh"
-returnStmts,No,Slices need to be able to take another slice as input: ie. Create copy constructor
+returnStmts,No,Missing semicolon after array declaration
 reuseAlias,Yes,
 shortDecls,Yes,
 slices,Yes,
@@ -41,6 +41,14 @@ varDecls,Yes,
 ,,
 ,,
 Previous Milestones: Scanner,,
-8-13-breakcontinuestmts,Yes,
+7-2-slices,No,Issue appending to multi-dimensional slice
 8-5-decstmts,Yes,
 8-12-forstmts,Yes,
+8-13-breakcontinuestmts,Yes,
+,,
+,,
+,,
+Previous Milestones: Typecheck,,
+3-4_return_stmt,Yes,
+3-8_op_assign_stmt,No,Need to determine cause
+3-11_for_stmt,No,Need to determine cause

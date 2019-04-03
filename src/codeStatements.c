@@ -215,13 +215,19 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
           fprintf(outputFile, "\n");
           writeTab(newTabCount + 1);
           fprintf(outputFile, "} \n");
-          writeTab(newTabCount + 1);
+          writeTab(newTabCount);
         } else {
-          writeTab(newTabCount + 1);
+          writeTab(newTabCount);
         }
 
-        fprintf(outputFile, "break;\n");
-        writeTab(newTabCount);
+        if (stmt->val.switchStmt.returnStatus == Undefined) {
+          fprintf(stderr, "Logical error! Return status of switch statement should be defined during typechecking\n");
+        }
+
+        if (stmt->val.switchStmt.returnStatus != Returns) {
+          fprintf(outputFile, "\tbreak;\n");
+          writeTab(newTabCount);
+        }
         fprintf(outputFile, "}\n");  // terminate while(true)
         writeTab(tabCount);
         fprintf(outputFile, "}");
@@ -330,7 +336,7 @@ void codeClauses(STMT_LIST *clauses, SymbolTable *st, IdentifierTable *it, int t
     }
     clauses = clauses->next;
   }
-}
+}    
 
 void codeAssignment(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
   int curAssignCount = assignCount;
