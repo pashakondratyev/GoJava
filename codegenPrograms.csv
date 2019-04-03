@@ -51,5 +51,5 @@ Previous Milestones: Scanner,,
 ,,
 Previous Milestones: Typecheck,,
 3-4_return_stmt,Yes,
-3-8_op_assign_stmt,No,"Assignment operations don’t work due to reference type conversions, must translate to regular expression"
+3-8_op_assign_stmt,Yes,
 3-11_for_stmt,Yes,

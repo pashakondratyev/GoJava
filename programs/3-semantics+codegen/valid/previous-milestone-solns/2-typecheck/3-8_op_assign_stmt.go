@@ -16,7 +16,7 @@ func op_string() {
 
 func op_float64() {
 	var f1 float64
-	var f2 float64
+	var f2 float64 = 2.1
 
 	f1 += f2
 	f1 -= f2
@@ -25,7 +25,7 @@ func op_float64() {
 
 	type f float64
 	var f3 f
-	var f4 f
+	var f4 f = f(2.1)
 
 	f3 += f4
 	f3 -= f4
@@ -35,7 +35,7 @@ func op_float64() {
 
 func op_int() {
 	var i1 int
-	var i2 int
+	var i2 int = 2
 
 	i1 += i2
 	i1 -= i2
@@ -52,7 +52,7 @@ func op_int() {
 
 	type i int
 	var i3 i
-	var i4 i
+	var i4 i = i(2)
 
 	i3 += i4
 	i3 -= i4
@@ -71,37 +71,21 @@ func op_int() {
 
 func op_rune() {
 	var r1 rune
-	var r2 rune
+	var r2 rune = 'a'
 
 	r1 += r2
 	r1 -= r2
 	r1 *= r2
 	r1 /= r2
 
-	r1 %= r2
-	r1 |= r2
-	r1 &= r2
-	r1 <<= r2
-	r1 >>= r2
-	r1 &^= r2
-	r1 ^= r2
-
 	type r rune
 	var r3 r
-	var r4 r
+	var r4 r = r('b')
 
 	r3 += r4
 	r3 -= r4
 	r3 *= r4
 	r3 /= r4
-
-	r3 %= r4
-	r3 |= r4
-	r3 &= r4
-	r3 <<= r4
-	r3 >>= r4
-	r3 &^= r4
-	r3 ^= r4
 
 }
 

@@ -12,6 +12,7 @@
 #include "codeStructs.h"
 #include "symbol.h"
 #include "type.h"
+#include "tree.h"
 
 #define DEBUG 0
 
@@ -407,45 +408,56 @@ void codeAssignment(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCou
 
 void codeAssignmentOp(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
   codeExp(stmt->val.assignOp.lhs, st, it, tabCount);
+  fprintf(outputFile, " = ");
+  EXP *binaryExp = NULL;
   switch (stmt->val.assignOp.kind) {
     case aok_plus:
-      fprintf(outputFile, " += ");
+      binaryExp = makeBinaryExp(ek_plus, stmt->val.assignOp.lhs, stmt->val.assignOp.rhs, stmt->lineno);
       break;
     case aok_minus:
-      fprintf(outputFile, " -= ");
+      binaryExp = makeBinaryExp(ek_minus, stmt->val.assignOp.lhs, stmt->val.assignOp.rhs, stmt->lineno);
       break;
     case aok_times:
-      fprintf(outputFile, " *= ");
+      binaryExp = makeBinaryExp(ek_times, stmt->val.assignOp.lhs, stmt->val.assignOp.rhs, stmt->lineno);
       break;
     case aok_div:
-      fprintf(outputFile, " /= ");
+      binaryExp = makeBinaryExp(ek_div, stmt->val.assignOp.lhs, stmt->val.assignOp.rhs, stmt->lineno);
       break;
     case aok_mod:
-      fprintf(outputFile, " %%= ");
+      binaryExp = makeBinaryExp(ek_mod, stmt->val.assignOp.lhs, stmt->val.assignOp.rhs, stmt->lineno);
       break;
     case aok_bitAnd:
-      fprintf(outputFile, " &= ");
+      binaryExp = makeBinaryExp(ek_bitAnd, stmt->val.assignOp.lhs, stmt->val.assignOp.rhs, stmt->lineno);
       break;
     case aok_bitOr:
-      fprintf(outputFile, " |= ");
+      binaryExp = makeBinaryExp(ek_bitOr, stmt->val.assignOp.lhs, stmt->val.assignOp.rhs, stmt->lineno);
       break;
     case aok_bitXor:
-      fprintf(outputFile, " ^= ");
+      binaryExp = makeBinaryExp(ek_bitXor, stmt->val.assignOp.lhs, stmt->val.assignOp.rhs, stmt->lineno);
       break;
     case aok_bitLeftShift:
-      fprintf(outputFile, " <<= ");
+      binaryExp = makeBinaryExp(ek_bitLeftShift, stmt->val.assignOp.lhs, stmt->val.assignOp.rhs, stmt->lineno);
       break;
     case aok_bitRightShift:
-      fprintf(outputFile, " >>= ");
+      binaryExp = makeBinaryExp(ek_bitRightShift, stmt->val.assignOp.lhs, stmt->val.assignOp.rhs, stmt->lineno);
       break;
     case aok_bitClear:
-      fprintf(outputFile, " &= ~(");
-      codeExp(stmt->val.assignOp.rhs, st, it, tabCount);
-      fprintf(outputFile, ");");
+      binaryExp = makeBinaryExp(ek_bitClear, stmt->val.assignOp.lhs, stmt->val.assignOp.rhs, stmt->lineno);
       break;
   }
-  if (stmt->val.assignOp.kind != aok_bitClear) {
-    codeExp(stmt->val.assignOp.rhs, st, it, tabCount);
-    fprintf(outputFile, ";");
+  
+  if (stmt->val.assignOp.lhs == NULL) {
+    fprintf(stderr, "Logical error! LHS of assignment op shouldn't be NULL\n" );
   }
+
+  if (typeResolve(stmt->val.assignOp.lhs->type, st)->kind == tk_rune) {
+    fprintf(outputFile, "new Character((char) ");
+    codeExp(binaryExp, st, it, tabCount);
+    fprintf(outputFile, ")");
+  } else {
+   codeExp(binaryExp, st, it, tabCount);  
+  }
+  
+  fprintf(outputFile, ";");
+
 }
