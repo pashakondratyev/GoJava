@@ -47,7 +47,7 @@ void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCou
       constructor = javaTypeStringDefaultConstructor(vs->type, st, NULL);
     }
     //writeTab(tabCount);
-    if (tabCount==1) fprintf(outputFile, "public static ");
+    if (tabCount==1) fprintf(outputFile, "\tpublic static ");
 
     if (strcmp(vs->id, "_") == 0) {
       fprintf(outputFile, "%s %s_%d = new %s", type, prefix("blank"), blankVar, constructor);
@@ -73,13 +73,13 @@ void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCou
       }
       fprintf(outputFile, "%s %s = new %s", type, identifier, constructor);
       if (vs->type->kind == tk_array && tabCount == 1) { //Declaring array in top level
-        //TODO: 1. Create a new buffer in code.c
-        //TODO: 2. Write all the arrays into the buffer
-        //TODO: 3. write the buffer into a new Java method and call it
+        fprintf(outputFile, ";\n");
         if(vs->exp){
-
+          char source[1000];
+          sprintf(source, "%s_temp_%d", prefix(vs->id), i->scopeCount);
+          codeCopyArrayBuffer(initArraysBuffer + strlen(initArraysBuffer), identifier, source, "", vs->type, st, tabCount + 1);
         } else{
-
+          codeZeroOutArrayBuffer(initArraysBuffer + strlen(initArraysBuffer), identifier, "", vs->type, st, tabCount + 1);
         }
       } else if (vs->type->kind == tk_array && vs->exp == NULL) { //Declaring empty arrau
         fprintf(outputFile, ";\n");

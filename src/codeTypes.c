@@ -181,6 +181,50 @@ char *javaTypeStringConstructor(TYPE *type, SymbolTable *st, char *name) {
   return "";
 }
 
+// Returns the java string for the constructor of the type, minus the paranthesis
+char *javaTypeStringConstructorArray(TYPE *type, SymbolTable *st, char *name) {
+  char *BUFFER = (char *)(malloc(1024));
+  SYMBOL *symbol;
+  if (type != NULL) {
+    switch (type->kind) {
+      case tk_int:
+        return "Integer";
+      case tk_float:
+        return "Double";
+      case tk_rune:
+        return "Character";
+      case tk_string:
+        return "String";
+      case tk_boolean:
+        return "Boolean";
+      case tk_struct:
+        getRecTypeString(BUFFER, type, st, name);
+        STRUCT *s = getFromStructTable(BUFFER);
+        if (s == NULL) {
+          s = addToStructTable(type, NULL, st);
+          if (s == NULL) {
+            fprintf(stderr, "Error! Could not retrieve struct during code generation\n");
+            exit(1);
+          }
+        }
+        return strdup(s->className);
+      case tk_array:
+        sprintf(BUFFER, "%s[%d]", javaTypeStringConstructorArray(type->val.array.elemType, st, name), type->val.array.size);
+        return strdup(BUFFER);
+      case tk_slice:
+        sprintf(BUFFER, "Slice");
+        return strdup(BUFFER);
+      case tk_ref:
+        symbol = getSymbol(st, type->val.name);
+        return javaTypeStringConstructorArray(symbol->val.typeDecl.resolvesTo, st, name);
+      case tk_res:
+        fprintf(stderr, "Encountered tk_res type during code generation");
+        exit(1);
+    }
+  }
+  return "";
+}
+
 char *javaConstructorForBasicTypes(TYPE *type, SymbolTable *st) {
   char *BUFFER = (char *)(malloc(1024));
   SYMBOL *symbol;

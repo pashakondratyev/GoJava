@@ -12,6 +12,12 @@ class Slice<T>{
         cap = 0;
         len = 0;
     }
+    
+    public Slice(Slice<T> other){
+        elementList = other.elementList;
+        cap = other.cap;
+        len = other.len;
+    }
 
     public Slice<T> append(T element) {
         if (len == cap) {
