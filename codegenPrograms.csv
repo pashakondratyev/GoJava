@@ -32,7 +32,7 @@ reuseAlias,Yes,
 shortDecls,Yes,
 slices,Yes,
 structs,Yes,
-structs2,No,"Fix slice array creation, check array array and struct array creation"
+structs2,No,"!!!Java Unsafe operation: Fix slice array creation, check array array and struct array creation"
 structsSubmit,No,See equality.go
 switchStmt,Yes,
 switchStmt2,Yes,
