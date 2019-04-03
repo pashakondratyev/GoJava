@@ -54,7 +54,7 @@ Previous Milestones: Scanner,,
 Previous Milestones: Typecheck,,
 2-1-var_decl,Yes,
 3-4_return_stmt,Yes,
-3-7_assign_stmts,No ,Major Error: Segmentation Fault – typecheck doesn’t check past the first assignment in a multi-assignment when first assignment is a blank_id
+3-7_assign_stmts,Yes,
 3-8_op_assign_stmt,Yes,
 3-11_for_stmt,Yes,
 4-9_cast_expr,Yes,

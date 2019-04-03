@@ -192,7 +192,10 @@ ReturnStatus typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
             exit(1);
           }
 
-          if (strcmp(al->lhs->val.id, "_") == 0) break;
+          if (strcmp(al->lhs->val.id, "_") == 0) {
+            al = al->next;
+            continue;
+          }
           // TODO : compare types when they are compound @Kabilan
           if (!typeCompare(al->lhs->type, al->rhs->type, st)) {
             char buffer1[1024];
