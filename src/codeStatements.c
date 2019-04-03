@@ -444,6 +444,8 @@ void codeAssignmentOp(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabC
       fprintf(outputFile, ");");
       break;
   }
-  codeExp(stmt->val.assignOp.rhs, st, it, tabCount);
-  fprintf(outputFile, ";");
+  if (stmt->val.assignOp.kind != aok_bitClear) {
+    codeExp(stmt->val.assignOp.rhs, st, it, tabCount);
+    fprintf(outputFile, ";");
+  }
 }

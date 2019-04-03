@@ -37,7 +37,7 @@ structsSubmit,No,See equality.go
 switchStmt,Yes,
 switchStmt2,Yes,
 trueFalse,No,Temp variable undeclared before used
-unterminatingProgram,No,Need to prevent further code generation when we have a true while loop that doesn’t break
+unterminatingProgram,No,"Need to prevent further code generation when we have a true while loop that doesn’t break, unlikely to be tested as it requires executing an unterminating program"
 varDecls,Yes,
 ,,
 ,,
@@ -51,5 +51,5 @@ Previous Milestones: Scanner,,
 ,,
 Previous Milestones: Typecheck,,
 3-4_return_stmt,Yes,
-3-8_op_assign_stmt,No,Expression handling of &^ not working for op assignments
+3-8_op_assign_stmt,No,"Assignment operations don’t work due to reference type conversions, must translate to regular expression"
 3-11_for_stmt,Yes,
