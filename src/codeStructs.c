@@ -26,7 +26,7 @@ void makeStructTable(DECL *decl, SymbolTable *st) {
       case dk_func:
         makeStructTableFuncDecl(decl->val.funcDecl, st);
         break;
-    }
+    } 
     makeStructTable(decl->next, st);
   }
 }

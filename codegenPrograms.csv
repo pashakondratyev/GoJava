@@ -52,7 +52,7 @@ Previous Milestones: Scanner,,
 ,,
 ,,
 Previous Milestones: Typecheck,,
-2-1-var_decl,No,Fix unspecified type in var decl for blank ids
+2-1-var_decl,Yes,
 3-4_return_stmt,Yes,
 3-7_assign_stmts,No ,Major Error: Segmentation Fault
 3-8_op_assign_stmt,Yes,

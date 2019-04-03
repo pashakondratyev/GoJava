@@ -48,6 +48,8 @@ void typeVarDecl(VAR_SPECS *vs, SymbolTable *st) {
         SYMBOL *s = getSymbol(st, vs->id);
         s->val.type = vs->exp->type;
         vs->type = vs->exp->type;
+      } else {
+        vs->type = fixType(st, vs->exp->type);
       }
 
       if (strcmp(vs->id, "_") != 0) {
@@ -62,7 +64,7 @@ void typeVarDecl(VAR_SPECS *vs, SymbolTable *st) {
                   vs->exp->lineno, buffer1, buffer2);
           exit(1);
         }
-      }
+      } 
     } else {
       if (vs->type != NULL) {
         vs->type = fixType(st, vs->type);
