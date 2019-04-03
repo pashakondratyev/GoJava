@@ -27,9 +27,16 @@ func main() {
 
 	for x := 0; ; {
 		x++
+		if (x > 5) {
+			break
+		}
 	}
 
 	for x := 0; ; {
 		var x int
+		x--
+		if (x<2) {
+			break
+		}
 	}
 }
