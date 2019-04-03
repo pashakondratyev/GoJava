@@ -218,7 +218,7 @@ char *codeStructType(char *BUFFER, FIELD_DECLS *fd, SymbolTable *st, STRUCT *s, 
     }
     switch (type->kind) {
       case tk_array:
-        constructor = javaTypeStringConstructor(type, st, name);
+        constructor = javaTypeStringConstructorArray(type, st, name);
         typeName = javaTypeString(type, st, name);
         sprintf(BUFFER + strlen(BUFFER), "\t%s %s = new %s;\n", typeName, temp->id, constructor);
         codeZeroOutArrayBuffer(constructorBUFFER + strlen(constructorBUFFER), temp->id, "", temp->type, st, 2);
@@ -237,7 +237,13 @@ char *codeStructType(char *BUFFER, FIELD_DECLS *fd, SymbolTable *st, STRUCT *s, 
   sprintf(constructorBUFFER + strlen(constructorBUFFER), "\n\t}\n");
   // Equality method, note it should not be generated if there is an incomparable type
   if (s->comparable) {
-    sprintf(BUFFER + strlen(BUFFER), "\tpublic Boolean equals(%s other){\n\t\treturn ", s->className);
+    //Note, overridden equals method MUST use Object as it's parameter
+    sprintf(BUFFER + strlen(BUFFER), "\tpublic boolean equals(Object o){\n");
+
+    sprintf(BUFFER + strlen(BUFFER), "\t\tif(this == o) return true;\n");
+    sprintf(BUFFER + strlen(BUFFER), "\t\tif(!(o instanceof %s)) return false;\n", s->className);
+    sprintf(BUFFER + strlen(BUFFER), "\t\t%1$s other = (%1$s)o;\n", s->className);
+    sprintf(BUFFER + strlen(BUFFER), "\t\treturn ");
 
     int needsAnd = 0;
     for (FIELD_DECLS *temp = fd; temp; temp = temp->next) {
@@ -273,7 +279,7 @@ char *codeStructType(char *BUFFER, FIELD_DECLS *fd, SymbolTable *st, STRUCT *s, 
     sprintf(BUFFER + strlen(BUFFER), ";\n\t}\n");
   }
 
-  sprintf(constructorBUFFER + strlen(constructorBUFFER), "\tpublic %1$s(%1$s other) {\n", s->className);
+  sprintf(constructorBUFFER + strlen(constructorBUFFER), "\tpublic %1$s(%1$s other) {", s->className);
   // Create clone method
   sprintf(BUFFER + strlen(BUFFER), "\tpublic %s copy(){\n\t\t", s->className);
   sprintf(BUFFER + strlen(BUFFER), "%1$s structCopy = new %1$s();", s->className);
@@ -282,7 +288,7 @@ char *codeStructType(char *BUFFER, FIELD_DECLS *fd, SymbolTable *st, STRUCT *s, 
       continue;
     }
     sprintf(BUFFER + strlen(BUFFER), "\n\t\t");
-    sprintf(constructorBUFFER + strlen(constructorBUFFER), "\t\t");
+    sprintf(constructorBUFFER + strlen(constructorBUFFER), "\n\t\t");
     TYPE *type;
     if (temp->type->kind == tk_ref) {
       SYMBOL *s = getSymbol(st, temp->type->val.name);
@@ -299,7 +305,7 @@ char *codeStructType(char *BUFFER, FIELD_DECLS *fd, SymbolTable *st, STRUCT *s, 
         sprintf(source, "structCopy.%s", temp->id);
         sprintf(target, "this.%s", temp->id);
         sprintf(other, "other.%s", temp->id);
-        
+        constructor = javaTypeStringConstructorArray(temp->type, st, NULL);
         sprintf(BUFFER + strlen(BUFFER), "structCopy.%1$s = new %2$s;\n", temp->id, constructor);
         sprintf(constructorBUFFER  + strlen(constructorBUFFER), "this.%1$s = new %2$s;\n", temp->id, constructor);  
         codeCopyArrayBuffer(BUFFER + strlen(BUFFER), source, target, "", temp->type, st, 2);
