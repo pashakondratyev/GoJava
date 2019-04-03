@@ -37,6 +37,7 @@ structsSubmit,No,See equality.go
 switchStmt,Yes,
 switchStmt2,Yes,
 trueFalse,No,Temp variable undeclared before used
+unterminatingProgram,No,Need to prevent further code generation when we have a true while loop that doesn’t break
 varDecls,Yes,
 ,,
 ,,
