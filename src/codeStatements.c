@@ -332,13 +332,14 @@ void codeAssignment(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCou
       blankVar++;
       codeExp(temp->rhs, st, it, tabCount);
       fprintf(outputFile, ";");
-    } else {
+    } else{
       if(temp->lhs->kind == ek_id){
         char *type = javaTypeString(temp->lhs->type, st, NULL);
-        fprintf(outputFile , "%s ", type);
-      }
-      if(temp->lhs->kind == ek_id){
-        fprintf(outputFile, "%s_temp_assign_%d", prefix(temp->lhs->val.id), assignCount);
+        fprintf(outputFile, "%s %s_temp_assign_%d", type, prefix(temp->lhs->val.id), assignCount);
+        assignCount++;
+      } else if(temp->lhs->type->kind == tk_array) {
+        char *type = javaTypeString(temp->lhs->type, st, NULL);
+        fprintf(outputFile, "%s %s_temp_assign_rhs_%d", type, prefix("array"), assignCount);
         assignCount++;
       } else {
         codeExp(temp->lhs, st, it, tabCount);
@@ -362,10 +363,10 @@ void codeAssignment(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCou
   for (ASSIGN *temp = stmt->val.assign; temp; temp = temp->next) {
     // TODO: check if resolves to identifier for cases like 
     // (x),(y) = x,y
+    char source[1024];
+    char target[1024];
     if(temp->lhs->kind == ek_id && strcmp(temp->lhs->val.id, "_") != 0){
       fprintf(outputFile, "\n");
-      char source[1024];
-      char target[1024];
       IDENTIFIER *i = getFromIdentifierTable(temp->lhs->val.id, it);
       sprintf(target, "%s_%d", prefix(temp->lhs->val.id), i->scopeCount);
       sprintf(source, "%s_temp_assign_%d", prefix(temp->lhs->val.id), curAssignCount);
@@ -377,6 +378,17 @@ void codeAssignment(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCou
         codeExp(temp->lhs, st, it, tabCount);
         fprintf(outputFile, " = %s;", source);
       }
+    } else if(temp->lhs->type->kind == tk_array) { //TODO: address empty identifiers
+        fprintf(outputFile, "\n");
+        sprintf(source, "%s_temp_assign_rhs_%d", prefix("array"), curAssignCount);
+        sprintf(target, "%s_temp_assign_lhs_%d", prefix("array"), curAssignCount);
+        char *type = javaTypeString(temp->lhs->type, st, NULL);
+        
+        fprintf(outputFile, "%s %s = ", type, target);
+        codeExp(temp->lhs, st, it, tabCount);
+        fprintf(outputFile, ";\n");
+        writeTab(tabCount);
+        codeCopyArray(target, source, "", temp->lhs->type, st, tabCount);
     }
   }
 }
