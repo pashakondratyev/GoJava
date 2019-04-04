@@ -12,6 +12,7 @@
 #include "codeStructs.h"
 #include "symbol.h"
 #include "type.h"
+#include "tree.h"
 
 #define DEBUG 0
 
@@ -181,9 +182,11 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
                 codeClauseCases(condId, clauseList->clause->val.caseClause.cases, st, it, newTabCount + 1, false,
                                 parentPost);
                 fprintf(outputFile, ") {\n");
-                writeTab(newTabCount + 1);
+                writeTab(newTabCount + 2);
                 it = scopeIdentifierTable(it);
                 codeClauses(clauseList->clause->val.caseClause.clauses, st, it, newTabCount + 1, false, parentPost);
+                fprintf(outputFile, "\n");
+                writeTab(newTabCount + 1);
                 fprintf(outputFile, "} ");
               } else {
                 fprintf(outputFile, "else if (");
@@ -191,8 +194,10 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
                                 parentPost);
                 fprintf(outputFile, ") {\n");
                 it = scopeIdentifierTable(it);
-                writeTab(newTabCount + 1);
+                writeTab(newTabCount + 2);
                 codeClauses(clauseList->clause->val.caseClause.clauses, st, it, newTabCount + 1, false, parentPost);
+                fprintf(outputFile, "\n");
+                writeTab(newTabCount + 1);
                 fprintf(outputFile, "} ");
               }
             }
@@ -200,16 +205,30 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
           clauseList = clauseList->next;
         }
         if (defaultClause != NULL) {
-          fprintf(outputFile, "else { \n");
-          writeTab(newTabCount + 1);
+          if (ifStmtUsed == true) {
+            fprintf(outputFile, "else { \n");
+          } else {
+            fprintf(outputFile, "if (true) { \n");
+          }
+          writeTab(newTabCount + 2);
           it = scopeIdentifierTable(it);
           codeClauses(defaultClause->val.defaultClauses, st, it, newTabCount + 1, false, parentPost);
-          fprintf(outputFile, "}\n");
+          fprintf(outputFile, "\n");
+          writeTab(newTabCount + 1);
+          fprintf(outputFile, "} \n");
+          writeTab(newTabCount);
+        } else {
           writeTab(newTabCount);
         }
 
-        fprintf(outputFile, "break;\n");
-        writeTab(newTabCount);
+        if (stmt->val.switchStmt.returnStatus == Undefined) {
+          fprintf(stderr, "Logical error! Return status of switch statement should be defined during typechecking\n");
+        }
+
+        if (stmt->val.switchStmt.returnStatus != Returns) {
+          fprintf(outputFile, "\tbreak;\n");
+          writeTab(newTabCount);
+        }
         fprintf(outputFile, "}\n");  // terminate while(true)
         writeTab(tabCount);
         fprintf(outputFile, "}");
@@ -227,7 +246,10 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
         // while loops
         if (stmt->val.forStmt.whileExp != NULL) {
           fprintf(outputFile, "while (");
-          codeExp(stmt->val.forStmt.whileExp, stmt->val.forStmt.scope, it, newTabCount);
+          if (stmt->val.forStmt.whileExp != NULL)
+            codeExp(stmt->val.forStmt.whileExp, stmt->val.forStmt.scope, it, newTabCount);
+          else
+            fprintf(outputFile, "true");
           fprintf(outputFile, ")");
           codeStmt(stmt->val.forStmt.body, stmt->val.forStmt.scope, it, newTabCount, false, NULL);
           fprintf(outputFile, "\n");
@@ -246,7 +268,10 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
             writeTab(newTabCount);
           }
           fprintf(outputFile, "while (");
-          codeExp(stmt->val.forStmt.forClause->cond, stmt->val.forStmt.scope, it, newTabCount);
+          if (stmt->val.forStmt.forClause->cond != NULL)
+            codeExp(stmt->val.forStmt.forClause->cond, stmt->val.forStmt.scope, it, newTabCount);
+          else
+              fprintf(outputFile, "true");
           fprintf(outputFile, ")");
           codeStmt(stmt->val.forStmt.body, stmt->val.forStmt.scope, it, newTabCount, true,
                    stmt->val.forStmt.forClause->post);
@@ -312,7 +337,7 @@ void codeClauses(STMT_LIST *clauses, SymbolTable *st, IdentifierTable *it, int t
     }
     clauses = clauses->next;
   }
-}
+}    
 
 void codeAssignment(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
   int curAssignCount = assignCount;
@@ -395,43 +420,56 @@ void codeAssignment(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCou
 
 void codeAssignmentOp(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount) {
   codeExp(stmt->val.assignOp.lhs, st, it, tabCount);
+  fprintf(outputFile, " = ");
+  EXP *binaryExp = NULL;
   switch (stmt->val.assignOp.kind) {
     case aok_plus:
-      fprintf(outputFile, " += ");
+      binaryExp = makeBinaryExp(ek_plus, stmt->val.assignOp.lhs, stmt->val.assignOp.rhs, stmt->lineno);
       break;
     case aok_minus:
-      fprintf(outputFile, " -= ");
+      binaryExp = makeBinaryExp(ek_minus, stmt->val.assignOp.lhs, stmt->val.assignOp.rhs, stmt->lineno);
       break;
     case aok_times:
-      fprintf(outputFile, " *= ");
+      binaryExp = makeBinaryExp(ek_times, stmt->val.assignOp.lhs, stmt->val.assignOp.rhs, stmt->lineno);
       break;
     case aok_div:
-      fprintf(outputFile, " /= ");
+      binaryExp = makeBinaryExp(ek_div, stmt->val.assignOp.lhs, stmt->val.assignOp.rhs, stmt->lineno);
       break;
     case aok_mod:
-      fprintf(outputFile, " %%= ");
+      binaryExp = makeBinaryExp(ek_mod, stmt->val.assignOp.lhs, stmt->val.assignOp.rhs, stmt->lineno);
       break;
     case aok_bitAnd:
-      fprintf(outputFile, " &= ");
+      binaryExp = makeBinaryExp(ek_bitAnd, stmt->val.assignOp.lhs, stmt->val.assignOp.rhs, stmt->lineno);
       break;
     case aok_bitOr:
-      fprintf(outputFile, " |= ");
+      binaryExp = makeBinaryExp(ek_bitOr, stmt->val.assignOp.lhs, stmt->val.assignOp.rhs, stmt->lineno);
       break;
     case aok_bitXor:
-      fprintf(outputFile, " ^= ");
+      binaryExp = makeBinaryExp(ek_bitXor, stmt->val.assignOp.lhs, stmt->val.assignOp.rhs, stmt->lineno);
       break;
     case aok_bitLeftShift:
-      fprintf(outputFile, " <<= ");
+      binaryExp = makeBinaryExp(ek_bitLeftShift, stmt->val.assignOp.lhs, stmt->val.assignOp.rhs, stmt->lineno);
       break;
     case aok_bitRightShift:
-      fprintf(outputFile, " >>= ");
+      binaryExp = makeBinaryExp(ek_bitRightShift, stmt->val.assignOp.lhs, stmt->val.assignOp.rhs, stmt->lineno);
       break;
     case aok_bitClear:
-      fprintf(outputFile, " &= ~(");
-      codeExp(stmt->val.assignOp.rhs, st, it, tabCount);
-      fprintf(outputFile, ");");
+      binaryExp = makeBinaryExp(ek_bitClear, stmt->val.assignOp.lhs, stmt->val.assignOp.rhs, stmt->lineno);
       break;
   }
-  codeExp(stmt->val.assignOp.rhs, st, it, tabCount);
+  
+  if (stmt->val.assignOp.lhs == NULL) {
+    fprintf(stderr, "Logical error! LHS of assignment op shouldn't be NULL\n" );
+  }
+
+  if (typeResolve(stmt->val.assignOp.lhs->type, st)->kind == tk_rune) {
+    fprintf(outputFile, "new Character((char) ");
+    codeExp(binaryExp, st, it, tabCount);
+    fprintf(outputFile, ")");
+  } else {
+   codeExp(binaryExp, st, it, tabCount);  
+  }
+  
   fprintf(outputFile, ";");
+
 }

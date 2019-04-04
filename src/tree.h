@@ -130,6 +130,13 @@ typedef enum {
   ek_conv
 } ExpKind;
 
+typedef enum {
+  NoReturn,
+  Returns,
+  Breaks,
+  Undefined
+} ReturnStatus; 
+
 struct PROG {
   int lineno;
   PACKAGE *package;
@@ -218,6 +225,7 @@ struct STMT {
       EXP *exp;
       CASE_CLAUSE_LIST *caseClauses;
       SymbolTable *scope;
+      ReturnStatus returnStatus;
     } switchStmt;
     struct {
       EXP *whileExp;

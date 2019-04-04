@@ -12,8 +12,13 @@ func breakcontinue_stmts() {
 			break
 	}
 
+	var i = 0
 	// continue loop
 	for {
+		i++
+		if i==10 {
+			break
+		}
 		continue
 	}
 } 

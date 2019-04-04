@@ -1,6 +1,9 @@
 //~1
 //~1
 //~1
+//~0
+//~1
+//~0
 
 // Return statements
 package main
@@ -28,4 +31,7 @@ func main () {
 	println(d[0])
 	println(e[0])
 	println(f.f)
+	println(a[0])
+	println(b[0])
+	println(c.f)
 }

@@ -263,7 +263,7 @@ char *javaTypeStringDefaultConstructor(TYPE *type, SymbolTable *st, char *name) 
       case tk_float:
         return "Double(0.0)";
       case tk_rune:
-        return "Character(' ')";
+        return "Character((char) 0)";
       case tk_string:
         return "String(\"\")";
       case tk_boolean:

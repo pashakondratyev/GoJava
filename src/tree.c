@@ -471,6 +471,7 @@ STMT *makeSwitchStmt(STMT *simpleStmt, EXP *exp, CASE_CLAUSE_LIST *caseClauses, 
   s->val.switchStmt.simpleStmt = simpleStmt;
   s->val.switchStmt.exp = exp;
   s->val.switchStmt.caseClauses = caseClauses;
+  s->val.switchStmt.returnStatus = Undefined;
   return s;
 }
 

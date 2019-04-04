@@ -26,7 +26,7 @@ void makeStructTable(DECL *decl, SymbolTable *st) {
       case dk_func:
         makeStructTableFuncDecl(decl->val.funcDecl, st);
         break;
-    }
+    } 
     makeStructTable(decl->next, st);
   }
 }
@@ -244,6 +244,10 @@ char *codeStructType(char *BUFFER, FIELD_DECLS *fd, SymbolTable *st, STRUCT *s, 
     sprintf(BUFFER + strlen(BUFFER), "\t\tif(!(o instanceof %s)) return false;\n", s->className);
     sprintf(BUFFER + strlen(BUFFER), "\t\t%1$s other = (%1$s)o;\n", s->className);
     sprintf(BUFFER + strlen(BUFFER), "\t\treturn ");
+
+    if (fd == NULL) { // empty struct
+    	sprintf(BUFFER + strlen(BUFFER), "Boolean.TRUE");
+    }
 
     int needsAnd = 0;
     for (FIELD_DECLS *temp = fd; temp; temp = temp->next) {

@@ -48,6 +48,8 @@ void typeVarDecl(VAR_SPECS *vs, SymbolTable *st) {
         SYMBOL *s = getSymbol(st, vs->id);
         s->val.type = vs->exp->type;
         vs->type = vs->exp->type;
+      } else {
+        vs->type = fixType(st, vs->exp->type);
       }
 
       if (strcmp(vs->id, "_") != 0) {
@@ -62,7 +64,7 @@ void typeVarDecl(VAR_SPECS *vs, SymbolTable *st) {
                   vs->exp->lineno, buffer1, buffer2);
           exit(1);
         }
-      }
+      } 
     } else {
       if (vs->type != NULL) {
         vs->type = fixType(st, vs->type);
@@ -190,7 +192,10 @@ ReturnStatus typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
             exit(1);
           }
 
-          if (strcmp(al->lhs->val.id, "_") == 0) break;
+          if (strcmp(al->lhs->val.id, "_") == 0) {
+            al = al->next;
+            continue;
+          }
           // TODO : compare types when they are compound @Kabilan
           if (!typeCompare(al->lhs->type, al->rhs->type, st)) {
             char buffer1[1024];
@@ -532,6 +537,10 @@ ReturnStatus typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
       case sk_empty:
         break;
     }
+  }
+  
+  if (stmt->kind == sk_switch) {
+    stmt->val.switchStmt.returnStatus = returns;
   }
   return returns;
 }
