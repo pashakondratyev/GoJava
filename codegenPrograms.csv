@@ -9,42 +9,44 @@ Slices-bounds2.go,Yes,
 VALID,,
 append,Yes,
 arrays,Yes,
-assignments,Yes,
+assignments,No,Segmentation fault – was working previously
 assignments2,Yes,
 blankid,Yes,
 callExprs,No,Pass function parameters in by value (make copies)
 capacity,Yes,
 cast,Yes,
-equality,No,"Fix equality: arrays, structs. Could stem from not passing the value when creating a new variable"
+equality,Yes,
 exprs,Yes,
 forLoops,Yes,
-funcDecls,No,Major Error
+funcDecls,No,Major Error with identifier table
 ifStmt,Yes,
 incrdec,Yes,
 javaReferenceTypes,Yes,
 javaKeywords,Yes,
 length,Yes,
-multiDimensionalArrays,No,2D array indices are swapped
+multiDimensionalArrays,Yes,
 orderOfOps,Yes,
-printStmts,Kinda,"Working properly only when run separately, ie. Not when using test.sh"
-returnStmts,No,Missing semicolon after array declaration
+printStmts,No,"*check to see if program run multiple times before printStmts results in a problem* Working properly only when run separately, ie. Not when using test.sh"
+returnStmts,Yes,
 reuseAlias,Yes,
 shortDecls,Yes,
 slices,Yes,
 structs,Yes,
 structs2,No,"!!!Java Unsafe operation: Fix slice array creation, check array array and struct array creation"
-structsSubmit,No,See equality.go
+structsSubmit,Yes,
 switchStmt,Yes,
 switchStmt2,Yes,
-trueFalse,No,Temp variable undeclared before used
+trueFalse,Yes,
 unterminatingProgram,No,"Need to prevent further code generation when we have a true while loop that doesn’t break, unlikely to be tested as it requires executing an unterminating program"
-varDecls,Yes,
+varDecls,No,"Was working, now verify script has a problem – look into"
 ,,
 ,,
 Previous Milestones: Scanner,,
 1-scanner/runelit,No,Error from previous milestone: doesn't catch that double quote doesn't have to be escaped for runes
+1-scanner/interstringlit,No,"Seems to be the same output, but still not passing"
 6-funcdecs,No,Error from previous milestone: doesn’t correctly determine function signature
-7-2-slices,No,Issue appending to multi-dimensional slice
+7-2-slices,No,Slice index exception
+8-4-assignstmts,No,Segmentation fault
 8-5-decstmts,Yes,
 8-12-forstmts,Yes,
 8-13-breakcontinuestmts,Yes,
@@ -53,8 +55,12 @@ Previous Milestones: Scanner,,
 ,,
 Previous Milestones: Typecheck,,
 2-1-var_decl,Yes,
+2-3-func_decl,No,Major Error with identifier table
 3-4_return_stmt,Yes,
-3-7_assign_stmts,Yes,
+3-7_assign_stmts,No,Segmentation fault – was working previously
 3-8_op_assign_stmt,Yes,
+3-10_print_stmt,No,Slight printing error – could be similar to our print stmt test error
 3-11_for_stmt,Yes,
+4-3_unary_expr,No,verify script has a problem – look into
+4-6_indexing_expr,No,Slice index exception
 4-9_cast_expr,Yes,
