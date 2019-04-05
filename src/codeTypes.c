@@ -97,7 +97,7 @@ char *javaArrayString(TYPE *type, SymbolTable *st) {
     sprintf(BUFFER + strlen(BUFFER), "[%d]", temp->val.array.size);
     temp = temp->val.array.elemType;
   }
-  sprintf(arrayString, "%s%s", strdup(javaTypeString(temp, st, NULL)), strdup(BUFFER));
+  sprintf(arrayString, "%s%s", strdup(javaTypeStringConstructorArray(temp, st, NULL)), strdup(BUFFER));
   free(BUFFER);
   return strdup(arrayString);
 }
