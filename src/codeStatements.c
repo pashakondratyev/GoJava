@@ -408,7 +408,7 @@ void codeAssignment(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCou
         sprintf(source, "%s_temp_assign_rhs_%d", prefix("array"), curAssignCount);
         sprintf(target, "%s_temp_assign_lhs_%d", prefix("array"), curAssignCount);
         char *type = javaTypeString(temp->lhs->type, st, NULL);
-        
+        writeTab(tabCount);
         fprintf(outputFile, "%s %s = ", type, target);
         codeExp(temp->lhs, st, it, tabCount);
         fprintf(outputFile, ";\n");

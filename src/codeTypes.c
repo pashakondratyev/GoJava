@@ -22,8 +22,8 @@ char *getRecTypeString(char *BUFFER, TYPE *type, SymbolTable *st, char *name) {
   }
   switch (type->kind) {
     case tk_array:
-      sprintf(BUFFER, "[%d]", type->val.array.size);
       getRecTypeString(BUFFER + strlen(BUFFER), type->val.array.elemType, st, name);
+      sprintf(BUFFER + strlen(BUFFER), "[%d]", type->val.array.size);
       break;
     case tk_slice:
       sprintf(BUFFER, "[]");
@@ -87,6 +87,19 @@ void codeType(TYPE *type, SymbolTable *st, int tabCount) {
         exit(1);
     }
   }
+}
+
+char *javaArrayString(TYPE *type, SymbolTable *st) {
+  char *BUFFER = (char *)malloc(1024);
+  char arrayString[1024];
+  TYPE *temp = type;
+  while (temp != NULL && temp->kind == tk_array) {
+    sprintf(BUFFER + strlen(BUFFER), "[%d]", temp->val.array.size);
+    temp = temp->val.array.elemType;
+  }
+  sprintf(arrayString, "%s%s", strdup(javaTypeString(temp, st, NULL)), strdup(BUFFER));
+  free(BUFFER);
+  return strdup(arrayString);
 }
 
 // Returns the string of the Java type
@@ -165,8 +178,8 @@ char *javaTypeStringConstructor(TYPE *type, SymbolTable *st, char *name) {
         }
         return strdup(s->className);
       case tk_array:
-        sprintf(BUFFER, "%s[%d]", javaTypeStringConstructor(type->val.array.elemType, st, name), type->val.array.size);
-        return strdup(BUFFER);
+        return javaArrayString(type, st);
+        ;
       case tk_slice:
         sprintf(BUFFER, "Slice<%s>", javaTypeString(type->val.sliceType, st, name));
         return strdup(BUFFER);
@@ -209,8 +222,7 @@ char *javaTypeStringConstructorArray(TYPE *type, SymbolTable *st, char *name) {
         }
         return strdup(s->className);
       case tk_array:
-        sprintf(BUFFER, "%s[%d]", javaTypeStringConstructorArray(type->val.array.elemType, st, name), type->val.array.size);
-        return strdup(BUFFER);
+        return javaArrayString(type, st);
       case tk_slice:
         sprintf(BUFFER, "Slice");
         return strdup(BUFFER);
@@ -281,8 +293,7 @@ char *javaTypeStringDefaultConstructor(TYPE *type, SymbolTable *st, char *name) 
         sprintf(BUFFER, "%s()", s->className);
         return strdup(BUFFER);
       case tk_array:
-        sprintf(BUFFER, "%s[%d]", javaTypeStringConstructor(type->val.array.elemType, st, name), type->val.array.size);
-        return strdup(BUFFER);
+        return javaArrayString(type, st);
       case tk_slice:
         sprintf(BUFFER, "Slice<%s>()", javaTypeString(type->val.sliceType, st, name));
         return strdup(BUFFER);
@@ -297,144 +308,229 @@ char *javaTypeStringDefaultConstructor(TYPE *type, SymbolTable *st, char *name) 
   return "";
 }
 
-void codeZeroOutArray(char *identifier, char *index, TYPE *type, SymbolTable *st, int tabCount){
-  fprintf(outputFile, "for(int _golite_iter_i%1$d = 0; _golite_iter_i%1$d < %2$d; _golite_iter_i%1$d++){\n", 
-    iterCount, type->val.array.size);
-  writeTab(tabCount + 1);
-  TYPE *elemType = type->val.array.elemType;
-  char *defaultConstructor;
-  char newIndex[1024];
-  switch(type->val.array.elemType->kind){
-    case tk_ref:
-      elemType = getSymbol(st, elemType->val.name)->val.typeDecl.resolvesTo;
-    case tk_int:
-    case tk_string:
-    case tk_float:
-    case tk_boolean:
-    case tk_rune:
-    case tk_slice:
-    case tk_struct:
-      fprintf(outputFile, "%s[_golite_iter_i%d]%s = new ", identifier, iterCount, index);
-      defaultConstructor = javaTypeStringDefaultConstructor(elemType, st, NULL);
-      fprintf(outputFile, "%s", defaultConstructor);
-      fprintf(outputFile, ";\n");
+void codeZeroOutArray(char *identifier, char *index, TYPE *type, SymbolTable *st, int tabCount) {
+  int levels = tabCount;
+  int depth = 0;
+  // calculate dimension of array
+  for (TYPE *temp = type; temp->kind == tk_array; temp = temp->val.array.elemType) depth++;
+  for (TYPE *temp = type; temp; temp = temp->val.array.elemType) {
+    int arraySize = type->val.array.size;
+    char *newIndex = (char *)malloc(1024);
+    char *defaultConstructor;
+    TYPE *depthTemp = type;
+    // Get correct array size for iteratior
+    for (int i = 0; i < depth; i++) {
+      arraySize = depthTemp->val.array.size;
+      depthTemp = depthTemp->val.array.elemType;
+    }
+    fprintf(outputFile, "for(int _golite_iter_i%1$d = 0; _golite_iter_i%1$d < %2$d; _golite_iter_i%1$d++){\n",
+            iterCount, arraySize);
+    writeTab(tabCount + 1);
+    TYPE *elemType = temp->val.array.elemType;
+    switch (elemType->kind) {
+      case tk_ref:
+        elemType = getSymbol(st, elemType->val.name)->val.typeDecl.resolvesTo;
+      case tk_int:
+      case tk_string:
+      case tk_float:
+      case tk_boolean:
+      case tk_rune:
+      case tk_slice:
+      case tk_struct:
+        fprintf(outputFile, "%s[_golite_iter_i%d]%s = new ", identifier, iterCount, index);
+        defaultConstructor = javaTypeStringDefaultConstructor(elemType, st, NULL);
+        fprintf(outputFile, "%s", defaultConstructor);
+        fprintf(outputFile, ";\n");
+        break;
+      case tk_array:
+        sprintf(newIndex, "[_golite_iter_i%d]%s", iterCount, index);
+        index = strdup(newIndex);
+        iterCount++;
+        tabCount++;
+        depth--;
+        break;
+      case tk_res:
+        fprintf(stderr, "Uh oh, encountered a tk_res");
+        exit(1);
+    }
+    if (elemType->kind != tk_array) {
       break;
-    case tk_array:
-      sprintf(newIndex, "[_golite_iter_i%d]%s", iterCount, index);
-      iterCount++;
-      codeZeroOutArray(identifier, strdup(newIndex), elemType, st, tabCount + 1);
-      break;
-    case tk_res:
-      fprintf(stderr, "Uh oh, encountered a tk_res");
-      exit(1);   
+    }
+    free(newIndex);
   }
-  writeTab(tabCount);
-  fprintf(outputFile, "}\n");
+  while (tabCount >= levels) {
+    writeTab(tabCount);
+    tabCount--;
+    fprintf(outputFile, "}\n");
+  }
 }
 
-void codeCopyArray(char *target, char *source, char *index, TYPE *type, SymbolTable *st, int tabCount){
-  fprintf(outputFile, "for(int _golite_iter_i%1$d = 0; _golite_iter_i%1$d < %2$d; _golite_iter_i%1$d++){\n", 
-    iterCount, type->val.array.size);
-  writeTab(tabCount + 1);
-  TYPE *elemType = type->val.array.elemType;
-  char *defaultConstructor;
-  char newIndex[1024];
-  switch(type->val.array.elemType->kind){
-    case tk_ref:
-      elemType = getSymbol(st, elemType->val.name)->val.typeDecl.resolvesTo;
-    case tk_int:
-    case tk_string:
-    case tk_float:
-    case tk_boolean:
-    case tk_rune:
-    case tk_slice:
-    case tk_struct:
-      fprintf(outputFile, "%s[_golite_iter_i%d]%s = ", target, iterCount, index);
-      // TODO: for slices and structs, should be slightly different
-      fprintf(outputFile, "%s[_golite_iter_i%d]%s", source, iterCount, index);
-      fprintf(outputFile, ";\n");
+void codeCopyArray(char *target, char *source, char *index, TYPE *type, SymbolTable *st, int tabCount) {
+  int levels = tabCount;
+  int depth = 0;
+  // calculate dimension of array
+  for (TYPE *temp = type; temp->kind == tk_array; temp = temp->val.array.elemType) depth++;
+  for (TYPE *temp = type; temp; temp = temp->val.array.elemType) {
+    int arraySize = type->val.array.size;
+    char newIndex[1024];
+    TYPE *depthTemp = type;
+    // Get correct array size for iteratior
+    for (int i = 0; i < depth; i++) {
+      arraySize = depthTemp->val.array.size;
+      depthTemp = depthTemp->val.array.elemType;
+    }
+    fprintf(outputFile, "for(int _golite_iter_i%1$d = 0; _golite_iter_i%1$d < %2$d; _golite_iter_i%1$d++){\n",
+            iterCount, arraySize);
+    writeTab(tabCount + 1);
+    TYPE *elemType = temp->val.array.elemType;
+    switch (elemType->kind) {
+      case tk_ref:
+        elemType = getSymbol(st, elemType->val.name)->val.typeDecl.resolvesTo;
+      case tk_int:
+      case tk_string:
+      case tk_float:
+      case tk_boolean:
+      case tk_rune:
+      case tk_slice:
+      case tk_struct:
+        // TODO: for slices and structs, should be slightly different, need to get type and call .copy()
+        fprintf(outputFile, "%s[_golite_iter_i%d]%s = ", target, iterCount, index);
+        fprintf(outputFile, "%s[_golite_iter_i%d]%s", source, iterCount, index);
+        fprintf(outputFile, ";\n");
+        break;
+      case tk_array:
+        sprintf(newIndex, "%s[_golite_iter_i%d]", index, iterCount);
+        index = strdup(newIndex);
+        iterCount++;
+        tabCount++;
+        depth--;
+        break;
+      case tk_res:
+        fprintf(stderr, "Uh oh, encountered a tk_res");
+        exit(1);
+    }
+    if (elemType->kind != tk_array) {
       break;
-    case tk_array:
-      sprintf(newIndex, "[_golite_iter_i%d]%s", iterCount, index);
-      iterCount++;
-      codeCopyArray(target, source, strdup(newIndex), elemType, st, tabCount + 1);
-      break;
-    case tk_res:
-      fprintf(stderr, "Uh oh, encountered a tk_res");
-      exit(1);   
+    }
   }
-  writeTab(tabCount);
-  fprintf(outputFile, "}\n");
+  while (tabCount >= levels) {
+    writeTab(tabCount);
+    tabCount--;
+    fprintf(outputFile, "}\n");
+  }
 }
 
-void codeCopyArrayBuffer(char *BUFFER, char *target, char *source, char *index, TYPE *type, SymbolTable *st, int tabCount){
+void codeCopyArrayBuffer(char *BUFFER, char *target, char *source, char *index, TYPE *type, SymbolTable *st,
+                         int tabCount) {
+  int levels = tabCount;
+  int depth = 0;
+
   writeTabBuffer(BUFFER + strlen(BUFFER), tabCount);
-  sprintf(BUFFER + strlen(BUFFER), "for(int _golite_iter_i%1$d = 0; _golite_iter_i%1$d < %2$d; _golite_iter_i%1$d++){\n", 
-    iterCount, type->val.array.size);
-  TYPE *elemType = type->val.array.elemType;
-  char *defaultConstructor;
-  char newIndex[1024];
-  switch(type->val.array.elemType->kind){
-    case tk_ref:
-      elemType = getSymbol(st, elemType->val.name)->val.typeDecl.resolvesTo;
-    case tk_int:
-    case tk_string:
-    case tk_float:
-    case tk_boolean:
-    case tk_rune:
-    case tk_slice:
-    case tk_struct:
-      writeTabBuffer(BUFFER + strlen(BUFFER), tabCount + 1);
-      sprintf(BUFFER + strlen(BUFFER), "%s[_golite_iter_i%d]%s = ", target, iterCount, index);
-      // TODO: for slices and structs, should be slightly different
-      sprintf(BUFFER + strlen(BUFFER), "%s[_golite_iter_i%d]%s", source, iterCount, index);
-      sprintf(BUFFER + strlen(BUFFER), ";\n");
+  for (TYPE *temp = type; temp->kind == tk_array; temp = temp->val.array.elemType) depth++;
+  for (TYPE *temp = type; temp; temp = temp->val.array.elemType) {
+    int arraySize = type->val.array.size;
+    char *defaultConstructor;
+    char newIndex[1024];
+    TYPE *depthTemp = type;
+    // Get correct array size for iteratior
+    for (int i = 0; i < depth; i++) {
+      arraySize = depthTemp->val.array.size;
+      depthTemp = depthTemp->val.array.elemType;
+    }
+    sprintf(BUFFER + strlen(BUFFER),
+            "for(int _golite_iter_i%1$d = 0; _golite_iter_i%1$d < %2$d; _golite_iter_i%1$d++){\n", iterCount,
+            arraySize);
+    writeTabBuffer(BUFFER + strlen(BUFFER), tabCount + 1);
+    TYPE *elemType = temp->val.array.elemType;
+    switch (elemType->kind) {
+      case tk_ref:
+        elemType = getSymbol(st, elemType->val.name)->val.typeDecl.resolvesTo;
+      case tk_int:
+      case tk_string:
+      case tk_float:
+      case tk_boolean:
+      case tk_rune:
+      case tk_slice:
+      case tk_struct:
+        sprintf(BUFFER + strlen(BUFFER), "%s[_golite_iter_i%d]%s = ", target, iterCount, index);
+        // TODO: for slices and structs, should be slightly different
+        sprintf(BUFFER + strlen(BUFFER), "%s[_golite_iter_i%d]%s", source, iterCount, index);
+        sprintf(BUFFER + strlen(BUFFER), ";\n");
+        break;
+      case tk_array:
+        sprintf(newIndex, "%s[_golite_iter_i%d]", index, iterCount);
+        index = strdup(newIndex);
+        iterCount++;
+        tabCount++;
+        depth--;
+        break;
+      case tk_res:
+        fprintf(stderr, "Uh oh, encountered a tk_res");
+        exit(1);
+    }
+    if (elemType->kind != tk_array) {
       break;
-    case tk_array:
-      sprintf(newIndex, "[_golite_iter_i%d]%s", iterCount, index);
-      iterCount++;
-      codeCopyArrayBuffer(BUFFER + strlen(BUFFER), target, source, strdup(newIndex), elemType, st, tabCount + 1);
-      break;
-    case tk_res:
-      fprintf(stderr, "Uh oh, encountered a tk_res");
-      exit(1);   
+    }
   }
-  writeTabBuffer(BUFFER + strlen(BUFFER), tabCount);
-  sprintf(BUFFER + strlen(BUFFER), "}\n");
+  while (tabCount >= levels) {
+    writeTabBuffer(BUFFER + strlen(BUFFER), tabCount);
+    tabCount--;
+    sprintf(BUFFER + strlen(BUFFER), "}\n");
+  }
 }
 
-void codeZeroOutArrayBuffer(char *BUFFER, char *identifier, char *index, TYPE *type, SymbolTable *st, int tabCount){
+void codeZeroOutArrayBuffer(char *BUFFER, char *identifier, char *index, TYPE *type, SymbolTable *st, int tabCount) {
+  int levels = tabCount;
+  int depth = 0;
+
   writeTabBuffer(BUFFER + strlen(BUFFER), tabCount);
-  sprintf(BUFFER + strlen(BUFFER), "for(int _golite_iter_i%1$d = 0; _golite_iter_i%1$d < %2$d; _golite_iter_i%1$d++){\n", 
-    iterCount, type->val.array.size);
-  TYPE *elemType = type->val.array.elemType;
-  char *defaultConstructor;
-  char newIndex[1024];
-  switch(type->val.array.elemType->kind){
-    case tk_ref:
-      elemType = getSymbol(st, elemType->val.name)->val.typeDecl.resolvesTo;
-    case tk_int:
-    case tk_string:
-    case tk_float:
-    case tk_boolean:
-    case tk_rune:
-    case tk_slice:
-    case tk_struct:
-      writeTabBuffer(BUFFER + strlen(BUFFER), tabCount + 1);
-      sprintf(BUFFER + strlen(BUFFER), "%s[_golite_iter_i%d]%s = new ", identifier, iterCount, index);
-      defaultConstructor = javaTypeStringDefaultConstructor(elemType, st, NULL);
-      sprintf(BUFFER + strlen(BUFFER), "%s", defaultConstructor);
-      sprintf(BUFFER + strlen(BUFFER), ";\n");
+  for (TYPE *temp = type; temp->kind == tk_array; temp = temp->val.array.elemType) depth++;
+  for (TYPE *temp = type; temp; temp = temp->val.array.elemType) {
+    int arraySize = type->val.array.size;
+    char *defaultConstructor;
+    char *newIndex = (char *)malloc(1024);
+    TYPE *depthTemp = type;
+    TYPE *elemType = temp->val.array.elemType;
+    // Get correct array size for iteratior
+    for (int i = 0; i < depth; i++) {
+      arraySize = depthTemp->val.array.size;
+      depthTemp = depthTemp->val.array.elemType;
+    }
+    sprintf(BUFFER + strlen(BUFFER), "for(int _golite_iter_i%1$d = 0; _golite_iter_i%1$d < %2$d; _golite_iter_i%1$d++){\n", iterCount, arraySize);
+    writeTabBuffer(BUFFER + strlen(BUFFER), tabCount + 1);
+    switch (elemType->kind) {
+      case tk_ref:
+        elemType = getSymbol(st, elemType->val.name)->val.typeDecl.resolvesTo;
+      case tk_int:
+      case tk_string:
+      case tk_float:
+      case tk_boolean:
+      case tk_rune:
+      case tk_slice:
+      case tk_struct:
+        sprintf(BUFFER + strlen(BUFFER), "%s[_golite_iter_i%d]%s= new ", identifier, iterCount, index);
+        defaultConstructor = javaTypeStringDefaultConstructor(elemType, st, NULL);
+        sprintf(BUFFER + strlen(BUFFER), "%s", defaultConstructor);
+        sprintf(BUFFER + strlen(BUFFER), ";\n");
+        break;
+      case tk_array:
+        sprintf(newIndex, "%s[_golite_iter_i%d]", index, iterCount);
+        index = strdup(newIndex);
+        iterCount++;
+        tabCount++;
+        depth--;
+        break;
+      case tk_res:
+        fprintf(stderr, "Uh oh, encountered a tk_res");
+        exit(1);
+    }
+    if(elemType->kind != tk_array){
       break;
-    case tk_array:
-      sprintf(newIndex, "[_golite_iter_i%d]%s", iterCount, index);
-      iterCount++;
-      codeZeroOutArrayBuffer(BUFFER + strlen(BUFFER), identifier, strdup(newIndex), elemType, st, tabCount + 1);
-      break;
-    case tk_res:
-      fprintf(stderr, "Uh oh, encountered a tk_res");
-      exit(1);   
+    }
   }
-  writeTabBuffer(BUFFER + strlen(BUFFER), tabCount);
-  sprintf(BUFFER + strlen(BUFFER), "}\n");
+  while(tabCount >= levels){
+    writeTabBuffer(BUFFER + strlen(BUFFER), tabCount);
+    tabCount--;
+    sprintf(BUFFER + strlen(BUFFER), "}\n");
+  }
 }
