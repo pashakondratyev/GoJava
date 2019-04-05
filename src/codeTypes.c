@@ -391,11 +391,15 @@ void codeCopyArray(char *target, char *source, char *index, TYPE *type, SymbolTa
       case tk_float:
       case tk_boolean:
       case tk_rune:
+        fprintf(outputFile, "%s[_golite_iter_i%d]%s = ", target, iterCount, index);
+        fprintf(outputFile, "%s[_golite_iter_i%d]%s", source, iterCount, index);
+        fprintf(outputFile, ";\n");
+        break;
       case tk_slice:
       case tk_struct:
         // TODO: for slices and structs, should be slightly different, need to get type and call .copy()
         fprintf(outputFile, "%s[_golite_iter_i%d]%s = ", target, iterCount, index);
-        fprintf(outputFile, "%s[_golite_iter_i%d]%s", source, iterCount, index);
+        fprintf(outputFile, "%s[_golite_iter_i%d]%s.copy()", source, iterCount, index);
         fprintf(outputFile, ";\n");
         break;
       case tk_array:
@@ -450,11 +454,16 @@ void codeCopyArrayBuffer(char *BUFFER, char *target, char *source, char *index, 
       case tk_float:
       case tk_boolean:
       case tk_rune:
+        sprintf(BUFFER + strlen(BUFFER), "%s[_golite_iter_i%d]%s = ", target, iterCount, index);
+        // TODO: for slices and structs, should be slightly different
+        sprintf(BUFFER + strlen(BUFFER), "%s[_golite_iter_i%d]%s", source, iterCount, index);
+        sprintf(BUFFER + strlen(BUFFER), ";\n");
+        break;
       case tk_slice:
       case tk_struct:
         sprintf(BUFFER + strlen(BUFFER), "%s[_golite_iter_i%d]%s = ", target, iterCount, index);
         // TODO: for slices and structs, should be slightly different
-        sprintf(BUFFER + strlen(BUFFER), "%s[_golite_iter_i%d]%s", source, iterCount, index);
+        sprintf(BUFFER + strlen(BUFFER), "%s[_golite_iter_i%d]%s.copy()", source, iterCount, index);
         sprintf(BUFFER + strlen(BUFFER), ";\n");
         break;
       case tk_array:
