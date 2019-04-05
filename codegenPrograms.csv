@@ -1,5 +1,5 @@
 Test,Functional?,Problem
-INVALID,,
+VALID: terminating in errors,,
 Arrays-bound1.go,Yes,
 Arrays-bound2.go,Yes,
 noMain.go,Yes,
@@ -45,7 +45,7 @@ Previous Milestones: Scanner,,
 1-scanner/runelit,No,Error from previous milestone: doesn't catch that double quote doesn't have to be escaped for runes
 1-scanner/interstringlit,No,"Seems to be the same output, but still not passing"
 6-funcdecs,No,Error from previous milestone: doesn’t correctly determine function signature
-7-2-slices,No,Slice index exception
+7-2-slices,Yes,
 8-4-assignstmts,Yes,
 8-5-decstmts,Yes,
 8-12-forstmts,Yes,
@@ -62,5 +62,5 @@ Previous Milestones: Typecheck,,
 3-10_print_stmt,No,Slight printing error – could be similar to our print stmt test error
 3-11_for_stmt,Yes,
 4-3_unary_expr,No,verify script has a problem – look into
-4-6_indexing_expr,No,Slice index exception
+4-6_indexing_expr,No,Outputing null’s instead of 0’s
 4-9_cast_expr,Yes,

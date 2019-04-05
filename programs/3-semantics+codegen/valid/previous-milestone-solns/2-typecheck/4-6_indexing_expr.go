@@ -1,3 +1,5 @@
+//~0 0 0 1 2 3 0 0 0 0
+
 package main
 
 func main() {
@@ -11,9 +13,13 @@ func main() {
 	type index int
 
 	var ws indirect_slice
+	ws = append(ws, 0)
 	var xs slice
+	xs = append(xs, 1)
 	var ys []int
+	ys = append(ys, 2)
 	var zs []elem
+	zs = append(zs, elem(3))
 
 	var wa indirect_array
 	var xa array
@@ -24,12 +30,10 @@ func main() {
 	var e elem
 	var i index
 
-	a = ws[0]
 	a = xs[0]
 	a = ys[0]
 	e = zs[0]
 
-	a = ws[i]
 	a = xs[i]
 	a = ys[i]
 	e = zs[i]
@@ -46,12 +50,18 @@ func main() {
 
 
 	var wsm []indirect_slice
+	wsm = append(wsm, ws)
 	var xsm []slice
+	xsm = append(xsm, xs)
 	var ysm [][]int
+	ysm = append(ysm, ys)
 	var zsm [][]elem
+	zsm = append(zsm, zs)
 
 	var wam []indirect_array
+	wam = append(wam, wa)
 	var xam []array
+	xam = append(xam, xa)
 	var yam [5][5]int
 	var zam [5][5]elem
 
@@ -84,4 +94,6 @@ func main() {
 	a = xam[0][0]
 	a = yam[0][0]
 	e = zam[0][0]
+	
+	println(a, e, ism[0], dsm[0], asm[0], esm[0],iam[0],dam[0],aam[0],eam[0])
 }
