@@ -9,7 +9,7 @@ Slices-bounds2.go,Yes,
 VALID,,
 append,Yes,
 arrays,Yes,
-assignments,No,Segmentation fault – was working previously
+assignments,Yes,
 assignments2,Yes,
 blankid,Yes,
 callExprs,No,Pass function parameters in by value (make copies)
@@ -46,7 +46,7 @@ Previous Milestones: Scanner,,
 1-scanner/interstringlit,No,"Seems to be the same output, but still not passing"
 6-funcdecs,No,Error from previous milestone: doesn’t correctly determine function signature
 7-2-slices,No,Slice index exception
-8-4-assignstmts,No,Segmentation fault
+8-4-assignstmts,Yes,
 8-5-decstmts,Yes,
 8-12-forstmts,Yes,
 8-13-breakcontinuestmts,Yes,
@@ -57,7 +57,7 @@ Previous Milestones: Typecheck,,
 2-1-var_decl,Yes,
 2-3-func_decl,No,Major Error with identifier table
 3-4_return_stmt,Yes,
-3-7_assign_stmts,No,Segmentation fault – was working previously
+3-7_assign_stmts,Yes,
 3-8_op_assign_stmt,Yes,
 3-10_print_stmt,No,Slight printing error – could be similar to our print stmt test error
 3-11_for_stmt,Yes,
