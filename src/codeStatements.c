@@ -403,7 +403,7 @@ void codeAssignment(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCou
         codeExp(temp->lhs, st, it, tabCount);
         fprintf(outputFile, " = %s;", source);
       }
-    } else if(temp->lhs->type->kind == tk_array) { //TODO: address empty identifiers
+    } else if(temp->lhs->type!=NULL && temp->lhs->type->kind == tk_array) { //TODO: address empty identifiers
         fprintf(outputFile, "\n");
         sprintf(source, "%s_temp_assign_rhs_%d", prefix("array"), curAssignCount);
         sprintf(target, "%s_temp_assign_lhs_%d", prefix("array"), curAssignCount);
@@ -414,7 +414,7 @@ void codeAssignment(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCou
         fprintf(outputFile, ";\n");
         writeTab(tabCount);
         codeCopyArray(target, source, "", temp->lhs->type, st, tabCount);
-    }
+    } 
   }
 }
 
