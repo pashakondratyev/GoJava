@@ -26,7 +26,9 @@ IDENTIFIER *addToIdentifierTable(char *identifier, int scopeCount, IdentifierTab
   int i = Hash(identifier);
   for (IDENTIFIER *s = it->table[i]; s; s = s->next) {
     if (strcmp(s->identifier, identifier) == 0) {
-      // By typechecking this should be done
+      // Potentially temporary fix
+      return s;
+
       fprintf(stderr, "Error adding to identifier table! Logical error! Shouldn't happen!\n");
       exit(1);
     }
