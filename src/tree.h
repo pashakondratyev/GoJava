@@ -203,6 +203,7 @@ struct SIGNATURE {
 
 struct STMT {
   int lineno;
+  int terminates;
   StmtKind kind;
   union {
     struct {

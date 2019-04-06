@@ -262,6 +262,7 @@ ID_LIST *makeIdList(ID_LIST *listHead, char *nextId) {
 
 STMT *makeDeclStmt(DECL *decl, int lineno) {
   STMT *s = malloc(sizeof(STMT));
+  s->terminates = 1;
   s->lineno = lineno;
   s->kind = sk_decl;
   s->val.decl = decl;
@@ -270,6 +271,7 @@ STMT *makeDeclStmt(DECL *decl, int lineno) {
 
 STMT *makeShortDeclStmt(DECL *decl, int lineno) {
   STMT *s = malloc(sizeof(STMT));
+  s->terminates = 1;
   s->lineno = lineno;
   s->kind = sk_shortDecl;
   s->val.decl = decl;
@@ -278,6 +280,7 @@ STMT *makeShortDeclStmt(DECL *decl, int lineno) {
 
 STMT *makeBlockStmt(STMT_LIST *stmts, int lineno) {
   STMT *s = malloc(sizeof(STMT));
+  s->terminates = 1;
   s->lineno = lineno;
   s->kind = sk_block;
   s->val.block.blockStatements = stmts;
@@ -287,6 +290,7 @@ STMT *makeBlockStmt(STMT_LIST *stmts, int lineno) {
 
 STMT *makeExpStmt(EXP *exp, int lineno) {
   STMT *s = malloc(sizeof(STMT));
+  s->terminates = 1;
   s->lineno = lineno;
   s->kind = sk_exp;
   s->val.exp = exp;
@@ -295,6 +299,7 @@ STMT *makeExpStmt(EXP *exp, int lineno) {
 
 STMT *makeIncrStmt(EXP *incrExp, int lineno) {
   STMT *s = malloc(sizeof(STMT));
+  s->terminates = 1;
   s->lineno = lineno;
   s->kind = sk_incr;
   s->val.exp = incrExp;
@@ -303,6 +308,7 @@ STMT *makeIncrStmt(EXP *incrExp, int lineno) {
 
 STMT *makeDecrStmt(EXP *decrExp, int lineno) {
   STMT *s = malloc(sizeof(STMT));
+  s->terminates = 1;
   s->lineno = lineno;
   s->kind = sk_decr;
   s->val.exp = decrExp;
@@ -311,6 +317,7 @@ STMT *makeDecrStmt(EXP *decrExp, int lineno) {
 
 STMT *makePrintStmt(EXP_LIST *expList, int lineno) {
   STMT *s = malloc(sizeof(STMT));
+  s->terminates = 1;
   s->lineno = lineno;
   s->kind = sk_print;
   s->val.printExps = expList;
@@ -319,6 +326,7 @@ STMT *makePrintStmt(EXP_LIST *expList, int lineno) {
 
 STMT *makePrintlnStmt(EXP_LIST *expList, int lineno) {
   STMT *s = malloc(sizeof(STMT));
+  s->terminates = 1;
   s->lineno = lineno;
   s->kind = sk_println;
   s->val.printExps = expList;
@@ -327,6 +335,7 @@ STMT *makePrintlnStmt(EXP_LIST *expList, int lineno) {
 
 STMT *makeReturnStmt(EXP *returnExp, int lineno) {
   STMT *s = malloc(sizeof(STMT));
+  s->terminates = 1;
   s->lineno = lineno;
   s->kind = sk_return;
   s->val.exp = returnExp;
@@ -335,6 +344,7 @@ STMT *makeReturnStmt(EXP *returnExp, int lineno) {
 
 STMT *makeBreakStmt(int lineno) {
   STMT *s = malloc(sizeof(STMT));
+  s->terminates = 1;
   s->lineno = lineno;
   s->kind = sk_break;
   return s;
@@ -342,6 +352,7 @@ STMT *makeBreakStmt(int lineno) {
 
 STMT *makeContinueStmt(int lineno) {
   STMT *s = malloc(sizeof(STMT));
+  s->terminates = 1;
   s->lineno = lineno;
   s->kind = sk_continue;
   return s;
@@ -349,6 +360,7 @@ STMT *makeContinueStmt(int lineno) {
 
 STMT *makeFallthroughStmt(int lineno) {
   STMT *s = malloc(sizeof(STMT));
+  s->terminates = 1;
   s->lineno = lineno;
   s->kind = sk_fallthrough;
   return s;
@@ -401,6 +413,7 @@ STMT *makeAssignStmt(EXP_LIST *lhsList, EXP_LIST *rhsList, int lineno) {
   }
 
   STMT *s = malloc(sizeof(STMT));
+  s->terminates = 1;
   s->lineno = lineno;
   s->kind = sk_assign;
   s->val.assign = firstAssign;
@@ -409,6 +422,7 @@ STMT *makeAssignStmt(EXP_LIST *lhsList, EXP_LIST *rhsList, int lineno) {
 
 STMT *makeAssignOpStmt(EXP *lhs, EXP *rhs, AssignOpKind kind, int lineno) {
   STMT *s = malloc(sizeof(STMT));
+  s->terminates = 1;
   s->lineno = lineno;
   s->kind = sk_assignOp;
   s->val.assignOp.lhs = lhs;
@@ -419,6 +433,7 @@ STMT *makeAssignOpStmt(EXP *lhs, EXP *rhs, AssignOpKind kind, int lineno) {
 
 STMT *makeForStmt(EXP *whileExp, FOR_CLAUSE *forClause, STMT *body, int lineno) {
   STMT *s = malloc(sizeof(STMT));
+  s->terminates = 1;
   s->lineno = lineno;
   s->kind = sk_for;
   s->val.forStmt.whileExp = whileExp;
@@ -430,6 +445,7 @@ STMT *makeForStmt(EXP *whileExp, FOR_CLAUSE *forClause, STMT *body, int lineno) 
 STMT *makeEmptyStmt(int lineno){
   // Empty statement is easier to work with than checking if a stmt is null
   STMT *s = malloc(sizeof(STMT));
+  s->terminates = 1;
   s->lineno = lineno;
   s->kind = sk_empty;
   return s;
@@ -466,6 +482,7 @@ CASE_CLAUSE *makeDefaultClause(STMT_LIST *clauses, int lineno) {
 
 STMT *makeSwitchStmt(STMT *simpleStmt, EXP *exp, CASE_CLAUSE_LIST *caseClauses, int lineno) {
   STMT *s = malloc(sizeof(STMT));
+  s->terminates = 1;
   s->lineno = lineno;
   s->kind = sk_switch;
   s->val.switchStmt.simpleStmt = simpleStmt;
@@ -477,6 +494,7 @@ STMT *makeSwitchStmt(STMT *simpleStmt, EXP *exp, CASE_CLAUSE_LIST *caseClauses, 
 
 STMT *makeIfStmt(STMT *simpleStmt, EXP *cond, STMT *body, STMT *elseStmt, int lineno) {
   STMT *s = malloc(sizeof(STMT));
+  s->terminates = 1;
   s->lineno = lineno;
   s->kind = sk_if;
   s->val.ifStmt.simpleStmt = simpleStmt;
@@ -488,6 +506,7 @@ STMT *makeIfStmt(STMT *simpleStmt, EXP *cond, STMT *body, STMT *elseStmt, int li
 
 STMT *makeElseStmt(STMT *body, int lineno) {
   STMT *s = malloc(sizeof(STMT));
+  s->terminates = 1;
   s->lineno = lineno;
   s->kind = sk_else;
   s->val.elseBody = body;
