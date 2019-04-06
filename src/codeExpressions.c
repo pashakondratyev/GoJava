@@ -498,7 +498,7 @@ void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
         break;
       case ek_structField:
         codeExp(exp->val.structField.structExp, st, it, tabCount);
-        fprintf(outputFile, ".%s", exp->val.structField.fieldName);
+        fprintf(outputFile, ".%s", prefix(exp->val.structField.fieldName));
         break;
       case ek_paren:
         fprintf(outputFile, "(");

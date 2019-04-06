@@ -26,7 +26,7 @@ javaKeywords,Yes,
 length,Yes,
 multiDimensionalArrays,Yes,
 orderOfOps,Yes,
-printStmts,No,"*check to see if program run multiple times before printStmts results in a problem* Working properly only when run separately, ie. Not when using test.sh"
+printStmts,Yes,
 returnStmts,Yes,
 reuseAlias,Yes,
 shortDecls,Yes,
@@ -60,7 +60,7 @@ Previous Milestones: Typecheck,,
 3-4_return_stmt,Yes,
 3-7_assign_stmts,Yes,
 3-8_op_assign_stmt,Yes,
-3-10_print_stmt,No,Slight printing error – could be similar to our print stmt test error
+3-10_print_stmt,Yes,
 3-11_for_stmt,Yes,
 4-3_unary_expr,No,Unary not gives different result in Java. Go spec: https://golang.org/ref/spec#Integer_operators
 4-6_indexing_expr,Yes,
