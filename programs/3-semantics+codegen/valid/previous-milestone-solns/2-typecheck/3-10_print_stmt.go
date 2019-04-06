@@ -1,4 +1,4 @@
-//~3 +3.141592e+000 hello 99 true
+//~3 hello 99 true +3.141592e+000
 //~0  0 +0.000000e+000
 
 package main
@@ -13,7 +13,7 @@ type employee struct {
 }
 
 func main() {
-	println(3, 3.141592, "hello", 'c', true)
+	println(3, "hello", 'c', true, 3.141592)
 
 	var e employee
 	println(e.id, e.name, e.sex, e.wage)
