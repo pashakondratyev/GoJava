@@ -12,7 +12,7 @@
 #include "symbol.h"
 #include "type.h"
 
-#define DEBUG 0
+#define DEBUG 1
 
 void writeTab(int tabCount) {
   for (int i = 0; i < tabCount; i++) {
@@ -121,6 +121,7 @@ void codeProgram(PROG *prog, SymbolTable *st, char *inputFileName) {
 void codeSetup(char *className) {
   // TODO: complete
   // class name must match file name
+  fprintf(outputFile, "@SuppressWarnings(\"unchecked\")");
   fprintf(outputFile, "public class %sGoLite {\n", className);
   // define Go boolean variables
   fprintf(outputFile, "\tpublic static Boolean __golite__true = Boolean.TRUE;\n");

@@ -196,12 +196,13 @@ void printStructTable() {
 
 // Puts the java representation of a struct into buffer
 char *codeStructType(char *BUFFER, FIELD_DECLS *fd, SymbolTable *st, STRUCT *s, char *name) {
+
+  sprintf(BUFFER + strlen(BUFFER), "@SuppressWarnings(\"unchecked\")\n");
   sprintf(BUFFER + strlen(BUFFER), "class %s {\n", s->className);
   char constructorBUFFER[2048];
   char *constructor;
   char *typeName;
   // put all the public parameters
-
   sprintf(constructorBUFFER, "\tpublic %s() {\n", s->className);
 
   for (FIELD_DECLS *temp = fd; temp; temp = temp->next) {
@@ -221,7 +222,7 @@ char *codeStructType(char *BUFFER, FIELD_DECLS *fd, SymbolTable *st, STRUCT *s, 
         constructor = javaTypeStringConstructorArray(type, st, name);
         typeName = javaTypeString(type, st, name);
         sprintf(BUFFER + strlen(BUFFER), "\t%s %s = new %s;\n", typeName, temp->id, constructor);
-        codeZeroOutArrayBuffer(constructorBUFFER + strlen(constructorBUFFER), temp->id, "", temp->type, st, 2);
+        codeZeroOutArrayBuffer(constructorBUFFER + strlen(constructorBUFFER), temp->id, "", type, st, 2);
         break;
       case tk_slice:
         typeName = javaTypeString(type, st, name);

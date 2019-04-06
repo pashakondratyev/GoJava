@@ -141,6 +141,9 @@ char *javaTypeString(TYPE *type, SymbolTable *st, char *name) {
       case tk_ref:
         if (DEBUG) printf("javaTypeString: tk_ref %s\n", name);
         symbol = getSymbol(st, type->val.name);
+        if(symbol->kind != dk_type){
+          symbol = getSymbol(st->parent, type->val.name);
+        }
         return javaTypeString(symbol->val.typeDecl.resolvesTo, st, name);
       case tk_res:
         fprintf(stderr, "Encountered tk_res type during code generation");
@@ -185,6 +188,9 @@ char *javaTypeStringConstructor(TYPE *type, SymbolTable *st, char *name) {
         return strdup(BUFFER);
       case tk_ref:
         symbol = getSymbol(st, type->val.name);
+        if(symbol->kind != dk_type){
+          symbol = getSymbol(st->parent, type->val.name);
+        } 
         return javaTypeStringConstructor(symbol->val.typeDecl.resolvesTo, st, name);
       case tk_res:
         fprintf(stderr, "Encountered tk_res type during code generation");
@@ -228,6 +234,9 @@ char *javaTypeStringConstructorArray(TYPE *type, SymbolTable *st, char *name) {
         return strdup(BUFFER);
       case tk_ref:
         symbol = getSymbol(st, type->val.name);
+        if(symbol->kind != dk_type){
+          symbol = getSymbol(st->parent, type->val.name);
+        }
         return javaTypeStringConstructorArray(symbol->val.typeDecl.resolvesTo, st, name);
       case tk_res:
         fprintf(stderr, "Encountered tk_res type during code generation");
@@ -254,6 +263,9 @@ char *javaConstructorForBasicTypes(TYPE *type, SymbolTable *st) {
         return "new Boolean";
       case tk_ref:
         symbol = getSymbol(st, type->val.name);
+        if(symbol->kind != dk_type){
+          symbol = getSymbol(st->parent, type->val.name);
+        }
         return javaConstructorForBasicTypes(symbol->val.typeDecl.resolvesTo, st);
       case tk_res:
         fprintf(stderr, "Encountered tk_res type during code generation");
@@ -299,6 +311,9 @@ char *javaTypeStringDefaultConstructor(TYPE *type, SymbolTable *st, char *name) 
         return strdup(BUFFER);
       case tk_ref:
         symbol = getSymbol(st, type->val.name);
+        if(symbol->kind != dk_type){
+          symbol = getSymbol(st->parent, type->val.name);
+        }
         return javaTypeStringDefaultConstructor(symbol->val.typeDecl.resolvesTo, st, name);
       case tk_res:
         fprintf(stderr, "Encountered tk_res type during code generation");
@@ -330,6 +345,10 @@ void codeZeroOutArray(char *identifier, char *index, TYPE *type, SymbolTable *st
     switch (elemType->kind) {
       case tk_ref:
         elemType = getSymbol(st, elemType->val.name)->val.typeDecl.resolvesTo;
+        if(elemType == NULL){
+          elemType = temp->val.array.elemType;
+          elemType = getSymbol(st->parent, elemType->val.name)->val.typeDecl.resolvesTo; 
+        }
       case tk_int:
       case tk_string:
       case tk_float:
@@ -386,6 +405,10 @@ void codeCopyArray(char *target, char *source, char *index, TYPE *type, SymbolTa
     switch (elemType->kind) {
       case tk_ref:
         elemType = getSymbol(st, elemType->val.name)->val.typeDecl.resolvesTo;
+        if(elemType == NULL){
+          elemType = temp->val.array.elemType;
+          elemType = getSymbol(st->parent, elemType->val.name)->val.typeDecl.resolvesTo; 
+        }
       case tk_int:
       case tk_string:
       case tk_float:
@@ -449,6 +472,10 @@ void codeCopyArrayBuffer(char *BUFFER, char *target, char *source, char *index, 
     switch (elemType->kind) {
       case tk_ref:
         elemType = getSymbol(st, elemType->val.name)->val.typeDecl.resolvesTo;
+        if(elemType == NULL){
+          elemType = temp->val.array.elemType;
+          elemType = getSymbol(st->parent, elemType->val.name)->val.typeDecl.resolvesTo; 
+        }
       case tk_int:
       case tk_string:
       case tk_float:
@@ -510,6 +537,10 @@ void codeZeroOutArrayBuffer(char *BUFFER, char *identifier, char *index, TYPE *t
     switch (elemType->kind) {
       case tk_ref:
         elemType = getSymbol(st, elemType->val.name)->val.typeDecl.resolvesTo;
+        if(elemType == NULL){
+          elemType = temp->val.array.elemType;
+          elemType = getSymbol(st->parent, elemType->val.name)->val.typeDecl.resolvesTo; 
+        }
       case tk_int:
       case tk_string:
       case tk_float:
