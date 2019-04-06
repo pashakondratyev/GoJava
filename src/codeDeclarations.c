@@ -127,9 +127,7 @@ void codeShortDecl(SHORT_SPECS *ss, SymbolTable *st, IdentifierTable *it, int ta
       fprintf(outputFile, ".copy()");
     }
     fprintf(outputFile, ";\n");
-    if (ss->next != NULL) {
-      writeTab(tabCount);
-    }
+    writeTab(tabCount);
   }
   int printLine = 0;
   for (SHORT_SPECS *temp = ss; temp; temp = temp->next) {
@@ -228,10 +226,11 @@ void codeFuncDecl(FUNC_DECL *fd, SymbolTable *st, IdentifierTable *it, int tabCo
         break;
     }
   }
-  writeTab(tabCount);
+  writeTab(tabCount + 1);
   codeStmt(fd->body, st, it, tabCount + 1, false, NULL);
   if (DEBUG) printf("Finished converting body\n");
+  fprintf(outputFile, "\n");
   writeTab(tabCount);
-  fprintf(outputFile, "\n}\n");
+  fprintf(outputFile, "}\n");
   // TODO: implement
 }

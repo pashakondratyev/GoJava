@@ -19,7 +19,10 @@
 int switchCount = 0;
 int assignCount = 0;
 
+
+
 void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bool incompleteBlock, STMT *parentPost) {
+  terminate_t status = nonterminating;
   int newTabCount = tabCount == -1 ? -1 : tabCount + 1;
   if (DEBUG) printf("Code Statement: %d\n", stmt->kind);
   if (stmt != NULL) {
@@ -36,6 +39,13 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
           fprintf(outputFile, "\n");
           writeTab(newTabCount);
           codeStmt(temp->stmt, stmt->val.block.scope, child, newTabCount, false, parentPost);
+          if(!temp->stmt->terminates){
+            fprintf(outputFile, "\n");
+            writeTab(tabCount);
+            if (!incompleteBlock) fprintf(outputFile, "}");
+            printf("Does not terminate\n");
+            return;
+          }
         }
         fprintf(outputFile, "\n");
         writeTab(tabCount);

@@ -171,6 +171,10 @@ ReturnStatus typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
             returns = temp;
           }
 
+          if(!sl->stmt->terminates){
+            stmt->terminates = 0;
+          }
+
           sl = sl->next;
         }
         break;
@@ -525,6 +529,7 @@ ReturnStatus typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
         if (returns == NoReturn &&
             ((stmt->val.forStmt.forClause == NULL && stmt->val.forStmt.whileExp == NULL) ||
              (stmt->val.forStmt.forClause != NULL && stmt->val.forStmt.forClause->cond == NULL))) {
+          stmt->terminates = 0;
           returns = Returns;
         } else {
           returns = NoReturn;
