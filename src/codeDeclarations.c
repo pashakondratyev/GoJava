@@ -201,10 +201,37 @@ void codeFuncDecl(FUNC_DECL *fd, SymbolTable *st, IdentifierTable *it, int tabCo
     }
   }
   // print args
-  fprintf(outputFile, ") ");
+  fprintf(outputFile, ") {\n");
   if (DEBUG) printf("Finished converting header\n");
-  codeStmt(fd->body, st, it, tabCount, false, NULL);
+  it = scopeIdentifierTable(it);
+  for(PARAM_LIST *temp = fd->params; temp; temp = temp->next){
+    IDENTIFIER *i = getFromIdentifierTable(temp->id, it);
+    switch (temp->type->kind)
+    {
+      case tk_array:
+        writeTab(tabCount);
+        fprintf(outputFile, "%s %s_declaration_copy_%d", javaTypeString(temp->type, st, NULL), prefix(i->identifier), i->scopeCount);
+        fprintf(outputFile, "= new %s;\n", javaTypeStringConstructorArray(temp->type, st, NULL));
+        char source[1024];
+        char target[1024];
+        sprintf(target, "%s_declaration_copy_%d", prefix(i->identifier), i->scopeCount);
+        sprintf(source, "%s_%d", prefix(i->identifier), i->scopeCount);
+        codeCopyArray(target, source, "", temp->type, st, tabCount);
+        writeTab(tabCount);
+        fprintf(outputFile, "%1$s_%2$d = %1$s_declaration_copy_%2$d;\n", prefix(i->identifier), i->scopeCount);
+        break;
+      case tk_struct:
+      case tk_slice: 
+        writeTab(tabCount);
+        fprintf(outputFile, "%1$s_%2$d = %1$s_%2$d.copy();\n", prefix(i->identifier), i->scopeCount);
+      default:
+        break;
+    }
+  }
+  writeTab(tabCount);
+  codeStmt(fd->body, st, it, tabCount + 1, false, NULL);
   if (DEBUG) printf("Finished converting body\n");
-  fprintf(outputFile, "\n");
+  writeTab(tabCount);
+  fprintf(outputFile, "\n}\n");
   // TODO: implement
 }
