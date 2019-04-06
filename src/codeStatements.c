@@ -43,7 +43,6 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
             fprintf(outputFile, "\n");
             writeTab(tabCount);
             if (!incompleteBlock) fprintf(outputFile, "}");
-            printf("Does not terminate\n");
             return;
           }
         }
