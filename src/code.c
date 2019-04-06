@@ -121,7 +121,7 @@ void codeProgram(PROG *prog, SymbolTable *st, char *inputFileName) {
 void codeSetup(char *className) {
   // TODO: complete
   // class name must match file name
-  fprintf(outputFile, "@SuppressWarnings(\"unchecked\")");
+  fprintf(outputFile, "@SuppressWarnings(\"unchecked\")\n");
   fprintf(outputFile, "public class %sGoLite {\n", className);
   // define Go boolean variables
   fprintf(outputFile, "\tpublic static Boolean __golite__true = Boolean.TRUE;\n");
