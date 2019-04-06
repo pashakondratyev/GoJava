@@ -63,5 +63,5 @@ Previous Milestones: Typecheck,,
 3-10_print_stmt,No,Slight printing error – could be similar to our print stmt test error
 3-11_for_stmt,Yes,
 4-3_unary_expr,No,Unary not gives different result in Java. Go spec: https://golang.org/ref/spec#Integer_operators
-4-6_indexing_expr,No,Outputing null’s instead of 0’s
+4-6_indexing_expr,Yes,
 4-9_cast_expr,Yes,

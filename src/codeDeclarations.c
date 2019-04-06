@@ -65,32 +65,33 @@ void codeVarDecl(VAR_SPECS *vs, SymbolTable *st, IdentifierTable *it, int tabCou
       i->identifier = " ";
       char identifier[1024];
       sprintf(identifier, "%s_%d", prefix(vs->id), i->scopeCount);
-      if (vs->exp != NULL && vs->type->kind == tk_array) {
+      TYPE *resolvedType = typeResolve(vs->type, st);
+      if (vs->exp != NULL && resolvedType->kind == tk_array) {
         fprintf(outputFile, "%s %s_temp_%d = ", type, prefix(vs->id), i->scopeCount);
         codeExp(vs->exp, st, it, tabCount);
         fprintf(outputFile, ";\n");
         writeTab(tabCount);
       }
       fprintf(outputFile, "%s %s = new %s", type, identifier, constructor);
-      if (vs->type->kind == tk_array && tabCount == 1) { //Declaring array in top level
+      if (resolvedType->kind == tk_array && tabCount == 1) { //Declaring array in top level
         fprintf(outputFile, ";\n");
         if(vs->exp){
           char source[1000];
           sprintf(source, "%s_temp_%d", prefix(vs->id), i->scopeCount);
-          codeCopyArrayBuffer(initArraysBuffer + strlen(initArraysBuffer), identifier, source, "", vs->type, st, tabCount + 1);
+          codeCopyArrayBuffer(initArraysBuffer + strlen(initArraysBuffer), identifier, source, "", resolvedType, st, tabCount + 1);
         } else{
-          codeZeroOutArrayBuffer(initArraysBuffer + strlen(initArraysBuffer), identifier, "", vs->type, st, tabCount + 1);
+          codeZeroOutArrayBuffer(initArraysBuffer + strlen(initArraysBuffer), identifier, "", resolvedType, st, tabCount + 1);
         }
-      } else if (vs->type->kind == tk_array && vs->exp == NULL) { //Declaring empty arrau
+      } else if (resolvedType->kind == tk_array && vs->exp == NULL) { //Declaring empty array
         fprintf(outputFile, ";\n");
         writeTab(tabCount);
-        codeZeroOutArray(identifier, "", vs->type, st, tabCount);
-      } else if (vs->type->kind == tk_array && vs->exp != NULL) { //Declaring new array(pass by value)
+        codeZeroOutArray(identifier, "", resolvedType, st, tabCount);
+      } else if (resolvedType->kind == tk_array && vs->exp != NULL) { //Declaring new array(pass by value)
         fprintf(outputFile, ";\n");
         writeTab(tabCount);
         char source[1024];
         sprintf(source, "%s_temp_%d", prefix(vs->id), i->scopeCount);
-        codeCopyArray(identifier, source, "", vs->type, st, tabCount);
+        codeCopyArray(identifier, source, "", resolvedType, st, tabCount);
       } else if(vs->exp == NULL){ //Declaring without expression
         fprintf(outputFile, ";");
       } else {
