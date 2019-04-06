@@ -66,13 +66,13 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
         break;
       case sk_print:
         for (EXP_LIST *temp = stmt->val.printExps; temp; temp = temp->next) {
-          if (temp->exp->type->kind == tk_float) {
+          if (typeResolve(temp->exp->type, st)->kind == tk_float) {
             fprintf(outputFile, "System.out.printf(\"%%+7.6e\", ");
             codeExp(temp->exp, st, it, tabCount);
             fprintf(outputFile, ");");
           } else {
             fprintf(outputFile, "System.out.print(");
-            if (temp->exp->type->kind == tk_rune) fprintf(outputFile, "(int)");
+            if (typeResolve(temp->exp->type, st)->kind == tk_rune) fprintf(outputFile, "(int)");
             codeExp(temp->exp, st, it, tabCount);
             fprintf(outputFile, ");");
           }
@@ -84,13 +84,13 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
         break;
       case sk_println:
         for (EXP_LIST *temp = stmt->val.printExps; temp; temp = temp->next) {
-          if (temp->exp->type->kind == tk_float) {
+          if (typeResolve(temp->exp->type, st)->kind == tk_float) {
             fprintf(outputFile, "System.out.printf(\"%%+7.6e\", ");
             codeExp(temp->exp, st, it, tabCount);
             fprintf(outputFile, ");");
           } else {
             fprintf(outputFile, "System.out.print(");
-            if (temp->exp->type->kind == tk_rune) fprintf(outputFile, "(int)");
+            if (typeResolve(temp->exp->type, st)->kind == tk_rune) fprintf(outputFile, "(int)");
             codeExp(temp->exp, st, it, tabCount);
             fprintf(outputFile, ");");
           }
