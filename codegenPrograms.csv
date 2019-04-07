@@ -62,6 +62,6 @@ Previous Milestones: Typecheck,,
 3-8_op_assign_stmt,Yes,
 3-10_print_stmt,Yes,
 3-11_for_stmt,Yes,
-4-3_unary_expr,No,Unary not gives different result in Java. Go spec: https://golang.org/ref/spec#Integer_operators
+4-3_unary_expr,No,"Unary not gives different result in Java. Go spec: https://golang.org/ref/spec#Integer_operators Gives correct value if Character.getNumericValue() is used, but this results in the wrong value under other operations"
 4-6_indexing_expr,Yes,
 4-9_cast_expr,Yes,
