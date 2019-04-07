@@ -214,7 +214,12 @@ PARAM_LIST *makeParamList(PARAM_LIST *firstParam, PARAM_LIST *paramList) {
   if (firstParam == NULL) {
     // printf("ERROR: Logical error in makeParamList.\n");
   }
-  firstParam->next = paramList;
+  // move to end of param list before adding to next
+  PARAM_LIST *cur = firstParam;
+  while (cur->next != NULL) {
+    cur = cur->next;
+  }
+  cur->next = paramList;
   return firstParam;
 }
 
