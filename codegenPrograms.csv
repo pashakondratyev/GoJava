@@ -42,7 +42,7 @@ varDecls,Yes,
 ,,
 ,,
 Previous Milestones: Scanner,,
-1-scanner/runelit,No,Error from previous milestone: doesn't catch that double quote doesn't have to be escaped for runes
+1-scanner/runelit,Yes,
 1-scanner/interstringlit,No,"Seems to be the same output, but still not passing"
 6-funcdecs,No,Error from previous milestone: doesn’t correctly determine function signature
 7-2-slices,Yes,

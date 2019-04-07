@@ -77,7 +77,7 @@ OCTALDIGITS [0-7]
 HEXDECSYMBOLS [0-9a-f]
 
 STRINGSYMBOLS [~@#$%^&*\-+/`<>=_|'.,;:!?{}\[\]() ]
-RUNESYMBOLS [~@#$%^&*\-+/`<>=_|.,;:!?{}\[\]() ]
+RUNESYMBOLS [~@#$%^&*\-+/`"<>=_|.,;:!?{}\[\]() ]
 ALPHNUM [a-zA-Z0-9]
 ESCAPESYMBOLS \\[abfnrtv\\]
 %option yylineno
