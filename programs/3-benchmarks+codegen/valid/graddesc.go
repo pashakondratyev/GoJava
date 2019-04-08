@@ -22,7 +22,7 @@ func graddesc (a float64) float64 {
 		if(abs(step) <= precision) {
 			break
 		}
-		
+
 	}
 	return next
 }

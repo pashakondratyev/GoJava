@@ -1,5 +1,5 @@
 // Utility class containing all methods to cast between types
-
+@SuppressWarnings({"unchecked", "deprecation"})
 class Cast {
  public static Integer castToInteger(Integer i) {
   return i;

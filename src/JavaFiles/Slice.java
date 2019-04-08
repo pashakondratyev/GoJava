@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.lang.ArrayIndexOutOfBoundsException;
 
+@SuppressWarnings({"unchecked", "deprecation"})
 class Slice<T>{
     public int cap;
     public int len;

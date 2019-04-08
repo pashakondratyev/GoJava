@@ -175,12 +175,12 @@ void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
       case ek_rune:
         escapeRune = (char*) malloc(9);
         expandEscapesChar(exp->val.runeval, escapeRune);
-        fprintf(outputFile, "new Character('%s')", escapeRune);
+        fprintf(outputFile, "new Integer((int)'%s')", escapeRune);
         break;
       case ek_plus:
         type = typeResolve(exp->val.binary.lhs->type, st);
         if (type->kind == tk_rune) {  // rune
-          fprintf(outputFile, "%s((char)(", javaConstructorForBasicTypes(type, st));
+          fprintf(outputFile, "%s((", javaConstructorForBasicTypes(type, st));
           codeExp(exp->val.binary.lhs, st, it, tabCount);
           fprintf(outputFile, " + ");
           codeExp(exp->val.binary.rhs, st, it, tabCount);
@@ -196,7 +196,7 @@ void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
       case ek_minus:
         type = typeResolve(exp->val.binary.lhs->type, st);
         if (type->kind == tk_rune) {  // rune
-          fprintf(outputFile, "%s((char)(", javaConstructorForBasicTypes(type, st));
+          fprintf(outputFile, "%s((", javaConstructorForBasicTypes(type, st));
           codeExp(exp->val.binary.lhs, st, it, tabCount);
           fprintf(outputFile, " - ");
           codeExp(exp->val.binary.rhs, st, it, tabCount);
@@ -228,7 +228,7 @@ void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
       case ek_div:
         type = typeResolve(exp->val.binary.lhs->type, st);
         if (type->kind == tk_rune) {  // rune
-          fprintf(outputFile, "%s((char)(", javaConstructorForBasicTypes(type, st));
+          fprintf(outputFile, "%s((", javaConstructorForBasicTypes(type, st));
           codeExp(exp->val.binary.lhs, st, it, tabCount);
           fprintf(outputFile, " / ");
           codeExp(exp->val.binary.rhs, st, it, tabCount);
@@ -367,7 +367,7 @@ void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
       case ek_uplus:
         type = typeResolve(exp->val.unary.exp->type, st);
         if (type->kind == tk_rune) {  // rune
-          fprintf(outputFile, "%s((char)(+", javaConstructorForBasicTypes(type, st));
+          fprintf(outputFile, "%s((+", javaConstructorForBasicTypes(type, st));
           codeExp(exp->val.unary.exp, st, it, tabCount);
           fprintf(outputFile, "))");
         } else {  // int, float64
@@ -379,7 +379,7 @@ void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
       case ek_uminus:
         type = typeResolve(exp->val.unary.exp->type, st);
         if (type->kind == tk_rune) {  // rune
-          fprintf(outputFile, "%s((char)(-", javaConstructorForBasicTypes(type, st));
+          fprintf(outputFile, "%s((-", javaConstructorForBasicTypes(type, st));
           codeExp(exp->val.unary.exp, st, it, tabCount);
           fprintf(outputFile, "))");
         } else {  // int, float64
@@ -396,7 +396,7 @@ void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
       case ek_ubitXor:
         type = typeResolve(exp->val.unary.exp->type, st);
         if (type->kind == tk_rune) { // char
-          fprintf(outputFile, "%s((char)(~", javaConstructorForBasicTypes(type, st));
+          fprintf(outputFile, "%s((~", javaConstructorForBasicTypes(type, st));
           codeExp(exp->val.unary.exp, st, it, tabCount);
           fprintf(outputFile, "))");
         } else {  // int
@@ -537,7 +537,7 @@ void codeExp(EXP *exp, SymbolTable *st, IdentifierTable *it, int tabCount) {
           break;
         }
         if (type1->kind == tk_rune || type2->kind == tk_rune || type3->kind == tk_rune) {  // rune
-          fprintf(outputFile, "castUtil.castToCharacter(");
+          fprintf(outputFile, "castUtil.castToInteger(");
           EXP_LIST *exps = exp->val.funcCall.args;
           codeExp(exps->exp, st, it, tabCount);
           fprintf(outputFile, ")");

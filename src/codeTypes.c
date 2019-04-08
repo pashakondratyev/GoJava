@@ -65,7 +65,7 @@ void codeType(TYPE *type, SymbolTable *st, int tabCount) {
         fprintf(outputFile, "Double ");
         break;
       case tk_rune:
-        fprintf(outputFile, "Character ");
+        fprintf(outputFile, "Integer ");
         break;
       case tk_string:
         fprintf(outputFile, "String ");
@@ -113,7 +113,7 @@ char *javaTypeString(TYPE *type, SymbolTable *st, char *name) {
       case tk_float:
         return "Double";
       case tk_rune:
-        return "Character";
+        return "Integer";
       case tk_string:
         return "String";
       case tk_boolean:
@@ -164,7 +164,7 @@ char *javaTypeStringConstructor(TYPE *type, SymbolTable *st, char *name) {
       case tk_float:
         return "Double";
       case tk_rune:
-        return "Character";
+        return "Integer";
       case tk_string:
         return "String";
       case tk_boolean:
@@ -211,7 +211,7 @@ char *javaTypeStringConstructorArray(TYPE *type, SymbolTable *st, char *name) {
       case tk_float:
         return "Double";
       case tk_rune:
-        return "Character";
+        return "Integer";
       case tk_string:
         return "String";
       case tk_boolean:
@@ -256,7 +256,7 @@ char *javaConstructorForBasicTypes(TYPE *type, SymbolTable *st) {
       case tk_float:
         return "new Double";
       case tk_rune:
-        return "new Character";
+        return "new Integer";
       case tk_string:
         return "new String";
       case tk_boolean:
@@ -287,7 +287,7 @@ char *javaTypeStringDefaultConstructor(TYPE *type, SymbolTable *st, char *name) 
       case tk_float:
         return "Double(0.0)";
       case tk_rune:
-        return "Character((char) 0)";
+        return "Integer(0)";
       case tk_string:
         return "String(\"\")";
       case tk_boolean:

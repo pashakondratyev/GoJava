@@ -184,7 +184,7 @@ func main() {
 				println(i, "prime")
 			case i%2==0:
 				println(i, "composite")
-			default: 
+			default:
 				println(i, fermat(i, 1000000))
 		}
 	}

@@ -42,5 +42,5 @@ func main(){
   println(lineList[0].points[1].x)
 	println(lineList[0].points[1].y)
   println(shapeList[0].vertices[0].x)
- 	println(shapeList[0].vertices[0].y)
+	println(shapeList[0].vertices[0].y)
 }

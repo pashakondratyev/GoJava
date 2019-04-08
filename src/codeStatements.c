@@ -472,7 +472,7 @@ void codeAssignmentOp(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabC
   }
 
   if (typeResolve(stmt->val.assignOp.lhs->type, st)->kind == tk_rune) {
-    fprintf(outputFile, "new Character((char) ");
+    fprintf(outputFile, "new Integer((int) ");
     codeExp(binaryExp, st, it, tabCount);
     fprintf(outputFile, ")");
   } else {

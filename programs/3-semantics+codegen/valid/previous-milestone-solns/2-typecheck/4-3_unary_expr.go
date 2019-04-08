@@ -16,7 +16,6 @@
 //~-1
 //~-1
 //~true
- 
 
 package main
 

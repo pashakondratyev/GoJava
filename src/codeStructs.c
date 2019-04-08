@@ -197,7 +197,7 @@ void printStructTable() {
 // Puts the java representation of a struct into buffer
 char *codeStructType(char *BUFFER, FIELD_DECLS *fd, SymbolTable *st, STRUCT *s, char *name) {
 
-  sprintf(BUFFER + strlen(BUFFER), "@SuppressWarnings(\"unchecked\")\n");
+  sprintf(BUFFER + strlen(BUFFER), "@SuppressWarnings({\"unchecked\", \"deprecation\"})\n");
   sprintf(BUFFER + strlen(BUFFER), "class %s {\n", s->className);
   char constructorBUFFER[2048];
   char *constructor;
