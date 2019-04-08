@@ -19,9 +19,9 @@ func main() {
 
 	var kab paul
 	kab.a = 5
-	var a alex 
+	var a alex
 	a.f.c = "kac"
 	println(kab.a)
 	println(a.f.c)
-	
+
 }

@@ -125,7 +125,7 @@ char *javaTypeString(TYPE *type, SymbolTable *st, char *name) {
         if (s == NULL) {
           s = addToStructTable(type, NULL, st);
           if (s == NULL) {
-            fprintf(stderr, "Error! Could not retrieve struct during code generation\n");
+            fprintf(stderr, "Error! Could not retrieve struct during code generation getting java type string\n");
             exit(1);
           }
         }
@@ -175,7 +175,7 @@ char *javaTypeStringConstructor(TYPE *type, SymbolTable *st, char *name) {
         if (s == NULL) {
           s = addToStructTable(type, NULL, st);
           if (s == NULL) {
-            fprintf(stderr, "Error! Could not retrieve struct during code generation\n");
+            fprintf(stderr, "Error! Could not retrieve struct during code generation getting java type string constructor\n");
             exit(1);
           }
         }
@@ -222,7 +222,7 @@ char *javaTypeStringConstructorArray(TYPE *type, SymbolTable *st, char *name) {
         if (s == NULL) {
           s = addToStructTable(type, NULL, st);
           if (s == NULL) {
-            fprintf(stderr, "Error! Could not retrieve struct during code generation\n");
+            fprintf(stderr, "Error! Could not retrieve struct during code generation getting java type string constructor array\n");
             exit(1);
           }
         }
@@ -298,7 +298,7 @@ char *javaTypeStringDefaultConstructor(TYPE *type, SymbolTable *st, char *name) 
         if (s == NULL) {
           s = addToStructTable(type, NULL, st);
           if (s == NULL) {
-            fprintf(stderr, "Error! Could not retrieve struct during code generation\n");
+            fprintf(stderr, "Error! Could not retrieve struct during code generation getting java type string default constructor\n");
             exit(1);
           }
         }

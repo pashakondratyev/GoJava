@@ -148,7 +148,7 @@ STRUCT *addToStructTable(TYPE *type, char *name, SymbolTable *st) {
   for (STRUCT *s = structTable->table[i]; s; s = s->next) {
     if (strcmp(s->structString, BUFFER) == 0) {
       // Struct string already exists in struct table
-      return NULL;
+      return s;
     }
   }
 
@@ -246,11 +246,9 @@ char *codeStructType(char *BUFFER, FIELD_DECLS *fd, SymbolTable *st, STRUCT *s, 
     sprintf(BUFFER + strlen(BUFFER), "\t\t%1$s other = (%1$s)o;\n", s->className);
     sprintf(BUFFER + strlen(BUFFER), "\t\treturn ");
 
-    if (fd == NULL) { // empty struct
-    	sprintf(BUFFER + strlen(BUFFER), "Boolean.TRUE");
-    }
+   	sprintf(BUFFER + strlen(BUFFER), "Boolean.TRUE");
 
-    int needsAnd = 0;
+    int needsAnd = 1;
     for (FIELD_DECLS *temp = fd; temp; temp = temp->next) {
       if (strcmp(temp->id, "_") == 0) {
         continue;
