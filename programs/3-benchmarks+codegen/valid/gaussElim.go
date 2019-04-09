@@ -1,6 +1,6 @@
 //&
-//~Mean: +1.302120e+03
-//~Max: +9.071082e+03
+//~Mean: +1.302120e+003
+//~Max: +9.071082e+003
 
 //Generate random matrices and perform Gaussian elimination on each of them
 //Compute growth factor each time and output mean growth factor and maximum growth factor
