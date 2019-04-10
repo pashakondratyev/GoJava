@@ -373,6 +373,7 @@ ReturnStatus typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
           // if no expression then all case expressions must be booleans
           while (ccl != NULL) {
             ReturnStatus clauseReturns = NoReturn;
+            st = ccl->clause->scope;
             switch (ccl->clause->kind) {
               case ck_case:
                 el = ccl->clause->val.caseClause.cases;
@@ -438,6 +439,7 @@ ReturnStatus typeStmt(STMT *stmt, SymbolTable *st, TYPE *returnType) {
           }
           returns = ccl == NULL ? NoReturn : Returns;
           while (ccl != NULL) {
+            st = ccl->clause->scope;
             ReturnStatus clauseReturns = NoReturn;
             switch (ccl->clause->kind) {
               case ck_case:

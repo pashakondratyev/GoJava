@@ -112,7 +112,7 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
         }
         fprintf(outputFile, "\n");
         writeTab(tabCount);
-        fprintf(outputFile, "System.out.println();\n");
+        fprintf(outputFile, "System.out.println();");
         writeTab(tabCount);
         break;
       case sk_return:
@@ -181,6 +181,7 @@ void codeStmt(STMT *stmt, SymbolTable *st, IdentifierTable *it, int tabCount, bo
         CASE_CLAUSE_LIST *clauseList = stmt->val.switchStmt.caseClauses;
         bool ifStmtUsed = false;
         while (clauseList != NULL) {
+          st = clauseList->clause->scope;
           if (clauseList->clause != NULL) {
             if (clauseList->clause->kind == ck_default) {
               defaultClause = clauseList->clause;
@@ -343,6 +344,9 @@ void codeClauses(STMT_LIST *clauses, SymbolTable *st, IdentifierTable *it, int t
   while (clauses != NULL) {
     if (clauses->stmt != NULL) {
       codeStmt(clauses->stmt, st, it, tabCount, incompleteBlock, parentPost);
+    }
+    if(clauses->next != NULL){
+      writeTab(tabCount + 1);
     }
     clauses = clauses->next;
   }

@@ -3,6 +3,7 @@
 //~apple
 //~this
 //~yes
+//~true true
 
 package test
 
@@ -64,10 +65,33 @@ func wag() {
   }
 }
 
+func buzz() {
+  var m = 12
+  switch m {
+    case 10:
+      var m = 1
+      println(m)
+    case 11:
+      var m = "one"
+      println(m)
+    default:
+      var m = 1.0
+      println(m)
+    case 12:
+      switch m:=true; {
+        case false, false:
+          println(m)
+        default:
+          println(m,m)
+      }
+  }
+}
+
 func main() {
   foo()
   foo()
   bar()
   baz()
   wag()
+  buzz()
 }

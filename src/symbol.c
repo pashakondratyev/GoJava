@@ -384,13 +384,22 @@ void createSwitchStmtScope(STMT *stmt, SymbolTable *st) {
 
   CASE_CLAUSE_LIST *ccl = stmt->val.switchStmt.caseClauses;
   while (ccl != NULL) {
+    SymbolTable *caseScope = scopeSymbolTable(scope);
     STMT *newBlock;
+    ccl->clause->scope = caseScope;
+    
     if (ccl->clause->kind == ck_case) {
-      newBlock = makeBlockStmt(ccl->clause->val.caseClause.clauses, stmt->lineno);
-    } else {  // Else is defauly
-      newBlock = makeBlockStmt(ccl->clause->val.defaultClauses, stmt->lineno);
+      for(STMT_LIST *temp = ccl->clause->val.caseClause.clauses; temp; temp=temp->next){
+        symTypesStatements(temp->stmt, caseScope);
+      }
+      //newBlock = makeBlockStmt(ccl->clause->val.caseClause.clauses, stmt->lineno);
+    } else {  // Else is default
+      for(STMT_LIST *temp = ccl->clause->val.defaultClauses; temp; temp=temp->next){
+        symTypesStatements(temp->stmt, caseScope);
+      }
+      //newBlock = makeBlockStmt(ccl->clause->val.defaultClauses, stmt->lineno);
     }
-    symTypesStatements(newBlock, scope);
+    //symTypesStatements(newBlock, caseScope);
     ccl = ccl->next;
   }
   closeScope();
